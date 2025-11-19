@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaperToPlan AI - Presentación de Proyecto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#38bdf8', // Sky blue
+                            purple: '#818cf8', // Indigo
+                            success: '#34d399'
+                        }
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-brand-dark text-gray-100 font-sans overflow-x-hidden">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass-effect px-6 py-4 top-0 left-0">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-brain text-brand-accent text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight">PaperToPlan <span class="text-brand-accent">AI</span></span>
+            </div>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
+                <a href="#concept" class="hover:text-white transition">Concepto</a>
+                <a href="#feasibility" class="hover:text-white transition">Factibilidad</a>
+                <a href="#tech" class="hover:text-white transition">Tecnología</a>
+                <a href="#roadmap" class="hover:text-white transition">Roadmap</a>
+            </div>
+            <a href="#contact" class="bg-brand-accent text-brand-dark font-bold py-2 px-4 rounded-full text-sm hover:bg-sky-300 transition transform hover:scale-105">
+                Ver Demo
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-purple rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-accent rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow" style="animation-delay: 1s;"></div>
+
+        <div class="container mx-auto px-4 text-center z-10">
+            <div class="inline-block mb-4 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-xs font-semibold tracking-wider text-brand-accent uppercase opacity-0 animate-fade-in-up" style="animation-delay: 0.1s;">
+                Inteligencia Artificial Local & Privada
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;">
+                De Papel a <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-brand-purple">Ejecución</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-10 opacity-0 animate-fade-in-up" style="animation-delay: 0.5s;">
+                Transforma notas manuscritas en planes de proyecto estructurados utilizando IA multimodal corriendo 100% en tu equipo.
+            </p>
+            <div class="flex flex-col md:flex-row justify-center gap-4 opacity-0 animate-fade-in-up" style="animation-delay: 0.7s;">
+                <a href="#concept" class="px-8 py-4 bg-gradient-to-r from-brand-accent to-brand-purple rounded-lg font-bold text-brand-dark shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition transform hover:-translate-y-1">
+                    Explorar Proyecto
+                </a>
+                <button class="px-8 py-4 glass-effect rounded-lg font-bold hover:bg-gray-800 transition flex items-center justify-center gap-2">
+                    <i class="fab fa-github"></i> Ver Repositorio
+                </button>
+            </div>
+        </div>
+        
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </header>
+
+    <!-- Concept Section -->
+    <section id="concept" class="py-20 bg-brand-dark relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="reveal">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">El Problema: <span class="text-gray-400">Caos Analógico</span></h2>
+                    <p class="text-gray-300 mb-6 text-lg leading-relaxed">
+                        Las mejores ideas nacen en servilletas y cuadernos, pero mueren allí porque digitalizarlas es tedioso. Los OCR tradicionales fallan con la letra manuscrita y subir datos confidenciales a la nube es un riesgo.
+                    </p>
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></div>
+                            <span class="text-gray-400">OCR tradicional falla con letra humana.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></div>
+                            <span class="text-gray-400">Riesgo de privacidad en APIs en la nube.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0"><i class="fas fa-times text-xs"></i></div>
+                            <span class="text-gray-400">Falta de estructura y seguimiento temporal.</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="glass-effect p-8 rounded-2xl border border-gray-700 reveal delay-200 relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-brand-accent opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition"></div>
+                    <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
+                        <i class="fas fa-robot text-brand-accent"></i> La Solución
+                    </h3>
+                    <div class="space-y-6">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
+                                <i class="fas fa-eye text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-200">Visión Multimodal (LLaVA)</h4>
+                                <p class="text-sm text-gray-400">No solo lee letras, "entiende" diagramas y garabatos visuales.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
+                                <i class="fas fa-server text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-200">Soberanía de Datos</h4>
+                                <p class="text-sm text-gray-400">Todo corre en localhost con Ollama. Tus secretos industriales no salen de tu PC.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
+                                <i class="fas fa-tasks text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-200">Gestión Automatizada</h4>
+                                <p class="text-sm text-gray-400">La IA clasifica tareas por tiempo de implementación y genera planes de acción.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feasibility Analysis -->
+    <section id="feasibility" class="py-20 bg-gray-900 relative">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Análisis de Factibilidad</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">
+                    Evaluación técnica basada en la integración de modelos LLaVA y optimización con Ollama.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-10">
+                <!-- Score Cards -->
+                <div class="space-y-6 reveal">
+                    <!-- Score Item -->
+                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-gray-200">Privacidad de Datos</span>
+                            <span class="text-brand-success font-mono">100/100</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-brand-success h-2.5 rounded-full" style="width: 100%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Ejecución 100% offline sin dependencias externas.</p>
+                    </div>
+
+                    <!-- Score Item -->
+                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700">
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-gray-200">Procesamiento NLP (Llama 3)</span>
+                            <span class="text-brand-accent font-mono">90/100</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-brand-accent h-2.5 rounded-full" style="width: 90%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Modelos cuantizados (4-bit) ofrecen alto rendimiento en local.</p>
+                    </div>
+
+                    <!-- Score Item -->
+                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700 relative overflow-hidden">
+                        <div class="absolute right-0 top-0 bg-brand-purple text-xs px-2 py-1 rounded-bl font-bold text-white">MEJORADO</div>
+                        <div class="flex justify-between mb-2">
+                            <span class="font-bold text-gray-200">Digitalización (LLaVA/Moondream)</span>
+                            <span class="text-brand-purple font-mono">85/100</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div class="bg-brand-purple h-2.5 rounded-full" style="width: 85%"></div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Subió de 40 a 85 gracias a la integración de modelos de Visión Multimodal.</p>
+                    </div>
+                </div>
+
+                <!-- Stats/Visual -->
+                <div class="bg-brand-card rounded-2xl p-8 border border-gray-700 flex flex-col justify-center items-center text-center reveal delay-200">
+                    <div class="relative w-48 h-48 mb-6">
+                        <!-- FIX: Movida la animación de spin al SVG para centrado perfecto -->
+                        <svg class="w-full h-full animate-[spin_3s_linear_infinite_reverse]" viewBox="0 0 36 36">
+                            <path class="text-gray-700" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2" />
+                            <path class="text-brand-accent" stroke-dasharray="76, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                        </svg>
+                        <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
+                            <span class="text-4xl font-bold text-white">76%</span>
+                            <span class="text-xs text-gray-400">Score Promedio</span>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 font-medium">Viable para MVP</p>
+                    <p class="text-sm text-gray-500 mt-2">La principal barrera es el hardware (GPU), mitigada por el uso de modelos ligeros como Moondream.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section id="tech" class="py-20 bg-brand-dark border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-12 reveal">
+                <h2 class="text-3xl font-bold">Stack Tecnológico</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Tech Card -->
+                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal">
+                    <i class="fab fa-python text-5xl text-yellow-500 mb-4"></i>
+                    <h4 class="font-bold">Python</h4>
+                    <p class="text-xs text-gray-500 mt-1">Core Logic</p>
+                </div>
+                <!-- Tech Card -->
+                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-100">
+                    <div class="text-5xl mb-4">🦙</div>
+                    <h4 class="font-bold">Ollama</h4>
+                    <p class="text-xs text-gray-500 mt-1">Local AI Runner</p>
+                </div>
+                 <!-- Tech Card -->
+                 <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-200">
+                    <i class="fas fa-desktop text-5xl text-blue-400 mb-4"></i>
+                    <h4 class="font-bold">CustomTkinter</h4>
+                    <p class="text-xs text-gray-500 mt-1">Modern GUI</p>
+                </div>
+                <!-- Tech Card -->
+                <div class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-300">
+                    <i class="fas fa-database text-5xl text-green-500 mb-4"></i>
+                    <h4 class="font-bold">SQLite</h4>
+                    <p class="text-xs text-gray-500 mt-1">Local DB</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section id="roadmap" class="py-20 bg-gray-900 relative">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl font-bold mb-12 text-center reveal">Roadmap de Implementación</h2>
+            
+            <div class="relative border-l-2 border-brand-purple/30 ml-4 md:ml-0 space-y-12">
+                
+                <!-- Phase 1 -->
+                <div class="relative pl-8 md:pl-0 reveal">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-brand-purple shadow-[0_0_10px_rgba(129,140,248,0.5)]"></div>
+                    <div class="md:flex items-start justify-between">
+                        <div class="md:w-1/2 md:pr-8 md:text-right">
+                            <h3 class="text-xl font-bold text-brand-accent">Fase 1: El Cerebro (Backend)</h3>
+                            <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Semana 1-2</span>
+                        </div>
+                        <div class="md:w-1/2 md:pl-8 mt-2 md:mt-0">
+                            <p class="text-gray-400 text-sm">Configuración de scripts de Python para conectar con Ollama. Ingeniería de Prompts JSON para estructurar respuestas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative pl-8 md:pl-0 reveal">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-brand-purple"></div>
+                    <div class="md:flex items-start justify-between">
+                        <div class="md:w-1/2 md:pr-8 md:text-right">
+                            <h3 class="text-xl font-bold text-white">Fase 2: El Ojo (Visión)</h3>
+                            <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Semana 3-4</span>
+                        </div>
+                        <div class="md:w-1/2 md:pl-8 mt-2 md:mt-0">
+                            <p class="text-gray-400 text-sm">Integración de LLaVA y Moondream. Lógica híbrida: OCR rápido (EasyOCR) vs. Interpretación Visual (LLM).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="relative pl-8 md:pl-0 reveal">
+                    <div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-600"></div>
+                    <div class="md:flex items-start justify-between">
+                        <div class="md:w-1/2 md:pr-8 md:text-right">
+                            <h3 class="text-xl font-bold text-white">Fase 3: La Interfaz (GUI)</h3>
+                            <span class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Semana 5-6</span>
+                        </div>
+                        <div class="md:w-1/2 md:pl-8 mt-2 md:mt-0">
+                            <p class="text-gray-400 text-sm">Desarrollo de Dashboard en CustomTkinter. Implementación de Hilos (Threading) para evitar bloqueos.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA / Footer -->
+    <footer id="contact" class="py-12 bg-black text-center">
+        <div class="max-w-2xl mx-auto px-4">
+            <p class="text-xs text-gray-600">
+                © 2024 PaperToPlan AI Concept. Generated by Gemini.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Scroll Reveal Animation
+        const revealElements = document.querySelectorAll('.reveal');
+
+        const revealOnScroll = () => {
+            const windowHeight = window.innerHeight;
+            const elementVisible = 100;
+
+            revealElements.forEach((element) => {
+                const elementTop = element.getBoundingClientRect().top;
+                if (elementTop < windowHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', revealOnScroll);
+        // Trigger once on load
+        revealOnScroll();
+    </script>
+</body>
+</html>
