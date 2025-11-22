@@ -126,7 +126,19 @@ class AIEngine:
             elif "```" in json_str:
                 json_str = json_str.split("```")[1].split("```")[0]
                 
-            return json.loads(json_str)
+            json_data = json.loads(json_str)
+            
+            if self.validate_response(json_data):
+                return json_data
+            else:
+                return {
+                    "title": "Error de Validación",
+                    "feasibility_score": 0,
+                    "technical_considerations": ["La respuesta de la IA no contenía todos los campos requeridos."],
+                    "recommended_stack": [],
+                    "implementation_time": "Error",
+                    "summary": "Respuesta incompleta de la IA."
+                }
 
         except json.JSONDecodeError:
             logger.error("Failed to parse JSON from Ollama response.")
@@ -143,3 +155,29 @@ class AIEngine:
             if "Connection refused" in str(e):
                 return {"error": "Ollama service is not running. Please start 'ollama serve'."}
             return {"error": f"Analysis failed: {str(e)}"}
+
+    def validate_response(self, data: Dict[str, Any]) -> bool:
+        """
+        Validates that the JSON response contains all required fields.
+        """
+        required_fields = [
+            "title", 
+            "feasibility_score", 
+            "technical_considerations", 
+            "recommended_stack", 
+            "implementation_time", 
+            "summary"
+        ]
+        
+        for field in required_fields:
+            if field not in data:
+                logger.warning(f"Missing field in AI response: {field}")
+                return False
+            
+            # Basic empty check
+            if not data[field] and not isinstance(data[field], (int, float)):
+                logger.warning(f"Empty field in AI response: {field}")
+                # We might allow empty lists but let's be strict for now or just warn
+                # return False # Optional: decide if empty fields are fatal
+        
+        return True

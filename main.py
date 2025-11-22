@@ -31,13 +31,14 @@ class PaperToPlanApp(ctk.CTk):
         self.sidebar = Sidebar(self, 
                                on_new_note_file=self.new_note_file, 
                                on_new_note_webcam=self.new_note_webcam,
-                               on_filter_change=self.apply_filter)
+                               on_filter_change=self.apply_filter,
+                               on_flush_db=self.flush_db_action)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
 
         self.note_list = NoteList(self, on_note_select=self.show_detail)
         self.note_list.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
 
-        self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note)
+        self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note)
         self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
 
         # Status Bar / Progress
@@ -78,6 +79,33 @@ class PaperToPlanApp(ctk.CTk):
         if self.db.delete_note(note_id):
             print(f"Deleted note {note_id}")
             self.refresh_notes()
+
+    def flush_db_action(self):
+        if self.db.flush_db():
+            print("DB Flushed")
+            self.refresh_notes()
+
+    def regenerate_note(self, note_id, new_text):
+        print(f"Regenerating note {note_id} with new text...")
+        
+        # Update raw text in DB first
+        self.db.update_note_text(note_id, new_text)
+        
+        # Start AI pipeline again (skipping image extraction)
+        self.status_bar.grid()
+        self.status_bar.start()
+        threading.Thread(target=self.ai_pipeline_text_only, args=(note_id, new_text), daemon=True).start()
+
+    def ai_pipeline_text_only(self, note_id, text):
+        try:
+            print("Analyzing text (Regeneration)...")
+            analysis = self.ai.analyze_text(text)
+            self.db.update_note_analysis(note_id, analysis)
+        except Exception as e:
+            print(f"Regeneration Error: {e}")
+            self.db.update_note_error(note_id, str(e))
+        finally:
+            self.after(0, self.finish_processing)
 
     def show_detail(self, note):
         self.note_detail.show_note(note)
@@ -145,6 +173,7 @@ class PaperToPlanApp(ctk.CTk):
             
         except Exception as e:
             print(f"Pipeline Error: {e}")
+            self.db.update_note_error(note_id, str(e))
         finally:
             # Update UI on main thread
             self.after(0, self.finish_processing)

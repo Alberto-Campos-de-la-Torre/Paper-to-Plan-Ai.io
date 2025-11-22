@@ -78,6 +78,35 @@ class DBManager:
             logger.error(f"Error deleting note {note_id}: {e}")
             return False
 
+    def update_note_error(self, note_id: int, error_msg: str):
+        """Update a note status to error."""
+        try:
+            error_json = json.dumps({"error": error_msg, "title": "Error de Procesamiento"})
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE notes 
+                    SET ai_analysis = ?, status = 'error', implementation_time = 'Error'
+                    WHERE id = ?
+                """, (error_json, note_id))
+                conn.commit()
+                logger.info(f"Note {note_id} marked as error.")
+        except sqlite3.Error as e:
+            logger.error(f"Error marking note {note_id} as error: {e}")
+
+    def flush_db(self) -> bool:
+        """Delete all notes from the database."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM notes")
+                conn.commit()
+                logger.info("Database flushed. All notes deleted.")
+                return True
+        except sqlite3.Error as e:
+            logger.error(f"Error flushing database: {e}")
+            return False
+
     def update_note_analysis(self, note_id: int, analysis: Dict[str, Any]):
         """Update a note with the AI analysis result."""
         try:

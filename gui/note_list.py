@@ -28,6 +28,9 @@ class NoteCard(ctk.CTkFrame):
             self.configure(border_color="orange")
         elif status == 'processed':
             self.configure(border_color="green")
+        elif status == 'error':
+            self.configure(border_color="red")
+            self.title_lbl.configure(text_color="red")
 
     def clicked(self, event=None):
         self.on_click(self.note)

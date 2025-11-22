@@ -2,11 +2,12 @@ import customtkinter as ctk
 from typing import Callable
 
 class Sidebar(ctk.CTkFrame):
-    def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable):
+    def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable, on_flush_db: Callable):
         super().__init__(master, width=200, corner_radius=0)
         self.on_new_note_file = on_new_note_file
         self.on_new_note_webcam = on_new_note_webcam
         self.on_filter_change = on_filter_change
+        self.on_flush_db = on_flush_db
 
         self.grid_rowconfigure(6, weight=1)
 
@@ -35,6 +36,9 @@ class Sidebar(ctk.CTkFrame):
 
         self.filter_long = ctk.CTkRadioButton(self, text="Largo Plazo", variable=self.filter_var, value="Long Term", command=self.trigger_filter)
         self.filter_long.grid(row=7, column=0, padx=20, pady=10, sticky="w")
+
+        self.flush_btn = ctk.CTkButton(self, text="Flush DB (Debug)", command=self.on_flush_db, fg_color="darkred", hover_color="red")
+        self.flush_btn.grid(row=8, column=0, padx=20, pady=(20, 20), sticky="s")
 
     def trigger_filter(self):
         self.on_filter_change(self.filter_var.get())

@@ -78,6 +78,8 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * [x] **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
 * [x] **Fase 4:** Base de datos y optimización de hilos (Threading).
 * [x] **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
+* [x] **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
+* [x] **Fase 7:** Pulido UI (Banner de Estado, Validación de Respuesta).
 * [ ] **Futuro:** Exportación a PDF/Markdown y soporte para notas de voz (Whisper).
 
 ## **✨ Características Implementadas**
@@ -86,7 +88,9 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.
 * **🧠 IA en Español:** Análisis de factibilidad y planes generados en español usando **gemma3:4B**.
 * **👁️ Visión Híbrida:** OCR rápido para texto claro, LLaVA para manuscritos complejos.
-* **🗑️ Gestión Completa:** Crea, visualiza y elimina notas desde la app.
+* **🗑️ Gestión Completa:** Crea, visualiza, edita y elimina notas.
+* **🔄 Regeneración:** Corrige el texto extraído y regenera el plan si la IA falla.
+* **🛡️ Validación:** Banners de estado y validación de respuestas para evitar errores.
 
 ## **🤝 Contribución**
 
