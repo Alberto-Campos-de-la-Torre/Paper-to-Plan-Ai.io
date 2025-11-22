@@ -71,13 +71,22 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 3. **Revisión:** Verás la tarjeta de la nota en el tablero. Haz clic para ver el "Plan de Mejora" generado por la IA.  
 4. **Filtrado:** Usa los filtros laterales para ver solo proyectos de "Corto Plazo" para victorias rápidas.
 
-## **🗺️ Roadmap**
+## **🗺️ Roadmap (Estado Actual)**
 
-* \[ \] **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).  
-* \[ \] **Fase 2:** Módulo de Visión Híbrido (EasyOCR \+ LLaVA fallback).  
-* \[ \] **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).  
-* \[ \] **Fase 4:** Base de datos y optimización de hilos (Threading).  
-* \[ \] **Futuro:** Exportación a PDF/Markdown y soporte para notas de voz (Whisper).
+* [x] **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).
+* [x] **Fase 2:** Módulo de Visión Híbrido (EasyOCR + LLaVA fallback).
+* [x] **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
+* [x] **Fase 4:** Base de datos y optimización de hilos (Threading).
+* [x] **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
+* [ ] **Futuro:** Exportación a PDF/Markdown y soporte para notas de voz (Whisper).
+
+## **✨ Características Implementadas**
+
+* **🔐 Privacidad Total (Local-First):** Ejecución 100% offline con Ollama.
+* **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.
+* **🧠 IA en Español:** Análisis de factibilidad y planes generados en español usando **gemma3:4B**.
+* **👁️ Visión Híbrida:** OCR rápido para texto claro, LLaVA para manuscritos complejos.
+* **🗑️ Gestión Completa:** Crea, visualiza y elimina notas desde la app.
 
 ## **🤝 Contribución**
 

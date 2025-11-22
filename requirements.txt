@@ -1,0 +1,5 @@
+customtkinter
+easyocr
+opencv-python
+pillow
+ollama
