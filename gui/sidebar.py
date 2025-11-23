@@ -49,13 +49,9 @@ class Sidebar(ctk.CTkFrame):
         self.server_btn = ctk.CTkButton(self, text="📱 Mobile Server", command=self.toggle_server, fg_color="#2ecc71", hover_color="#27ae60")
         self.server_btn.grid(row=10, column=0, padx=20, pady=(0, 10), sticky="s")
         
-        self.qr_label = ctk.CTkLabel(self, text="")
-        self.qr_label.grid(row=11, column=0, padx=20, pady=(0, 5))
-        self.qr_label.grid_remove()
-
-        # User Management Frame (created but hidden initially)
+        # User Management Frame (above QR code so it's always visible)
         self.user_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self.user_frame.grid(row=11, column=0, padx=20, pady=(0, 10), sticky="ew")
         self.user_frame.grid_remove()
 
         self.add_user_btn = ctk.CTkButton(self.user_frame, text="+ Add User", command=self.add_user, width=100, height=24, font=ctk.CTkFont(size=12))
@@ -63,6 +59,11 @@ class Sidebar(ctk.CTkFrame):
 
         self.users_label = ctk.CTkLabel(self.user_frame, text="", font=ctk.CTkFont(size=12), justify="left")
         self.users_label.pack()
+        
+        # QR Code (below user management)
+        self.qr_label = ctk.CTkLabel(self, text="")
+        self.qr_label.grid(row=12, column=0, padx=20, pady=(0, 5))
+        self.qr_label.grid_remove()
         
         self.is_server_running = False
 
@@ -74,7 +75,7 @@ class Sidebar(ctk.CTkFrame):
         self.is_server_running = is_running
         if is_running:
             self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
-            self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
+            self.user_frame.grid()
             self.update_user_list()
         else:
             self.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")

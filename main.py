@@ -188,9 +188,8 @@ class PaperToPlanApp(ctk.CTk):
 
     def toggle_mobile_server(self):
         if self.sidebar.is_server_running:
-            self.sidebar.qr_label.grid_remove()
-            self.sidebar.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
-            self.sidebar.is_server_running = False
+            # Stop server
+            self.sidebar.set_server_status(False)
             return
 
         # Start Server
@@ -206,6 +205,9 @@ class PaperToPlanApp(ctk.CTk):
         # Convert to CTkImage
         ctk_qr = ctk.CTkImage(light_image=qr_img.get_image(), size=(150, 150))
         self.sidebar.set_qr_code(ctk_qr)
+        
+        # Update server status
+        self.sidebar.set_server_status(True)
         
         # Run Server in Thread if not already running
         if not self.server_thread or not self.server_thread.is_alive():
