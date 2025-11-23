@@ -104,11 +104,13 @@
         style="display:flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
         <div class="icon">🔒</div>
         <h1>Acceso Seguro</h1>
-        <p>Ingresa el PIN que aparece en la app de escritorio</p>
+        <p>Ingresa tu Usuario y PIN</p>
+        <input type="text" id="userInput" placeholder="Usuario"
+            style="font-size: 20px; padding: 10px; text-align: center; width: 200px; border-radius: 10px; border: none; margin-bottom: 10px;">
         <input type="tel" id="pinInput" placeholder="PIN (4 dígitos)" maxlength="4"
             style="font-size: 24px; padding: 10px; text-align: center; width: 150px; border-radius: 10px; border: none; margin-bottom: 20px;">
         <button class="btn" onclick="login()">Entrar</button>
-        <p id="login-error" class="error" style="display:none; margin-top: 10px;">PIN Incorrecto</p>
+        <p id="login-error" class="error" style="display:none; margin-top: 10px;">Usuario o PIN Incorrecto</p>
     </div>
 
     <div id="home-view" style="display:none;">
@@ -146,17 +148,22 @@
         const fileInput = document.getElementById('fileInput');
         const statusDiv = document.getElementById('status');
         let currentPIN = localStorage.getItem('paper_pin');
+        let currentUser = localStorage.getItem('paper_user');
 
         // Init
-        if (currentPIN) {
+        if (currentPIN && currentUser) {
             showHome();
         }
 
         function login() {
             const pin = document.getElementById('pinInput').value;
-            if (pin.length === 4) {
+            const user = document.getElementById('userInput').value;
+
+            if (pin.length === 4 && user.length > 0) {
                 currentPIN = pin;
+                currentUser = user;
                 localStorage.setItem('paper_pin', pin);
+                localStorage.setItem('paper_user', user);
                 document.getElementById('login-error').style.display = 'none';
                 showHome();
             } else {
@@ -166,12 +173,14 @@
 
         function logout() {
             localStorage.removeItem('paper_pin');
+            localStorage.removeItem('paper_user');
             location.reload();
         }
 
         function getHeaders() {
             return {
-                'X-Auth-PIN': currentPIN
+                'X-Auth-PIN': currentPIN,
+                'X-Auth-User': currentUser
             };
         }
 

@@ -35,11 +35,14 @@ def set_upload_callback(callback):
     global on_upload_callback
     on_upload_callback = callback
 
-async def verify_pin(x_auth_pin: str = Header(None)):
-    user_id = session_manager.get_user_id(x_auth_pin)
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid PIN")
-    return user_id
+async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
+    if not x_auth_user or not x_auth_pin:
+        raise HTTPException(status_code=401, detail="Missing Username or PIN")
+    
+    if not session_manager.verify_user(x_auth_user, x_auth_pin):
+        raise HTTPException(status_code=401, detail="Invalid Username or PIN")
+    
+    return x_auth_user
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -50,7 +53,7 @@ async def read_root():
         return "<h1>Error: mobile_index.html not found</h1>"
 
 @app.post("/api/upload")
-async def upload_image(file: UploadFile = File(...), user_id: str = Depends(verify_pin)):
+async def upload_image(file: UploadFile = File(...), user_id: str = Depends(verify_user_and_pin)):
     try:
         # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
@@ -75,7 +78,7 @@ async def upload_image(file: UploadFile = File(...), user_id: str = Depends(veri
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/notes")
-async def get_notes(user_id: str = Depends(verify_pin)):
+async def get_notes(user_id: str = Depends(verify_user_and_pin)):
     """Returns a list of all notes for the authenticated user."""
     try:
         notes = db.get_all_notes(user_id=user_id)
@@ -85,7 +88,7 @@ async def get_notes(user_id: str = Depends(verify_pin)):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/notes/{note_id}")
-async def get_note_detail(note_id: int, user_id: str = Depends(verify_pin)):
+async def get_note_detail(note_id: int, user_id: str = Depends(verify_user_and_pin)):
     """Returns details for a specific note if owned by the user."""
     try:
         note = db.get_note_by_id(note_id, user_id=user_id)

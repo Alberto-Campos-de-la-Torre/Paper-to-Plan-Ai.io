@@ -42,6 +42,14 @@ class DBManager:
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ''')
+                cursor.execute('''
+                CREATE TABLE IF NOT EXISTS users (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username TEXT UNIQUE NOT NULL,
+                    pin TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
                 conn.commit()
                 
                 # Migration: Check columns in notes
@@ -61,6 +69,51 @@ class DBManager:
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")
+
+    def create_user(self, username: str, pin: str) -> bool:
+        """Creates a new user with a PIN. Returns True if successful."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO users (username, pin, created_at) VALUES (?, ?, ?)",
+                    (username, pin, datetime.now())
+                )
+                conn.commit()
+                logger.info(f"User created: {username}")
+                return True
+        except sqlite3.IntegrityError:
+            logger.warning(f"User creation failed: Username {username} already exists.")
+            return False
+        except sqlite3.Error as e:
+            logger.error(f"Error creating user: {e}")
+            return False
+
+    def verify_user(self, username: str, pin: str) -> bool:
+        """Verifies if the username and PIN match."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT pin FROM users WHERE username = ?", (username,))
+                row = cursor.fetchone()
+                if row and row[0] == pin:
+                    return True
+                return False
+        except sqlite3.Error as e:
+            logger.error(f"Error verifying user: {e}")
+            return False
+
+    def get_all_users(self) -> List[Dict[str, Any]]:
+        """Retrieves all users."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT username, pin FROM users ORDER BY created_at DESC")
+                rows = cursor.fetchall()
+                return [{"username": row[0], "pin": row[1]} for row in rows]
+        except sqlite3.Error as e:
+            logger.error(f"Error fetching users: {e}")
+            return []
 
     def add_note(self, image_path: str, raw_text: str = "", user_id: str = "admin") -> int:
         """Add a new note with an image path and optional raw text. Returns the new note ID."""

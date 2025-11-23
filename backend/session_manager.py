@@ -3,46 +3,54 @@ import string
 from typing import Dict, Optional
 
 class SessionManager:
-    def __init__(self):
-        # Map PIN -> User ID
-        self.sessions: Dict[str, str] = {}
-        # Map User ID -> PIN (for reverse lookup if needed)
-        self.user_pins: Dict[str, str] = {}
-        
-        # Create a default admin user
-        self.create_user("admin")
+    _instance = None
+    _db = None
 
-    def create_user(self, user_id: str) -> str:
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(SessionManager, cls).__new__(cls)
+        return cls._instance
+
+    @property
+    def db(self):
+        """Lazy initialization of DBManager."""
+        if self._db is None:
+            from database.db_manager import DBManager
+            self._db = DBManager()
+        return self._db
+
+    def create_user(self, username: str) -> str:
         """Creates a new user session and returns the generated PIN."""
-        # Remove existing session for this user if any
-        if user_id in self.user_pins:
-            old_pin = self.user_pins[user_id]
-            if old_pin in self.sessions:
-                del self.sessions[old_pin]
-
         pin = self._generate_unique_pin()
-        self.sessions[pin] = user_id
-        self.user_pins[user_id] = pin
-        return pin
+        if self.db.create_user(username, pin):
+            return pin
+        return "" # Or handle error appropriately
+
+    def verify_user(self, username: str, pin: str) -> bool:
+        """Verifies if the username and PIN match."""
+        return self.db.verify_user(username, pin)
 
     def get_user_id(self, pin: str) -> Optional[str]:
-        """Returns the user_id associated with the PIN, or None if invalid."""
-        return self.sessions.get(pin)
-
-    def get_pin(self, user_id: str) -> Optional[str]:
-        """Returns the PIN for a given user_id."""
-        return self.user_pins.get(user_id)
+        """
+        Returns the username associated with the PIN.
+        Note: This is a bit ambiguous if multiple users have the same PIN (unlikely but possible with 4 digits).
+        For stricter security, we should require username + PIN for every request, 
+        or issue a session token. For now, we'll iterate to find the user.
+        """
+        users = self.db.get_all_users()
+        for user in users:
+            if user['pin'] == pin:
+                return user['username']
+        return None
 
     def _generate_unique_pin(self) -> str:
-        """Generates a unique 4-digit PIN."""
-        while True:
-            pin = ''.join(random.choices(string.digits, k=4))
-            if pin not in self.sessions:
-                return pin
+        """Generates a random 4-digit PIN."""
+        return ''.join(random.choices(string.digits, k=4))
 
     def get_all_users(self) -> Dict[str, str]:
-        """Returns a dictionary of user_id -> pin."""
-        return self.user_pins
+        """Returns a dictionary of username -> pin."""
+        users = self.db.get_all_users()
+        return {user['username']: user['pin'] for user in users}
 
-# Global instance
+# Global instance - but DB won't be initialized until first use
 session_manager = SessionManager()
