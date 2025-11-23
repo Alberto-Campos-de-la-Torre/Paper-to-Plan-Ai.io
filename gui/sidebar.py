@@ -40,9 +40,9 @@ class Sidebar(ctk.CTkFrame):
 
         self.filter_long = ctk.CTkRadioButton(self, text="Largo Plazo", variable=self.filter_var, value="Long Term", command=self.trigger_filter)
         self.filter_long.grid(row=7, column=0, padx=20, pady=5, sticky="w")
-
         self.filter_completed = ctk.CTkRadioButton(self, text="✓ Completados", variable=self.filter_var, value="Completed", command=self.trigger_filter)
         self.filter_completed.grid(row=8, column=0, padx=20, pady=5, sticky="w")
+
 
         # Debug / System
         self.flush_btn = ctk.CTkButton(self, text="⚠️ Flush DB (Debug)", command=self.on_flush_db, fg_color="transparent", border_width=1, border_color="darkred", text_color="red", hover_color="gray20")
