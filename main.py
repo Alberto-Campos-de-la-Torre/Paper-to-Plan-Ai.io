@@ -77,7 +77,7 @@ class PaperToPlanApp(ctk.CTk):
             logger.info("NoteList created and gridded")
 
             logger.info("Creating NoteDetail...")
-            self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note)
+            self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note, on_mark_completed_callback=self.mark_completed)
             self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
             logger.info("NoteDetail created and gridded")
 
@@ -122,7 +122,13 @@ class PaperToPlanApp(ctk.CTk):
         filtered_notes = []
         if filter_type == "All":
             filtered_notes = notes
+        elif filter_type == "Completed":
+            # Filter for completed notes
+            for note in notes:
+                if note.get('completed') == 1:
+                    filtered_notes.append(note)
         else:
+            # Filter by implementation_time
             for note in notes:
                 if note.get('implementation_time') == filter_type:
                     filtered_notes.append(note)
@@ -133,9 +139,12 @@ class PaperToPlanApp(ctk.CTk):
         self.refresh_notes(filter_value)
 
     def delete_note(self, note_id):
-        if self.db.delete_note(note_id):
-            print(f"Deleted note {note_id}")
-            self.refresh_notes()
+        self.db.delete_note(note_id)
+        self.refresh_notes()
+
+    def mark_completed(self, note_id):
+        self.db.mark_as_completed(note_id)
+        self.refresh_notes()
 
     def flush_db_action(self):
         if self.db.flush_db():
@@ -254,7 +263,7 @@ class PaperToPlanApp(ctk.CTk):
             print(f"Extracting text from {image_path}...")
             
             # Fetch recent corrections for personalization
-            examples = self.db.get_recent_corrections(limit=3)
+            examples = self.db.get_recent_corrections(limit=10)
             raw_text = self.ai.extract_text_from_image(image_path, examples=examples)
             
             self.db.update_note_text(note_id, raw_text)

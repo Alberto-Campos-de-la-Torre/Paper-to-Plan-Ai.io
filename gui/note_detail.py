@@ -2,10 +2,11 @@ import customtkinter as ctk
 from typing import Dict, Any
 
 class NoteDetail(ctk.CTkFrame):
-    def __init__(self, master, on_delete_callback=None, on_regenerate_callback=None):
+    def __init__(self, master, on_delete_callback=None, on_regenerate_callback=None, on_mark_completed_callback=None):
         super().__init__(master, corner_radius=0, fg_color="gray15")
         self.on_delete_callback = on_delete_callback
         self.on_regenerate_callback = on_regenerate_callback
+        self.on_mark_completed_callback = on_mark_completed_callback
         
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1) # Content scrollable (adjusted index)
@@ -79,6 +80,11 @@ class NoteDetail(ctk.CTkFrame):
 
         self.regenerate_btn = ctk.CTkButton(self.btn_frame, text="Regenerar Plan", fg_color="blue", command=lambda: self.regenerate_note(note))
         self.regenerate_btn.pack(side="left", padx=10)
+
+        # Mark as Completed button (only show if not already completed)
+        if note.get('completed') != 1:
+            self.complete_btn = ctk.CTkButton(self.btn_frame, text="✓ Marcar Completado", fg_color="green", hover_color="darkgreen", command=lambda: self.mark_completed(note))
+            self.complete_btn.pack(side="left", padx=10)
 
         self.delete_btn = ctk.CTkButton(self.btn_frame, text="Eliminar Nota", fg_color="red", hover_color="darkred", command=lambda: self.delete_note(note))
         self.delete_btn.pack(side="left", padx=10)
@@ -157,7 +163,21 @@ class NoteDetail(ctk.CTkFrame):
             for widget in self.scrollable_content.winfo_children():
                 widget.destroy()
                 
-            ctk.CTkLabel(self.scrollable_content, text="🗑️ Nota eliminada.", font=ctk.CTkFont(size=16), text_color="red").pack(pady=20)
+            ctk.CTkLabel(self.scrollable_content, text="✅ Nota eliminada", font=ctk.CTkFont(size=16)).pack(pady=20)
+            
+            self.btn_frame.destroy()
+            self.raw_text_area.destroy()
+            self.raw_text_label.destroy()
+
+    def mark_completed(self, note):
+        if self.on_mark_completed_callback:
+            self.on_mark_completed_callback(note['id'])
+            
+            # Clear content and show completed message
+            for widget in self.scrollable_content.winfo_children():
+                widget.destroy()
+            
+            ctk.CTkLabel(self.scrollable_content, text="✅ Nota marcada como completada", font=ctk.CTkFont(size=16), text_color="green").pack(pady=20)
             
             self.btn_frame.destroy()
             self.raw_text_area.destroy()

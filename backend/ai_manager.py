@@ -21,7 +21,8 @@ class AIEngine:
         Tu tarea es analizar el siguiente texto crudo, que representa una idea de software o nota de proyecto.
         
         Analiza el contenido y proporciona una respuesta JSON estructurada con los siguientes campos:
-        1. "title": Un título conciso y profesional para el proyecto (en Español).
+        1. "title": Un título CREATIVO, ATRACTIVO y profesional para el proyecto que capture la esencia de la idea (en Español). 
+           El título debe ser memorable y reflejar el contexto visual y conceptual de la idea.
         2. "feasibility_score": Un entero de 0 a 100 indicando qué tan factible es el proyecto basado en tecnología actual y complejidad.
         3. "technical_considerations": Una lista de desafíos técnicos clave, requisitos o decisiones de arquitectura (en Español).
         4. "recommended_stack": Una lista de tecnologías recomendadas (lenguajes, frameworks, bases de datos).
@@ -76,8 +77,6 @@ class AIEngine:
             # Construct Few-Shot Prompt
             if examples:
                 prompt = "Here are examples of this user's handwriting and the correct transcription:\n\n"
-                for ex in examples:
-                    # Note: We can't easily pass multiple images to Ollama in one go via this simple API 
                     # without complex multi-modal context handling. 
                     # For a simple local implementation, we will include the TEXT of the examples 
                     # as a style guide if possible, or just rely on the instruction.

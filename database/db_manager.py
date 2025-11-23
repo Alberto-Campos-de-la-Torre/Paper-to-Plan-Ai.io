@@ -66,6 +66,11 @@ class DBManager:
                     cursor.execute("ALTER TABLE notes ADD COLUMN user_id TEXT DEFAULT 'admin'")
                     conn.commit()
 
+                if 'completed' not in columns:
+                    logger.info("Migrating DB: Adding completed column to notes table.")
+                    cursor.execute("ALTER TABLE notes ADD COLUMN completed INTEGER DEFAULT 0")
+                    conn.commit()
+
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")
@@ -114,6 +119,19 @@ class DBManager:
         except sqlite3.Error as e:
             logger.error(f"Error fetching users: {e}")
             return []
+
+    def mark_as_completed(self, note_id: int) -> bool:
+        """Marks a note as completed."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("UPDATE notes SET completed = 1 WHERE id = ?", (note_id,))
+                conn.commit()
+                logger.info(f"Note {note_id} marked as completed")
+                return True
+        except sqlite3.Error as e:
+            logger.error(f"Error marking note as completed: {e}")
+            return False
 
     def add_note(self, image_path: str, raw_text: str = "", user_id: str = "admin") -> int:
         """Add a new note with an image path and optional raw text. Returns the new note ID."""
