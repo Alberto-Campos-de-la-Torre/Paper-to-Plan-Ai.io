@@ -155,18 +155,42 @@
             showHome();
         }
 
-        function login() {
+        async function login() {
             const pin = document.getElementById('pinInput').value;
             const user = document.getElementById('userInput').value;
 
-            if (pin.length === 4 && user.length > 0) {
-                currentPIN = pin;
-                currentUser = user;
-                localStorage.setItem('paper_pin', pin);
-                localStorage.setItem('paper_user', user);
-                document.getElementById('login-error').style.display = 'none';
-                showHome();
-            } else {
+            if (pin.length !== 4 || user.length === 0) {
+                document.getElementById('login-error').textContent = 'Please enter username and 4-digit PIN';
+                document.getElementById('login-error').style.display = 'block';
+                return;
+            }
+
+            // Validate credentials with server
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'X-Auth-User': user,
+                        'X-Auth-PIN': pin
+                    }
+                });
+
+                if (response.ok) {
+                    // Login successful
+                    currentPIN = pin;
+                    currentUser = user;
+                    localStorage.setItem('paper_pin', pin);
+                    localStorage.setItem('paper_user', user);
+                    document.getElementById('login-error').style.display = 'none';
+                    showHome();
+                } else {
+                    // Login failed
+                    document.getElementById('login-error').textContent = 'Invalid username or PIN';
+                    document.getElementById('login-error').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('login-error').textContent = 'Connection error. Please try again.';
                 document.getElementById('login-error').style.display = 'block';
             }
         }

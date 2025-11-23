@@ -44,6 +44,17 @@ async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str =
     
     return x_auth_user
 
+@app.post("/api/login")
+async def login(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
+    """Validates username and PIN for login."""
+    if not x_auth_user or not x_auth_pin:
+        raise HTTPException(status_code=400, detail="Username and PIN required")
+    
+    if session_manager.verify_user(x_auth_user, x_auth_pin):
+        return {"status": "success", "message": "Login successful"}
+    else:
+        raise HTTPException(status_code=401, detail="Invalid username or PIN")
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
