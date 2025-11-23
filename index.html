@@ -369,156 +369,131 @@
     </section>
 
     <!-- Roadmap -->
-    <section id="roadmap" class="py-20 bg-gray-900 relative">
-        <div class="max-w-4xl mx-auto px-4">
-            <h2 class="text-3xl font-bold mb-12 text-center reveal">Roadmap de Implementación (Completado)</h2>
+    <section id="roadmap" class="py-20 px-4 bg-gradient-to-b from-brand-dark to-black">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold mb-12 text-center reveal">Roadmap de Implementación</h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Phase 1 -->
+            <!-- Phase Ranges -->
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <!-- Phases 1-5: Foundation -->
                 <div
                     class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 1</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
+                        <span class="text-brand-success font-bold">Fases 1-5</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">El Cerebro (Backend)</h3>
-                    <p class="text-sm text-gray-400">Implementado con Ollama (gemma3:4B) y Prompts en Español.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">Fundación</h3>
+                    <p class="text-sm text-gray-400 mb-4">Backend AI, Base de Datos, GUI Desktop y Pipeline de Visión
+                        Híbrida.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• AI Engine (LLaVA + Gemma)</li>
+                        <li>• SQLite + CustomTkinter</li>
+                        <li>• OCR Híbrido (EasyOCR + LLaVA)</li>
+                    </ul>
                 </div>
 
-                <!-- Phase 2 -->
+                <!-- Phases 6-9: Enhancement -->
                 <div
                     class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 2</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
+                        <span class="text-brand-success font-bold">Fases 6-9</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">El Ojo (Visión)</h3>
-                    <p class="text-sm text-gray-400">Integración Híbrida: EasyOCR + LLaVA funcionando.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">Mejoras</h3>
+                    <p class="text-sm text-gray-400 mb-4">Funciones avanzadas, UI pulida y personalización de escritura.
+                    </p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• Edición y regeneración de planes</li>
+                        <li>• Rich UI con chips y banners</li>
+                        <li>• Few-Shot Learning personalizado</li>
+                    </ul>
                 </div>
 
-                <!-- Phase 3 -->
+                <!-- Phases 10-12: Mobile -->
                 <div
                     class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 3</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
+                        <span class="text-brand-success font-bold">Fases 10-12</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">La Interfaz (GUI)</h3>
-                    <p class="text-sm text-gray-400">Dashboard Moderno con CustomTkinter y soporte Webcam.</p>
+                    <h3 class="text-xl font-bold text-white mb-3">Mobile Companion</h3>
+                    <p class="text-sm text-gray-400 mb-4">PWA multiplataforma con captura de imágenes y visualización de
+                        notas.</p>
+                    <ul class="text-xs text-gray-500 space-y-1">
+                        <li>• FastAPI + PWA local</li>
+                        <li>• Ver notas en móvil</li>
+                        <li>• Soporte iOS/Android</li>
+                    </ul>
                 </div>
+            </div>
 
-                <!-- Phase 4 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 4</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Base de Datos</h3>
-                    <p class="text-sm text-gray-400">Persistencia local con SQLite y optimización con Threading.</p>
-                </div>
-
-                <!-- Phase 5 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 5</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Mejoras</h3>
-                    <p class="text-sm text-gray-400">Soporte completo en Español, Eliminación de Notas y Webcam.</p>
-                </div>
-
-                <!-- Phase 6 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 6</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Funciones Avanzadas</h3>
-                    <p class="text-sm text-gray-400">Flush DB, Edición de Texto y Regeneración de Planes.</p>
-                </div>
-
-                <!-- Phase 7 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 7</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Pulido UI</h3>
-                    <p class="text-sm text-gray-400">Banner de Estado, Validación y Mejoras Visuales.</p>
-                </div>
-
-                <!-- Phase 8 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 8</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Embellecimiento UI</h3>
-                    <p class="text-sm text-gray-400">Rich Layout, Chips de Tecnologías y Sidebar Pulido.</p>
-                </div>
-
-                <!-- Phase 9 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 9</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Personalización</h3>
-                    <p class="text-sm text-gray-400">Aprendizaje Few-Shot basado en correcciones del usuario.</p>
-                </div>
-
-                <!-- Phase 10 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 10</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Mobile Companion</h3>
-                    <p class="text-sm text-gray-400">PWA Local con carga de fotos vía QR.</p>
-                </div>
-
-                <!-- Phase 11 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 11</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Mobile Enhancements</h3>
-                    <p class="text-sm text-gray-400">Ver notas y detalles directamente en el móvil.</p>
-                </div>
-
-                <!-- Phase 12 -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 12</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-white mb-2">iOS Compatibility</h3>
-                    <p class="text-sm text-gray-400">Soporte nativo PWA para iPhone y iPad.</p>
-                </div>
-
+            <!-- Recent Phases (13-15) -->
+            <div class="grid md:grid-cols-3 gap-8">
                 <!-- Phase 13 -->
                 <div
                     class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
                     <div class="flex justify-between items-center mb-4">
                         <span class="text-brand-success font-bold">Fase 13</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">Completado</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white mb-2">Seguridad</h3>
+                    <h3 class="text-lg font-bold text-white mb-2">Seguridad & Config</h3>
                     <p class="text-sm text-gray-400">Autenticación por PIN y configuración centralizada.</p>
+                </div>
+
+                <!-- Phase 14 -->
+                <div
+                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-brand-success font-bold">Fase 14</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Multi-Usuario</h3>
+                    <p class="text-sm text-gray-400">Gestión de usuarios con PINs únicos y notas aisladas.</p>
+                </div>
+
+                <!-- Phase 15 -->
+                <div
+                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-brand-success font-bold">Fase 15</span>
+                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
+                            Completado</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white mb-2">Tracking & AI+</h3>
+                    <p class="text-sm text-gray-400">Marcar proyectos completados y títulos creativos con IA.</p>
                 </div>
             </div>
 
-        </div>
+            <!-- Future Phases -->
+            <div
+                class="mt-12 bg-gradient-to-r from-brand-purple/10 to-brand-accent/10 rounded-xl p-8 border border-brand-purple/30 reveal">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <i class="fas fa-rocket text-brand-accent"></i>
+                    Próximas Fases
+                </h3>
+                <div class="grid md:grid-cols-3 gap-6 text-sm">
+                    <div>
+                        <span class="text-brand-purple font-bold">Fase 16</span>
+                        <p class="text-gray-400 mt-1">UI Avanzada: Drag & Drop, Dashboard con gráficos, Export
+                            PDF/Markdown</p>
+                    </div>
+                    <div>
+                        <span class="text-brand-purple font-bold">Fase 17</span>
+                        <p class="text-gray-400 mt-1">Mobile Polish: Compresión de imágenes, WebSockets en tiempo real
+                        </p>
+                    </div>
+                    <div>
+                        <span class="text-brand-purple font-bold">Fase 18</span>
+                        <p class="text-gray-400 mt-1">Voice Notes: Integración con Whisper para notas de voz</p>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 

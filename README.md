@@ -75,16 +75,27 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 
 ## **🗺️ Roadmap (Estado Actual)**
 
-* [x] **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).
-* [x] **Fase 2:** Módulo de Visión Híbrido (EasyOCR + LLaVA fallback).
-* [x] **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
-* [x] **Fase 4:** Base de datos y optimización de hilos (Threading).
-* [x] **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
-* [x] **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
-* [x] **Fase 8:** Embellecimiento UI (Layout Rico, Sidebar Pulido).
-* [x] **Fase 9:** Personalización de Escritura (Few-Shot Learning).
-* [x] **Fase 10:** Compañero Android (PWA Local con QR).
-* [ ] **Futuro:** Exportación a PDF/Markdown y soporte para notas de voz (Whisper).
+### Completado ✅
+* **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).
+* **Fase 2:** Módulo de Visión Híbrido (EasyOCR + LLaVA fallback).
+* **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
+* **Fase 4:** Base de datos y optimización de hilos (Threading).
+* **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
+* **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
+* **Fase 7:** Pulido UI (Banner de Estado, Validación).
+* **Fase 8:** Embellecimiento UI (Layout Rico, Sidebar Pulido).
+* **Fase 9:** Personalización de Escritura (Few-Shot Learning).
+* **Fase 10:** Compañero Móvil (PWA Local con QR).
+* **Fase 11:** Mobile Enhancements (Ver notas en móvil).
+* **Fase 12:** iOS Compatibility (Soporte nativo PWA).
+* **Fase 13:** Seguridad & Configuración (Autenticación PIN).
+* **Fase 14:** Multi-Usuario (Gestión de usuarios con PINs únicos).
+* **Fase 15:** Tracking & AI+ (Marcar proyectos completados, títulos creativos con IA).
+
+### Próximas Fases 🚀
+* **Fase 16:** UI Avanzada (Drag & Drop, Dashboard con gráficos, Export PDF/Markdown).
+* **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
+* **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
 
 ## **✨ Características Implementadas**
 
