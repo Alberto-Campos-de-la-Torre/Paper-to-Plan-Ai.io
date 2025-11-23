@@ -75,7 +75,7 @@ class Sidebar(ctk.CTkFrame):
         self.is_server_running = is_running
         if is_running:
             self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
-            self.user_frame.grid()
+            self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
             self.update_user_list()
         else:
             self.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
