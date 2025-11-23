@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from typing import Callable
 from config import config
-from backend.session_manager import session_manager
 
 class Sidebar(ctk.CTkFrame):
     def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable, on_flush_db: Callable, on_toggle_server: Callable = None):
@@ -88,6 +87,7 @@ class Sidebar(ctk.CTkFrame):
         self.qr_label.grid()
 
     def add_user(self):
+        from backend.session_manager import session_manager
         dialog = ctk.CTkInputDialog(text="Enter Username:", title="New User")
         username = dialog.get_input()
         if username:
@@ -99,6 +99,7 @@ class Sidebar(ctk.CTkFrame):
                 print(f"Failed to create user {username}")
 
     def update_user_list(self):
+        from backend.session_manager import session_manager
         users = session_manager.get_all_users()
         text = "Active Users:\n"
         for user_id, pin in users.items():

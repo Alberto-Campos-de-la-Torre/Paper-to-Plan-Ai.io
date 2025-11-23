@@ -7,6 +7,9 @@ import uvicorn
 from PIL import Image
 from backend.server import app as fastapi_app, set_upload_callback
 import os
+import sys
+import traceback
+import logging
 from tkinter import filedialog
 from gui.sidebar import Sidebar
 from gui.note_list import NoteList
@@ -15,60 +18,103 @@ from gui.webcam import WebcamWindow
 from backend.ai_manager import AIEngine
 from database.db_manager import DBManager
 
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
 class PaperToPlanApp(ctk.CTk):
     def __init__(self):
-        super().__init__()
-        self.title("PaperToPlan AI")
-        self.geometry("1200x800")
+        try:
+            logger.info("Starting PaperToPlanApp initialization...")
+            super().__init__()
+            logger.info("CTk super().__init__() completed")
+            
+            self.title("PaperToPlan AI")
+            self.geometry("1200x800")
+            logger.info("Window configuration completed")
 
-        # Data & Logic
-        self.db = DBManager()
-        self.ai = None # Lazy init or init here
-        
-        # Layout
-        self.grid_columnconfigure(1, weight=1)
-        self.grid_columnconfigure(2, weight=2)
-        self.grid_rowconfigure(0, weight=1)
+            # Data & Logic
+            logger.info("Initializing DBManager...")
+            self.db = DBManager()
+            logger.info("DBManager initialized")
+            
+            self.ai = None # Lazy init or init here
+            
+            # Layout
+            self.grid_columnconfigure(1, weight=1)
+            self.grid_columnconfigure(2, weight=2)
+            self.grid_rowconfigure(0, weight=1)
+            logger.info("Grid configuration completed")
 
-        # Components
-        self.sidebar = Sidebar(self, 
-                               on_new_note_file=self.new_note_from_file, 
-                               on_new_note_webcam=self.new_note_webcam,
-                               on_filter_change=self.apply_filter,
-                               on_flush_db=self.flush_db_action,
-                               on_toggle_server=self.toggle_mobile_server)
-        self.sidebar.grid(row=0, column=0, sticky="nsew")
-        self.server_thread = None
-        
-        # Set callback for mobile uploads
-        set_upload_callback(self.on_mobile_upload)
+            # Components
+            logger.info("Creating Sidebar...")
+            self.sidebar = Sidebar(self, 
+                                   on_new_note_file=self.new_note_from_file, 
+                                   on_new_note_webcam=self.new_note_webcam,
+                                   on_filter_change=self.apply_filter,
+                                   on_flush_db=self.flush_db_action,
+                                   on_toggle_server=self.toggle_mobile_server)
+            logger.info("Sidebar created, adding to grid...")
+            self.sidebar.grid(row=0, column=0, sticky="nsew")
+            logger.info("Sidebar gridded")
+            
+            self.server_thread = None
+            
+            # Set callback for mobile uploads
+            logger.info("Setting upload callback...")
+            set_upload_callback(self.on_mobile_upload)
+            logger.info("Upload callback set")
 
-        self.note_list = NoteList(self, on_note_select=self.show_detail)
-        self.note_list.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+            logger.info("Creating NoteList...")
+            self.note_list = NoteList(self, on_note_select=self.show_detail)
+            self.note_list.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+            logger.info("NoteList created and gridded")
 
-        self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note)
-        self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+            logger.info("Creating NoteDetail...")
+            self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note)
+            self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+            logger.info("NoteDetail created and gridded")
 
-        # Status Bar / Progress
-        self.status_bar = ctk.CTkProgressBar(self, mode="indeterminate")
-        self.status_bar.grid(row=1, column=0, columnspan=3, sticky="ew")
-        self.status_bar.set(0)
-        self.status_bar.grid_remove() # Hide initially
+            # Status Bar / Progress
+            logger.info("Creating status bar...")
+            self.status_bar = ctk.CTkProgressBar(self, mode="indeterminate")
+            self.status_bar.grid(row=1, column=0, columnspan=3, sticky="ew")
+            self.status_bar.set(0)
+            self.status_bar.grid_remove() # Hide initially
+            logger.info("Status bar created")
 
-        # Init AI in background to not freeze UI startup
-        self.init_ai_thread()
+            # Init AI in background to not freeze UI startup
+            logger.info("Starting AI initialization thread...")
+            self.init_ai_thread()
+            logger.info("AI thread started")
 
-        # Load initial notes
-        self.refresh_notes()
+            # Load initial notes
+            logger.info("Refreshing notes...")
+            self.refresh_notes()
+            logger.info("PaperToPlanApp initialization COMPLETE")
+            
+        except Exception as e:
+            logger.error(f"FATAL ERROR during initialization: {e}")
+            logger.error(traceback.format_exc())
+            sys.exit(1)
 
     def init_ai_thread(self):
         def _init():
-            print("Initializing AI Engine...")
-            self.ai = AIEngine()
-            print("AI Engine Ready.")
+            try:
+                print("Initializing AI Engine...")
+                logger.info("AI Engine initialization starting...")
+                self.ai = AIEngine()
+                logger.info("AI Engine initialization complete")
+                print("AI Engine Ready.")
+            except Exception as e:
+                logger.error(f"Error initializing AI Engine: {e}")
+                logger.error(traceback.format_exc())
         threading.Thread(target=_init, daemon=True).start()
 
     def refresh_notes(self, filter_type="All"):
