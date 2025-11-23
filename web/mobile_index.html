@@ -100,7 +100,17 @@
 
 <body>
 
-    <div id="home-view">
+    <div id="login-view" style="display:flex;">
+        <div class="icon">🔒</div>
+        <h1>Acceso Seguro</h1>
+        <p>Ingresa el PIN que aparece en la app de escritorio</p>
+        <input type="tel" id="pinInput" placeholder="PIN (4 dígitos)" maxlength="4"
+            style="font-size: 24px; padding: 10px; text-align: center; width: 150px; border-radius: 10px; border: none; margin-bottom: 20px;">
+        <button class="btn" onclick="login()">Entrar</button>
+        <p id="login-error" class="error" style="display:none; margin-top: 10px;">PIN Incorrecto</p>
+    </div>
+
+    <div id="home-view" style="display:none;">
         <div class="icon">📸</div>
         <h1>PaperToPlan AI</h1>
         <p>Sube una foto o usa tu cámara</p>
@@ -112,6 +122,9 @@
 
         <br><br>
         <button class="btn secondary" onclick="showNotesList()">📂 Ver Notas</button>
+        <br><br>
+        <button class="btn small" onclick="logout()"
+            style="background:none; border:none; color:#666; font-size:12px;">Cerrar Sesión</button>
 
         <div id="status"></div>
     </div>
@@ -131,9 +144,48 @@
     <script>
         const fileInput = document.getElementById('fileInput');
         const statusDiv = document.getElementById('status');
+        let currentPIN = localStorage.getItem('paper_pin');
+
+        // Init
+        if (currentPIN) {
+            showHome();
+        }
+
+        function login() {
+            const pin = document.getElementById('pinInput').value;
+            if (pin.length === 4) {
+                currentPIN = pin;
+                localStorage.setItem('paper_pin', pin);
+                document.getElementById('login-error').style.display = 'none';
+                showHome();
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('paper_pin');
+            location.reload();
+        }
+
+        function getHeaders() {
+            return {
+                'X-Auth-PIN': currentPIN
+            };
+        }
+
+        async function handleAuthError(response) {
+            if (response.status === 401) {
+                alert("Sesión expirada o PIN incorrecto");
+                logout();
+                throw new Error("Unauthorized");
+            }
+            return response;
+        }
 
         // Navigation
         function showHome() {
+            document.getElementById('login-view').style.display = 'none';
             document.getElementById('home-view').style.display = 'block';
             document.getElementById('list-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'none';
@@ -148,7 +200,8 @@
             container.innerHTML = '<p class="loading">Cargando notas...</p>';
 
             try {
-                const response = await fetch('/api/notes');
+                let response = await fetch('/api/notes', { headers: getHeaders() });
+                response = await handleAuthError(response);
                 const notes = await response.json();
 
                 container.innerHTML = '';
@@ -172,6 +225,7 @@
                     container.appendChild(card);
                 });
             } catch (e) {
+                console.error(e);
                 container.innerHTML = '<p class="error">Error al cargar notas.</p>';
             }
         }
@@ -184,7 +238,8 @@
             content.innerHTML = '<p class="loading">Cargando detalle...</p>';
 
             try {
-                const response = await fetch(`/api/notes/${id}`);
+                let response = await fetch(`/api/notes/${id}`, { headers: getHeaders() });
+                response = await handleAuthError(response);
                 const note = await response.json();
 
                 const analysis = note.ai_analysis || {};
@@ -201,6 +256,7 @@
                     <p>${(analysis.tech_stack || []).join(', ')}</p>
                 `;
             } catch (e) {
+                console.error(e);
                 content.innerHTML = '<p class="error">Error al cargar detalle.</p>';
             }
         }
@@ -216,10 +272,13 @@
             formData.append('file', file);
 
             try {
-                const response = await fetch('/api/upload', {
+                let response = await fetch('/api/upload', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: getHeaders()
                 });
+
+                response = await handleAuthError(response);
 
                 if (response.ok) {
                     const result = await response.json();

@@ -1,10 +1,13 @@
 import os
 import shutil
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import json
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import logging
+from database.db_manager import DBManager
+from config import config
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,12 +25,8 @@ os.makedirs(WEB_DIR, exist_ok=True)
 # Mount static files (for serving the PWA)
 app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
-# Global reference to the main app's DB and AI (injected at runtime if needed, 
-# but for simplicity we might just use the DB directly or share the instance)
-# Ideally, we'd pass the controller, but for a simple companion, we can just save the file 
-# and let the main app pick it up or trigger a callback if we run in the same process.
-# Since we run this in a thread from main.py, we can access shared state if we are careful.
-# For now, let's just save the file and let the user "Refresh" or we can trigger an event.
+# Database Instance
+db = DBManager()
 
 # We will use a simple callback mechanism if running in the same process
 on_upload_callback = None
@@ -35,6 +34,11 @@ on_upload_callback = None
 def set_upload_callback(callback):
     global on_upload_callback
     on_upload_callback = callback
+
+async def verify_pin(x_auth_pin: str = Header(None)):
+    if x_auth_pin != config.PIN_CODE:
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+    return x_auth_pin
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -45,7 +49,7 @@ async def read_root():
         return "<h1>Error: mobile_index.html not found</h1>"
 
 @app.post("/api/upload")
-async def upload_image(file: UploadFile = File(...)):
+async def upload_image(file: UploadFile = File(...), pin: str = Depends(verify_pin)):
     try:
         # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
@@ -60,15 +64,35 @@ async def upload_image(file: UploadFile = File(...)):
         
         # Trigger callback in main app to process the note
         if on_upload_callback:
-            # We pass the path to the main thread logic
-            # Note: This runs in the server thread, so the callback must be thread-safe 
-            # or schedule the work on the main UI thread.
             on_upload_callback(file_path)
             
         return {"status": "success", "filename": filename, "message": "Image uploaded and processing started."}
         
     except Exception as e:
         logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/notes")
+async def get_notes(pin: str = Depends(verify_pin)):
+    """Returns a list of all notes."""
+    try:
+        notes = db.get_all_notes()
+        # Convert to list of dicts if not already (DBManager returns dicts)
+        return notes
+    except Exception as e:
+        logger.error(f"Error fetching notes: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/notes/{note_id}")
+async def get_note_detail(note_id: int, pin: str = Depends(verify_pin)):
+    """Returns details for a specific note."""
+    try:
+        note = db.get_note_by_id(note_id)
+        if not note:
+            raise HTTPException(status_code=404, detail="Note not found")
+        return note
+    except Exception as e:
+        logger.error(f"Error fetching note {note_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/status")

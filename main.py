@@ -38,11 +38,9 @@ class PaperToPlanApp(ctk.CTk):
                                on_new_note_file=self.new_note_from_file, 
                                on_new_note_webcam=self.new_note_webcam,
                                on_filter_change=self.apply_filter,
-                               on_flush_db=self.flush_db_action)
+                               on_flush_db=self.flush_db_action,
+                               on_toggle_server=self.toggle_mobile_server)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
-
-        # Connect Sidebar Server Button
-        self.sidebar.on_server_toggle = self.toggle_mobile_server
         self.server_thread = None
         
         # Set callback for mobile uploads

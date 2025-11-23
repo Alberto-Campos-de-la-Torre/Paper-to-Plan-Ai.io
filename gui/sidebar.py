@@ -1,15 +1,17 @@
 import customtkinter as ctk
 from typing import Callable
+from config import config
 
 class Sidebar(ctk.CTkFrame):
-    def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable, on_flush_db: Callable):
+    def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable, on_flush_db: Callable, on_toggle_server: Callable = None):
         super().__init__(master, width=200, corner_radius=0)
         self.on_new_note_file = on_new_note_file
         self.on_new_note_webcam = on_new_note_webcam
         self.on_filter_change = on_filter_change
         self.on_flush_db = on_flush_db
+        self.on_toggle_server = on_toggle_server
 
-        self.grid_rowconfigure(8, weight=1)
+        self.grid_rowconfigure(9, weight=1)
 
         self.logo_label = ctk.CTkLabel(self, text="PaperToPlan AI", font=ctk.CTkFont(size=22, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(30, 20))
@@ -45,27 +47,37 @@ class Sidebar(ctk.CTkFrame):
 
         # Mobile Server
         self.server_btn = ctk.CTkButton(self, text="📱 Mobile Server", command=self.toggle_server, fg_color="#2ecc71", hover_color="#27ae60")
-        self.server_btn.grid(row=9, column=0, padx=20, pady=(0, 20), sticky="s")
+        self.server_btn.grid(row=10, column=0, padx=20, pady=(0, 10), sticky="s")
         
         self.qr_label = ctk.CTkLabel(self, text="")
-        self.qr_label.grid(row=10, column=0, padx=20, pady=(0, 20))
+        self.qr_label.grid(row=11, column=0, padx=20, pady=(0, 5))
         self.qr_label.grid_remove()
+
+        # PIN Label
+        self.pin_label = ctk.CTkLabel(self, text=f"PIN: {config.PIN_CODE}", font=ctk.CTkFont(size=16, weight="bold"), text_color="#4CAF50")
+        self.pin_label.grid(row=12, column=0, padx=20, pady=(0, 20))
+        self.pin_label.grid_remove()
         
         self.is_server_running = False
 
     def toggle_server(self):
-        # This will be handled by main.py via a callback or event, 
-        # but for now let's just trigger a callback if we had one.
-        # Ideally, Sidebar should take an on_server_toggle callback.
-        # Since we didn't add it to __init__, let's add a method to set it or just assume main sets it.
-        if hasattr(self, 'on_server_toggle'):
-            self.on_server_toggle()
+        if self.on_toggle_server:
+            self.on_toggle_server()
+
+    def set_server_status(self, is_running):
+        self.is_server_running = is_running
+        if is_running:
+            self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
+            self.pin_label.grid()
+        else:
+            self.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
+            self.qr_label.configure(image=None, text="")
+            self.qr_label.grid_remove()
+            self.pin_label.grid_remove()
 
     def set_qr_code(self, qr_image):
         self.qr_label.configure(image=qr_image)
         self.qr_label.grid()
-        self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
-        self.is_server_running = True
 
     def trigger_filter(self):
         self.on_filter_change(self.filter_var.get())
