@@ -77,31 +77,10 @@ class AIEngine:
             # Construct Few-Shot Prompt
             if examples:
                 prompt = "Here are examples of this user's handwriting and the correct transcription:\n\n"
-                    # without complex multi-modal context handling. 
-                    # For a simple local implementation, we will include the TEXT of the examples 
-                    # as a style guide if possible, or just rely on the instruction.
-                    # HOWEVER, standard LLaVA few-shot requires passing images.
-                    # Current Ollama python lib supports 'images' list.
-                    # We will try to just prompt better for now, or if we can, pass context.
-                    # LIMITATION: The simple `ollama.chat` with one image doesn't support "previous image" context easily 
-                    # without maintaining a session history with images.
-                    # For this iteration, we will refine the prompt based on the *fact* that we have examples,
-                    # but maybe we can't pass the example images directly in this single call easily.
-                    
-                    # ALTERNATIVE: We can't easily pass multiple images in one message in standard Ollama API yet (varies by version).
-                    # Let's try to be clever: We will just be very specific.
-                    pass
+                for i, ex in enumerate(examples[:10]):  # Limit to 10 examples
+                    prompt += f"Example {i+1}: '{ex['corrected_text']}'\n"
                 
-                # If we can't pass example images, we can at least tell it to be careful.
-                # BUT, the user wants "Personalized".
-                # If we can't pass example images, we can't do true visual few-shot.
-                # Let's assume we can't pass multiple images for now and just improve the prompt.
-                # WAIT! We can try to pass the text of previous corrections if they share vocabulary?
-                # No, that's not helpful for handwriting style.
-                
-                # Let's stick to a strong prompt for now, and if the library supports it later, we add it.
-                # Actually, let's just add a "Context" string if we have text-based hints.
-                prompt += "Pay close attention to unique letter formations."
+                prompt += "\nNow, transcribe this new image in the same handwriting style. Pay close attention to unique letter formations.\n"
 
             response = ollama.chat(
                 model=self.vision_model,
