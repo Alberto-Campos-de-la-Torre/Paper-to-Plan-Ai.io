@@ -3,3 +3,7 @@ easyocr
 opencv-python
 pillow
 ollama
+fastapi
+uvicorn
+python-multipart
+qrcode

@@ -33,20 +33,28 @@ class DBManager:
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 """)
+                cursor.execute('''
+                CREATE TABLE IF NOT EXISTS corrections (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    image_path TEXT NOT NULL,
+                    corrected_text TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            ''')
                 conn.commit()
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")
 
-    def add_note(self, raw_text: str, status: str = 'pending') -> int:
-        """Add a new note with raw text. Returns the new note ID."""
+    def add_note(self, image_path: str, raw_text: str = "") -> int:
+        """Add a new note with an image path and optional raw text. Returns the new note ID."""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("""
-                    INSERT INTO notes (raw_text, status, created_at)
-                    VALUES (?, ?, ?)
-                """, (raw_text, status, datetime.now()))
+                cursor.execute(
+                    "INSERT INTO notes (image_path, raw_text, status, created_at) VALUES (?, ?, ?, ?)",
+                    (image_path, raw_text, 'pending', datetime.now())
+                )
                 conn.commit()
                 logger.info(f"Note added with ID: {cursor.lastrowid}")
                 return cursor.lastrowid
@@ -54,12 +62,41 @@ class DBManager:
             logger.error(f"Error adding note: {e}")
             return -1
 
-    def update_note_text(self, note_id: int, text: str):
+    def save_correction(self, image_path: str, corrected_text: str):
+        """Saves a user correction as a learning example."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "INSERT INTO corrections (image_path, corrected_text, created_at) VALUES (?, ?, ?)",
+                    (image_path, corrected_text, datetime.now())
+                )
+                conn.commit()
+                logger.info(f"Correction saved for {image_path}")
+        except sqlite3.Error as e:
+            logger.error(f"Error saving correction: {e}")
+
+    def get_recent_corrections(self, limit: int = 3) -> List[Dict[str, Any]]:
+        """Retrieves recent corrections to use as few-shot examples."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute(
+                    "SELECT image_path, corrected_text FROM corrections ORDER BY created_at DESC LIMIT ?",
+                    (limit,)
+                )
+                rows = cursor.fetchall()
+                return [{"image_path": row[0], "corrected_text": row[1]} for row in rows]
+        except sqlite3.Error as e:
+            logger.error(f"Error fetching corrections: {e}")
+            return []
+
+    def update_note_text(self, note_id: int, new_text: str):
         """Update the raw text of a note."""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE notes SET raw_text = ? WHERE id = ?", (text, note_id))
+                cursor.execute("UPDATE notes SET raw_text = ? WHERE id = ?", (new_text, note_id))
                 conn.commit()
                 logger.info(f"Note {note_id} text updated.")
         except sqlite3.Error as e:

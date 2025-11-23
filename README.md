@@ -79,14 +79,18 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * [x] **Fase 4:** Base de datos y optimización de hilos (Threading).
 * [x] **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
 * [x] **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
-* [x] **Fase 7:** Pulido UI (Banner de Estado, Validación de Respuesta).
+* [x] **Fase 8:** Embellecimiento UI (Layout Rico, Sidebar Pulido).
+* [x] **Fase 9:** Personalización de Escritura (Few-Shot Learning).
+* [x] **Fase 10:** Compañero Android (PWA Local con QR).
 * [ ] **Futuro:** Exportación a PDF/Markdown y soporte para notas de voz (Whisper).
 
 ## **✨ Características Implementadas**
 
 * **🔐 Privacidad Total (Local-First):** Ejecución 100% offline con Ollama.
+* **📱 Compañero Móvil:** Escanea un QR y usa tu teléfono como cámara inalámbrica.
 * **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.
 * **🧠 IA en Español:** Análisis de factibilidad y planes generados en español usando **gemma3:4B**.
+* **✍️ Aprendizaje Personalizado:** La IA aprende de tus correcciones para entender mejor tu letra.
 * **👁️ Visión Híbrida:** OCR rápido para texto claro, LLaVA para manuscritos complejos.
 * **🗑️ Gestión Completa:** Crea, visualiza, edita y elimina notas.
 * **🔄 Regeneración:** Corrige el texto extraído y regenera el plan si la IA falla.

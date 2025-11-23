@@ -1,5 +1,11 @@
 import customtkinter as ctk
 import threading
+import asyncio
+import socket
+import qrcode
+import uvicorn
+from PIL import Image
+from backend.server import app as fastapi_app, set_upload_callback
 import os
 from tkinter import filedialog
 from gui.sidebar import Sidebar
@@ -34,6 +40,13 @@ class PaperToPlanApp(ctk.CTk):
                                on_filter_change=self.apply_filter,
                                on_flush_db=self.flush_db_action)
         self.sidebar.grid(row=0, column=0, sticky="nsew")
+
+        # Connect Sidebar Server Button
+        self.sidebar.on_server_toggle = self.toggle_mobile_server
+        self.server_thread = None
+        
+        # Set callback for mobile uploads
+        set_upload_callback(self.on_mobile_upload)
 
         self.note_list = NoteList(self, on_note_select=self.show_detail)
         self.note_list.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
@@ -86,8 +99,17 @@ class PaperToPlanApp(ctk.CTk):
             self.refresh_notes()
 
     def regenerate_note(self, note_id, new_text):
-        print(f"Regenerating note {note_id} with new text...")
-        
+        """
+        Callback when user edits text and clicks 'Regenerate'.
+        1. Save the correction as a learning example.
+        2. Update raw text in DB.
+        3. Re-run AI analysis (text-only).
+        """
+        # Save correction for future learning
+        note = self.db.get_note_by_id(note_id)
+        if note and note['image_path']:
+             self.db.save_correction(note['image_path'], new_text)
+
         # Update raw text in DB first
         self.db.update_note_text(note_id, new_text)
         
@@ -110,7 +132,53 @@ class PaperToPlanApp(ctk.CTk):
     def show_detail(self, note):
         self.note_detail.show_note(note)
 
-    def new_note_file(self):
+    def get_local_ip(self):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            s.close()
+            return ip
+        except:
+            return "127.0.0.1"
+
+    def toggle_mobile_server(self):
+        if self.sidebar.is_server_running:
+            self.sidebar.qr_label.grid_remove()
+            self.sidebar.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
+            self.sidebar.is_server_running = False
+            return
+
+        # Start Server
+        ip = self.get_local_ip()
+        url = f"http://{ip}:8000"
+        
+        # Generate QR
+        qr = qrcode.QRCode(box_size=4, border=2)
+        qr.add_data(url)
+        qr.make(fit=True)
+        qr_img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Convert to CTkImage
+        ctk_qr = ctk.CTkImage(light_image=qr_img.get_image(), size=(150, 150))
+        self.sidebar.set_qr_code(ctk_qr)
+        
+        # Run Server in Thread if not already running
+        if not self.server_thread or not self.server_thread.is_alive():
+            self.server_thread = threading.Thread(target=self.run_server, daemon=True)
+            self.server_thread.start()
+
+    def run_server(self):
+        # Disable access log to keep console clean
+        config = uvicorn.Config(fastapi_app, host="0.0.0.0", port=8000, log_level="error")
+        server = uvicorn.Server(config)
+        server.run()
+
+    def on_mobile_upload(self, file_path):
+        print(f"Received mobile upload: {file_path}")
+        self.process_new_note(file_path)
+
+    def new_note_from_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp")])
         if file_path:
             self.process_new_note(file_path)
@@ -136,14 +204,17 @@ class PaperToPlanApp(ctk.CTk):
 
     def ai_pipeline(self, note_id, image_path):
         try:
-            # Extract Text
+            # 1. Extract Text (Hybrid + Few-Shot)
             print(f"Extracting text from {image_path}...")
-            extracted_text = self.ai.extract_text_from_image(image_path)
-            self.db.update_note_text(note_id, extracted_text)
             
-            # Analyze Text
+            # Fetch recent corrections for personalization
+            examples = self.db.get_recent_corrections(limit=3)
+            raw_text = self.ai.extract_text_from_image(image_path, examples=examples)
+            
+            self.db.update_note_text(note_id, raw_text)
+            # logger.info(f"Note {note_id} text updated.") # Omitted as logger is not defined in the provided context
             print("Analyzing text...")
-            analysis = self.ai.analyze_text(extracted_text)
+            analysis = self.ai.analyze_text(raw_text)
             
             # Update DB
             # We need to update raw_text too, but our DBManager.update_note_analysis only updates analysis.
