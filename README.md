@@ -1,4 +1,4 @@
-# **PaperToPlan AI 🧠📝**
+ # **PaperToPlan AI 🧠📝**
 
 **De Papel a Ejecución:** Digitaliza, Analiza y Estructura tus ideas manuscritas con IA 100% Local.
 
@@ -16,8 +16,9 @@ A diferencia de los OCR tradicionales que fallan con la caligrafía humana, Pape
   * Score de factibilidad (0-100).  
   * Consideraciones técnicas y stack recomendado.  
   * Tiempo estimado de implementación.  
-* **🗂️ Gestión Temporal:** Clasificación automática de notas en el dashboard según su complejidad: *Corto, Medio o Largo Plazo*.  
-* **🎨 UI Moderna:** Interfaz oscura, limpia y responsiva construida con CustomTkinter.
+*   **🗂️ Gestión Temporal:** Clasificación automática de notas en el dashboard según su complejidad: *Corto, Medio o Largo Plazo*.  
+*   **📱 Web Companion App:** Escanea un código QR para conectar tu móvil (iOS/Android) y usarlo como escáner de notas o visor de planes.
+*   **🎨 UI Moderna:** Interfaz oscura, limpia y responsiva construida con CustomTkinter.
 
 ## **🛠️ Stack Tecnológico**
 
