@@ -30,6 +30,7 @@ A diferencia de los OCR tradicionales que fallan con la caligrafía humana, Pape
   * *Ojos (Visión):* llava (para GPUs potentes) o moondream (para eficiencia)  
 * **OCR Rápido:** EasyOCR \+ OpenCV (Pre-procesamiento de imagen)  
 * **Persistencia:** SQLite
+* **Web Companion:** FastAPI + HTML5/JS (PWA para iOS y Android)
 
 ## **⚙️ Requisitos Previos**
 
