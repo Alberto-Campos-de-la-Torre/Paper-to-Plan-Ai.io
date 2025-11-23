@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import logging
 from database.db_manager import DBManager
-from config import config
+from backend.session_manager import session_manager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,9 +36,10 @@ def set_upload_callback(callback):
     on_upload_callback = callback
 
 async def verify_pin(x_auth_pin: str = Header(None)):
-    if x_auth_pin != config.PIN_CODE:
+    user_id = session_manager.get_user_id(x_auth_pin)
+    if not user_id:
         raise HTTPException(status_code=401, detail="Invalid PIN")
-    return x_auth_pin
+    return user_id
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
@@ -49,7 +50,7 @@ async def read_root():
         return "<h1>Error: mobile_index.html not found</h1>"
 
 @app.post("/api/upload")
-async def upload_image(file: UploadFile = File(...), pin: str = Depends(verify_pin)):
+async def upload_image(file: UploadFile = File(...), user_id: str = Depends(verify_pin)):
     try:
         # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
@@ -60,11 +61,12 @@ async def upload_image(file: UploadFile = File(...), pin: str = Depends(verify_p
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
-        logger.info(f"File uploaded from mobile: {file_path}")
+        logger.info(f"File uploaded from mobile: {file_path} by user {user_id}")
         
         # Trigger callback in main app to process the note
+        # We need to pass user_id to the callback now
         if on_upload_callback:
-            on_upload_callback(file_path)
+            on_upload_callback(file_path, user_id)
             
         return {"status": "success", "filename": filename, "message": "Image uploaded and processing started."}
         
@@ -73,21 +75,20 @@ async def upload_image(file: UploadFile = File(...), pin: str = Depends(verify_p
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/notes")
-async def get_notes(pin: str = Depends(verify_pin)):
-    """Returns a list of all notes."""
+async def get_notes(user_id: str = Depends(verify_pin)):
+    """Returns a list of all notes for the authenticated user."""
     try:
-        notes = db.get_all_notes()
-        # Convert to list of dicts if not already (DBManager returns dicts)
+        notes = db.get_all_notes(user_id=user_id)
         return notes
     except Exception as e:
         logger.error(f"Error fetching notes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/notes/{note_id}")
-async def get_note_detail(note_id: int, pin: str = Depends(verify_pin)):
-    """Returns details for a specific note."""
+async def get_note_detail(note_id: int, user_id: str = Depends(verify_pin)):
+    """Returns details for a specific note if owned by the user."""
     try:
-        note = db.get_note_by_id(note_id)
+        note = db.get_note_by_id(note_id, user_id=user_id)
         if not note:
             raise HTTPException(status_code=404, detail="Note not found")
         return note

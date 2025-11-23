@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from typing import Callable
 from config import config
+from backend.session_manager import session_manager
 
 class Sidebar(ctk.CTkFrame):
     def __init__(self, master, on_new_note_file: Callable, on_new_note_webcam: Callable, on_filter_change: Callable, on_flush_db: Callable, on_toggle_server: Callable = None):
@@ -53,10 +54,16 @@ class Sidebar(ctk.CTkFrame):
         self.qr_label.grid(row=11, column=0, padx=20, pady=(0, 5))
         self.qr_label.grid_remove()
 
-        # PIN Label
-        self.pin_label = ctk.CTkLabel(self, text=f"PIN: {config.PIN_CODE}", font=ctk.CTkFont(size=16, weight="bold"), text_color="#4CAF50")
-        self.pin_label.grid(row=12, column=0, padx=20, pady=(0, 20))
-        self.pin_label.grid_remove()
+        # User Management Frame
+        self.user_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self.user_frame.grid_remove()
+
+        self.add_user_btn = ctk.CTkButton(self.user_frame, text="+ Add User", command=self.add_user, width=100, height=24, font=ctk.CTkFont(size=12))
+        self.add_user_btn.pack(pady=(0, 5))
+
+        self.users_label = ctk.CTkLabel(self.user_frame, text="", font=ctk.CTkFont(size=12), justify="left")
+        self.users_label.pack()
         
         self.is_server_running = False
 
@@ -68,16 +75,31 @@ class Sidebar(ctk.CTkFrame):
         self.is_server_running = is_running
         if is_running:
             self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
-            self.pin_label.grid()
+            self.user_frame.grid()
+            self.update_user_list()
         else:
             self.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
             self.qr_label.configure(image=None, text="")
             self.qr_label.grid_remove()
-            self.pin_label.grid_remove()
+            self.user_frame.grid_remove()
 
     def set_qr_code(self, qr_image):
         self.qr_label.configure(image=qr_image)
         self.qr_label.grid()
+
+    def add_user(self):
+        # Generate a new user ID (e.g., User 2, User 3)
+        existing_users = len(session_manager.get_all_users())
+        new_user_id = f"User {existing_users + 1}"
+        session_manager.create_user(new_user_id)
+        self.update_user_list()
+
+    def update_user_list(self):
+        users = session_manager.get_all_users()
+        text = "Active Users:\n"
+        for user_id, pin in users.items():
+            text += f"{user_id}: {pin}\n"
+        self.users_label.configure(text=text)
 
     def trigger_filter(self):
         self.on_filter_change(self.filter_var.get())

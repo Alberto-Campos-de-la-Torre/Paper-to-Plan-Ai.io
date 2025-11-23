@@ -26,6 +26,7 @@ class DBManager:
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS notes (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id TEXT DEFAULT 'admin',
                         raw_text TEXT,
                         ai_analysis TEXT,
                         status TEXT DEFAULT 'pending',
@@ -43,29 +44,35 @@ class DBManager:
             ''')
                 conn.commit()
                 
-                # Migration: Check if image_path exists in notes
+                # Migration: Check columns in notes
                 cursor.execute("PRAGMA table_info(notes)")
                 columns = [info[1] for info in cursor.fetchall()]
+                
                 if 'image_path' not in columns:
                     logger.info("Migrating DB: Adding image_path column to notes table.")
                     cursor.execute("ALTER TABLE notes ADD COLUMN image_path TEXT")
+                    conn.commit()
+
+                if 'user_id' not in columns:
+                    logger.info("Migrating DB: Adding user_id column to notes table.")
+                    cursor.execute("ALTER TABLE notes ADD COLUMN user_id TEXT DEFAULT 'admin'")
                     conn.commit()
 
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")
 
-    def add_note(self, image_path: str, raw_text: str = "") -> int:
+    def add_note(self, image_path: str, raw_text: str = "", user_id: str = "admin") -> int:
         """Add a new note with an image path and optional raw text. Returns the new note ID."""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT INTO notes (image_path, raw_text, status, created_at) VALUES (?, ?, ?, ?)",
-                    (image_path, raw_text, 'pending', datetime.now())
+                    "INSERT INTO notes (image_path, raw_text, status, created_at, user_id) VALUES (?, ?, ?, ?, ?)",
+                    (image_path, raw_text, 'pending', datetime.now(), user_id)
                 )
                 conn.commit()
-                logger.info(f"Note added with ID: {cursor.lastrowid}")
+                logger.info(f"Note added with ID: {cursor.lastrowid} for user: {user_id}")
                 return cursor.lastrowid
         except sqlite3.Error as e:
             logger.error(f"Error adding note: {e}")
@@ -172,13 +179,18 @@ class DBManager:
         except sqlite3.Error as e:
             logger.error(f"Error updating note {note_id}: {e}")
 
-    def get_all_notes(self) -> List[Dict[str, Any]]:
-        """Retrieve all notes ordered by creation date (newest first)."""
+    def get_all_notes(self, user_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Retrieve all notes ordered by creation date. Optionally filter by user_id."""
         try:
             with self._get_connection() as conn:
                 conn.row_factory = sqlite3.Row
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM notes ORDER BY created_at DESC")
+                
+                if user_id:
+                    cursor.execute("SELECT * FROM notes WHERE user_id = ? ORDER BY created_at DESC", (user_id,))
+                else:
+                    cursor.execute("SELECT * FROM notes ORDER BY created_at DESC")
+                    
                 rows = cursor.fetchall()
                 
                 notes = []
@@ -196,8 +208,8 @@ class DBManager:
             logger.error(f"Error fetching notes: {e}")
             return []
 
-    def get_note_by_id(self, note_id: int) -> Optional[Dict[str, Any]]:
-        """Retrieve a single note by ID."""
+    def get_note_by_id(self, note_id: int, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """Retrieve a single note by ID. Optionally verify user ownership."""
         try:
             with self._get_connection() as conn:
                 conn.row_factory = sqlite3.Row
@@ -206,6 +218,11 @@ class DBManager:
                 row = cursor.fetchone()
                 if row:
                     note = dict(row)
+                    
+                    # Check ownership if user_id is provided
+                    if user_id and note.get('user_id') != user_id:
+                        return None
+                        
                     if note['ai_analysis']:
                         try:
                             note['ai_analysis'] = json.loads(note['ai_analysis'])
