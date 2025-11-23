@@ -3,7 +3,7 @@ import cv2
 import ollama
 import json
 import logging
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, List
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -37,12 +37,13 @@ class AIEngine:
         {text_content}
         """
 
-    def extract_text_from_image(self, image_path: str) -> str:
+    def extract_text_from_image(self, image_path: str, examples: List[Dict[str, Any]] = []) -> str:
         """
         Hybrid extraction strategy:
         1. Try EasyOCR.
         2. If average confidence > 0.8, return OCR text.
         3. Else, fallback to Ollama (LLaVA) for visual transcription.
+        Uses 'examples' for few-shot prompting if available.
         """
         try:
             logger.info(f"Starting text extraction for: {image_path}")
@@ -52,12 +53,11 @@ class AIEngine:
             
             if not results:
                 logger.info("EasyOCR found no text. Falling back to LLaVA.")
-                return self._transcribe_with_llava(image_path)
-            result = self.reader.readtext(image_path)
+                return self._transcribe_with_llava(image_path, examples)
             
             text = ""
             confidences = []
-            for (_, t, conf) in result:
+            for (_, t, conf) in results:
                 text += t + " "
                 confidences.append(conf)
             

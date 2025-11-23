@@ -42,6 +42,15 @@ class DBManager:
                 )
             ''')
                 conn.commit()
+                
+                # Migration: Check if image_path exists in notes
+                cursor.execute("PRAGMA table_info(notes)")
+                columns = [info[1] for info in cursor.fetchall()]
+                if 'image_path' not in columns:
+                    logger.info("Migrating DB: Adding image_path column to notes table.")
+                    cursor.execute("ALTER TABLE notes ADD COLUMN image_path TEXT")
+                    conn.commit()
+
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")

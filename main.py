@@ -35,7 +35,7 @@ class PaperToPlanApp(ctk.CTk):
 
         # Components
         self.sidebar = Sidebar(self, 
-                               on_new_note_file=self.new_note_file, 
+                               on_new_note_file=self.new_note_from_file, 
                                on_new_note_webcam=self.new_note_webcam,
                                on_filter_change=self.apply_filter,
                                on_flush_db=self.flush_db_action)
@@ -193,7 +193,7 @@ class PaperToPlanApp(ctk.CTk):
             return
 
         # 1. Create pending note in DB
-        note_id = self.db.add_note(raw_text="Procesando imagen...", status="pending")
+        note_id = self.db.add_note(image_path, raw_text="Procesando imagen...")
         self.refresh_notes()
 
         # 2. Start processing thread
