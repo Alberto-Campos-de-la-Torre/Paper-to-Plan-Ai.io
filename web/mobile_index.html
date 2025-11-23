@@ -94,21 +94,110 @@
 
 <body>
 
-    <div class="icon">📸</div>
-    <h1>PaperToPlan AI</h1>
-    <p>Sube una foto o usa tu cámara</p>
+    <div id="home-view">
+        <div class="icon">📸</div>
+        <h1>PaperToPlan AI</h1>
+        <p>Sube una foto o usa tu cámara</p>
 
-    <div class="upload-btn-wrapper">
-        <button class="btn">📷 Tomar Foto</button>
-        <!-- capture="environment" forces the rear camera on mobile -->
-        <input type="file" name="file" id="fileInput" accept="image/*" capture="environment">
+        <div class="upload-btn-wrapper">
+            <button class="btn">📷 Tomar Foto</button>
+            <input type="file" name="file" id="fileInput" accept="image/*" capture="environment">
+        </div>
+
+        <br><br>
+        <button class="btn secondary" onclick="showNotesList()">📂 Ver Notas</button>
+
+        <div id="status"></div>
     </div>
 
-    <div id="status"></div>
+    <div id="list-view" style="display:none; width: 100%; max-width: 600px; padding: 20px;">
+        <button class="btn small" onclick="showHome()">⬅️ Volver</button>
+        <h2>Mis Notas</h2>
+        <div id="notes-container" style="text-align: left;"></div>
+    </div>
+
+    <div id="detail-view" style="display:none; width: 100%; max-width: 600px; padding: 20px; text-align: left;">
+        <button class="btn small" onclick="showNotesList()">⬅️ Volver a Lista</button>
+        <h2 id="detail-title">Detalle de Nota</h2>
+        <div id="detail-content"></div>
+    </div>
 
     <script>
         const fileInput = document.getElementById('fileInput');
         const statusDiv = document.getElementById('status');
+
+        // Navigation
+        function showHome() {
+            document.getElementById('home-view').style.display = 'block';
+            document.getElementById('list-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'none';
+        }
+
+        async function showNotesList() {
+            document.getElementById('home-view').style.display = 'none';
+            document.getElementById('list-view').style.display = 'block';
+            document.getElementById('detail-view').style.display = 'none';
+
+            const container = document.getElementById('notes-container');
+            container.innerHTML = '<p class="loading">Cargando notas...</p>';
+
+            try {
+                const response = await fetch('/api/notes');
+                const notes = await response.json();
+
+                container.innerHTML = '';
+                if (notes.length === 0) {
+                    container.innerHTML = '<p>No hay notas aún.</p>';
+                    return;
+                }
+
+                notes.forEach(note => {
+                    const card = document.createElement('div');
+                    card.className = 'note-card';
+                    card.innerHTML = `
+                        <div style="display:flex; justify-content:space-between;">
+                            <strong>ID: ${note.id}</strong>
+                            <span class="status-${note.status}">${note.status}</span>
+                        </div>
+                        <p style="font-size: 0.9em; color: #ccc;">${new Date(note.created_at).toLocaleString()}</p>
+                        <p>${note.ai_analysis?.title || 'Sin título'}</p>
+                    `;
+                    card.onclick = () => showNoteDetail(note.id);
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                container.innerHTML = '<p class="error">Error al cargar notas.</p>';
+            }
+        }
+
+        async function showNoteDetail(id) {
+            document.getElementById('list-view').style.display = 'none';
+            document.getElementById('detail-view').style.display = 'block';
+
+            const content = document.getElementById('detail-content');
+            content.innerHTML = '<p class="loading">Cargando detalle...</p>';
+
+            try {
+                const response = await fetch(`/api/notes/${id}`);
+                const note = await response.json();
+
+                const analysis = note.ai_analysis || {};
+
+                content.innerHTML = `
+                    <h3>${analysis.title || 'Nota #' + note.id}</h3>
+                    <p><strong>Estado:</strong> ${note.status}</p>
+                    <p><strong>Tiempo:</strong> ${note.implementation_time || 'N/A'}</p>
+                    <p><strong>Score:</strong> ${analysis.feasibility_score || 0}/100</p>
+                    <hr style="border-color: #333;">
+                    <h4>Resumen</h4>
+                    <p>${analysis.summary || 'Sin resumen'}</p>
+                    <h4>Stack Tecnológico</h4>
+                    <p>${(analysis.tech_stack || []).join(', ')}</p>
+                `;
+            } catch (e) {
+                content.innerHTML = '<p class="error">Error al cargar detalle.</p>';
+            }
+        }
 
         fileInput.addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -130,7 +219,6 @@
                     const result = await response.json();
                     statusDiv.className = 'success';
                     statusDiv.textContent = '✅ ¡Enviado! Revisa tu PC.';
-                    // Reset input so we can upload the same file again if needed
                     fileInput.value = '';
                 } else {
                     throw new Error('Upload failed');
@@ -142,6 +230,49 @@
             }
         });
     </script>
+    <style>
+        /* Additions for new views */
+        .secondary {
+            border-color: #2196F3;
+            color: #2196F3;
+        }
+
+        .secondary:hover {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .small {
+            padding: 5px 15px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .note-card {
+            background: #333;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .note-card:hover {
+            background: #444;
+        }
+
+        .status-pending {
+            color: orange;
+        }
+
+        .status-processed {
+            color: #4CAF50;
+        }
+
+        .status-error {
+            color: #f44336;
+        }
+    </style>
 
 </body>
 
