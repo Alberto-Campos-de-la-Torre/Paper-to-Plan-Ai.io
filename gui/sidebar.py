@@ -45,9 +45,17 @@ class Sidebar(ctk.CTkFrame):
         self.flush_btn = ctk.CTkButton(self, text="⚠️ Flush DB (Debug)", command=self.on_flush_db, fg_color="transparent", border_width=1, border_color="darkred", text_color="red", hover_color="gray20")
         self.flush_btn.grid(row=8, column=0, padx=20, pady=(10, 10), sticky="s")
 
-        # User Management Frame
+        # Mobile Server
+        self.server_btn = ctk.CTkButton(self, text="📱 Mobile Server", command=self.toggle_server, fg_color="#2ecc71", hover_color="#27ae60")
+        self.server_btn.grid(row=10, column=0, padx=20, pady=(0, 10), sticky="s")
+        
+        self.qr_label = ctk.CTkLabel(self, text="")
+        self.qr_label.grid(row=11, column=0, padx=20, pady=(0, 5))
+        self.qr_label.grid_remove()
+
+        # User Management Frame (created but hidden initially)
         self.user_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.user_frame.grid(row=10, column=0, padx=20, pady=(0, 10), sticky="ew")
+        self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
         self.user_frame.grid_remove()
 
         self.add_user_btn = ctk.CTkButton(self.user_frame, text="+ Add User", command=self.add_user, width=100, height=24, font=ctk.CTkFont(size=12))
@@ -55,14 +63,6 @@ class Sidebar(ctk.CTkFrame):
 
         self.users_label = ctk.CTkLabel(self.user_frame, text="", font=ctk.CTkFont(size=12), justify="left")
         self.users_label.pack()
-
-        # Mobile Server
-        self.server_btn = ctk.CTkButton(self, text="📱 Mobile Server", command=self.toggle_server, fg_color="#2ecc71", hover_color="#27ae60")
-        self.server_btn.grid(row=11, column=0, padx=20, pady=(0, 10), sticky="s")
-        
-        self.qr_label = ctk.CTkLabel(self, text="")
-        self.qr_label.grid(row=12, column=0, padx=20, pady=(0, 5))
-        self.qr_label.grid_remove()
         
         self.is_server_running = False
 
@@ -74,7 +74,7 @@ class Sidebar(ctk.CTkFrame):
         self.is_server_running = is_running
         if is_running:
             self.server_btn.configure(text="Stop Server", fg_color="#e74c3c", hover_color="#c0392b")
-            self.user_frame.grid()
+            self.user_frame.grid(row=12, column=0, padx=20, pady=(0, 20), sticky="ew")
             self.update_user_list()
         else:
             self.server_btn.configure(text="📱 Mobile Server", fg_color="#2ecc71", hover_color="#27ae60")
@@ -87,19 +87,27 @@ class Sidebar(ctk.CTkFrame):
         self.qr_label.grid()
 
     def add_user(self):
+        # Import only when needed to avoid initialization conflicts
         from backend.session_manager import session_manager
+        
+        # Show dialog to get username
         dialog = ctk.CTkInputDialog(text="Enter Username:", title="New User")
         username = dialog.get_input()
+        
         if username:
             pin = session_manager.create_user(username)
             if pin:
                 self.update_user_list()
+                # Optionally show success message
+                print(f"User '{username}' created with PIN: {pin}")
             else:
-                # Ideally show an error message, but for now just log/ignore
-                print(f"Failed to create user {username}")
+                # User already exists or error
+                print(f"Failed to create user '{username}' - username may already exist")
 
     def update_user_list(self):
+        # Import only when needed to avoid initialization conflicts
         from backend.session_manager import session_manager
+        
         users = session_manager.get_all_users()
         text = "Active Users:\n"
         for user_id, pin in users.items():
