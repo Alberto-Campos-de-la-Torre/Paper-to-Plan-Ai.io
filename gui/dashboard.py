@@ -1,6 +1,6 @@
 import customtkinter as ctk
 from typing import List, Dict, Any
-import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib
 
@@ -41,9 +41,27 @@ class Dashboard(ctk.CTkFrame):
             s = note.get('status', 'pending')
             status_counts[s] = status_counts.get(s, 0) + 1
         
-        fig1, ax1 = plt.subplots(figsize=(5, 4), facecolor='#2b2b2b')
-        ax1.pie(status_counts.values(), labels=status_counts.keys(), autopct='%1.1f%%', 
-                colors=['#FFA500', '#008000', '#FF0000'], textprops={'color':"w"})
+        # Filter out zero values to avoid label overlap
+        labels = []
+        sizes = []
+        colors = []
+        color_map = {'pending': '#FFA500', 'processed': '#008000', 'error': '#FF0000'}
+        
+        for status, count in status_counts.items():
+            if count > 0:
+                labels.append(status)
+                sizes.append(count)
+                colors.append(color_map.get(status, '#808080'))
+        
+        fig1 = Figure(figsize=(5, 4), facecolor='#2b2b2b')
+        ax1 = fig1.add_subplot(111)
+        
+        if sizes:
+            ax1.pie(sizes, labels=labels, autopct='%1.1f%%', 
+                    colors=colors, textprops={'color':"w"})
+        else:
+            ax1.text(0.5, 0.5, "No Data", ha='center', va='center', color='white')
+            
         ax1.set_title("Project Status", color='white')
         
         canvas1 = FigureCanvasTkAgg(fig1, master=self.chart1_frame)
@@ -60,7 +78,8 @@ class Dashboard(ctk.CTkFrame):
             elif "Medio" in t or "Medium" in t: time_counts["Medio Plazo"] += 1
             elif "Largo" in t or "Long" in t: time_counts["Largo Plazo"] += 1
             
-        fig2, ax2 = plt.subplots(figsize=(5, 4), facecolor='#2b2b2b')
+        fig2 = Figure(figsize=(5, 4), facecolor='#2b2b2b')
+        ax2 = fig2.add_subplot(111)
         ax2.bar(time_counts.keys(), time_counts.values(), color=['#4CAF50', '#2196F3', '#9C27B0'])
         ax2.set_title("Implementation Time", color='white')
         ax2.tick_params(colors='white')
@@ -83,7 +102,8 @@ class Dashboard(ctk.CTkFrame):
                     scores.append(s)
                 except: pass
         
-        fig3, ax3 = plt.subplots(figsize=(10, 3), facecolor='#2b2b2b')
+        fig3 = Figure(figsize=(10, 3), facecolor='#2b2b2b')
+        ax3 = fig3.add_subplot(111)
         if scores:
             ax3.hist(scores, bins=10, range=(0, 100), color='#FFC107', edgecolor='black')
         ax3.set_title("Feasibility Score Distribution", color='white')
