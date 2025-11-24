@@ -13,10 +13,19 @@ import logging
 from tkinter import filedialog
 from gui.sidebar import Sidebar
 from gui.note_list import NoteList
+from gui.note_list import NoteList
 from gui.note_detail import NoteDetail
+from gui.kanban import KanbanBoard
+from gui.dashboard import Dashboard
 from gui.webcam import WebcamWindow
 from backend.ai_manager import AIEngine
 from database.db_manager import DBManager
+
+# Directory for captures
+CAPTURES_DIR = "captures"
+
+# Ensure captures directory exists
+os.makedirs(CAPTURES_DIR, exist_ok=True)
 
 # Configure logging
 logging.basicConfig(
@@ -54,14 +63,21 @@ class PaperToPlanApp(ctk.CTk):
 
             # Components
             logger.info("Creating Sidebar...")
-            self.sidebar = Sidebar(self, 
-                                   on_new_note_file=self.new_note_from_file, 
-                                   on_new_note_webcam=self.new_note_webcam,
-                                   on_filter_change=self.apply_filter,
-                                   on_flush_db=self.flush_db_action,
-                                   on_toggle_server=self.toggle_mobile_server)
-            logger.info("Sidebar created, adding to grid...")
+            self.sidebar = Sidebar(
+                self,
+                on_new_note_file=self.new_note_from_file,
+                on_new_note_webcam=self.new_note_webcam,
+                on_filter_change=self.apply_filter,
+                on_flush_db=self.flush_db_action,
+                on_toggle_server=self.toggle_mobile_server,
+                on_show_qr=self.show_qr_window,
+                on_show_list=self.show_list_view,
+                on_show_kanban=self.show_kanban_view,
+                on_show_dashboard=self.show_dashboard_view
+            )
             self.sidebar.grid(row=0, column=0, sticky="nsew")
+            logger.info("Sidebar created, adding to grid...")
+            #self.sidebar.grid(row=0, column=0, sticky="nsew")
             logger.info("Sidebar gridded")
             
             self.server_thread = None
@@ -80,6 +96,16 @@ class PaperToPlanApp(ctk.CTk):
             self.note_detail = NoteDetail(self, on_delete_callback=self.delete_note, on_regenerate_callback=self.regenerate_note, on_mark_completed_callback=self.mark_completed)
             self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
             logger.info("NoteDetail created and gridded")
+
+            # Kanban Board (Hidden initially)
+            self.kanban = KanbanBoard(self, on_note_click=self.show_detail, on_move_note=self.move_note_kanban)
+            self.kanban.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
+            self.kanban.grid_remove()
+
+            # Dashboard (Hidden initially)
+            self.dashboard = Dashboard(self)
+            self.dashboard.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
+            self.dashboard.grid_remove()
 
             # Status Bar / Progress
             logger.info("Creating status bar...")
@@ -117,9 +143,11 @@ class PaperToPlanApp(ctk.CTk):
                 logger.error(traceback.format_exc())
         threading.Thread(target=_init, daemon=True).start()
 
-    def refresh_notes(self, filter_type="All"):
+    def refresh_notes(self, filter_type="All", user_filter="All Users"):
         notes = self.db.get_all_notes()
         filtered_notes = []
+        
+        # First apply time/completion filter
         if filter_type == "All":
             filtered_notes = notes
         elif filter_type == "Completed":
@@ -133,10 +161,51 @@ class PaperToPlanApp(ctk.CTk):
                 if note.get('implementation_time') == filter_type:
                     filtered_notes.append(note)
         
+        # Then apply user filter if not "All Users"
+        if user_filter != "All Users":
+            user_filtered = []
+            for note in filtered_notes:
+                if note.get('user_id') == user_filter:
+                    user_filtered.append(note)
+            filtered_notes = user_filtered
+        
         self.note_list.update_notes(filtered_notes)
+        self.kanban.update_notes(filtered_notes)
+        self.dashboard.update_stats(filtered_notes)
 
-    def apply_filter(self, filter_value):
-        self.refresh_notes(filter_value)
+    def show_list_view(self):
+        self.kanban.grid_remove()
+        self.dashboard.grid_remove()
+        self.note_list.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
+        self.note_detail.grid(row=0, column=2, sticky="nsew", padx=10, pady=10)
+        
+    def show_kanban_view(self):
+        self.note_list.grid_remove()
+        self.note_detail.grid_remove()
+        self.dashboard.grid_remove()
+        self.kanban.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
+        self.refresh_notes() # Ensure data is fresh
+
+    def show_dashboard_view(self):
+        self.note_list.grid_remove()
+        self.note_detail.grid_remove()
+        self.kanban.grid_remove()
+        self.dashboard.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
+        self.refresh_notes() # Ensure data is fresh
+
+    def move_note_kanban(self, note_id, new_time):
+        # Update implementation time in DB
+        # We need a method in DBManager for this, or use raw SQL
+        # Let's add a quick method to DBManager or just use raw SQL here if I can't access DBManager easily
+        # I'll assume DBManager has update_note_time or I'll add it.
+        # Wait, I haven't added it yet. I should add it.
+        # For now, I'll use update_note_text as a proxy? No.
+        # I will add `update_note_time` to DBManager in the next step.
+        self.db.update_note_time(note_id, new_time)
+        self.refresh_notes()
+
+    def apply_filter(self, filter_value, user_filter="All Users"):
+        self.refresh_notes(filter_value, user_filter=user_filter)
 
     def delete_note(self, note_id):
         self.db.delete_note(note_id)
@@ -145,6 +214,10 @@ class PaperToPlanApp(ctk.CTk):
     def mark_completed(self, note_id):
         self.db.mark_as_completed(note_id)
         self.refresh_notes()
+        # Refresh the detail view if this note is currently displayed
+        updated_note = self.db.get_note_by_id(note_id)
+        if updated_note:
+            self.show_detail(updated_note)
 
     def flush_db_action(self):
         if self.db.flush_db():
@@ -211,11 +284,11 @@ class PaperToPlanApp(ctk.CTk):
         qr.make(fit=True)
         qr_img = qr.make_image(fill_color="black", back_color="white")
         
-        # Convert to CTkImage
-        ctk_qr = ctk.CTkImage(light_image=qr_img.get_image(), size=(150, 150))
-        self.sidebar.set_qr_code(ctk_qr)
+        # Convert to CTkImage (larger size for the window)
+        ctk_qr = ctk.CTkImage(light_image=qr_img.get_image(), size=(300, 300))
+        self.sidebar.set_qr_code(ctk_qr, url)
         
-        # Update server status
+        # Update server status (this will show the "Mostrar QR" button)
         self.sidebar.set_server_status(True)
         
         # Run Server in Thread if not already running
@@ -229,9 +302,9 @@ class PaperToPlanApp(ctk.CTk):
         server = uvicorn.Server(config)
         server.run()
 
-    def on_mobile_upload(self, file_path):
-        print(f"Received mobile upload: {file_path}")
-        self.process_new_note(file_path)
+    def on_mobile_upload(self, file_path, user_id=None):
+        print(f"Received mobile upload: {file_path} from user: {user_id}")
+        self.process_new_note(file_path, user_id=user_id)
 
     def new_note_from_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp")])
@@ -242,13 +315,14 @@ class PaperToPlanApp(ctk.CTk):
         # Open webcam window
         WebcamWindow(self, self.process_new_note)
 
-    def process_new_note(self, image_path):
+    def process_new_note(self, image_path, user_id=None):
         if not self.ai:
             print("AI Engine not ready yet!")
             return
 
-        # 1. Create pending note in DB
-        note_id = self.db.add_note(image_path, raw_text="Procesando imagen...")
+        # 1. Create pending note in DB (use user_id if provided, otherwise default to 'admin')
+        note_user_id = user_id if user_id else "admin"
+        note_id = self.db.add_note(image_path, raw_text="Procesando imagen...", user_id=note_user_id)
         self.refresh_notes()
 
         # 2. Start processing thread
@@ -308,6 +382,76 @@ class PaperToPlanApp(ctk.CTk):
         self.status_bar.stop()
         self.status_bar.grid_remove()
         self.refresh_notes()
+    
+    def show_qr_window(self, qr_image, qr_url):
+        """Display QR code in a separate window."""
+        qr_window = ctk.CTkToplevel(self)
+        qr_window.title("Código QR - PaperToPlan Mobile")
+        qr_window.geometry("400x500")
+        qr_window.resizable(False, False)
+        
+        # Center the window
+        qr_window.transient(self)
+        
+        # Title
+        title_label = ctk.CTkLabel(
+            qr_window,
+            text="Escanea este código QR",
+            font=ctk.CTkFont(size=20, weight="bold")
+        )
+        title_label.pack(pady=(20, 10))
+        
+        # Subtitle
+        subtitle_label = ctk.CTkLabel(
+            qr_window,
+            text="Con tu dispositivo móvil",
+            font=ctk.CTkFont(size=14),
+            text_color="gray70"
+        )
+        subtitle_label.pack(pady=(0, 20))
+        
+        # QR Code Image
+        qr_label = ctk.CTkLabel(qr_window, image=qr_image, text="")
+        qr_label.pack(pady=10)
+        
+        # URL Label
+        url_label = ctk.CTkLabel(
+            qr_window,
+            text=qr_url,
+            font=ctk.CTkFont(size=12),
+            text_color="gray70",
+            wraplength=350
+        )
+        url_label.pack(pady=(10, 20))
+        
+        # Instructions
+        instructions = ctk.CTkLabel(
+            qr_window,
+            text="1. Abre la cámara de tu móvil\n2. Escanea el código QR\n3. Inicia sesión con tu usuario y PIN",
+            font=ctk.CTkFont(size=12),
+            justify="left",
+            text_color="gray60"
+        )
+        instructions.pack(pady=(0, 20))
+        
+        # Close button
+        close_btn = ctk.CTkButton(
+            qr_window,
+            text="Cerrar",
+            command=qr_window.destroy,
+            fg_color="#2196F3",
+            hover_color="#1976D2",
+            width=150
+        )
+        close_btn.pack(pady=(0, 20))
+        
+        # Make window visible and then set grab (fixes the error)
+        qr_window.update_idletasks()
+        try:
+            qr_window.grab_set()
+        except:
+            # If grab_set fails, continue without it (window will still work)
+            pass
 
 if __name__ == "__main__":
     app = PaperToPlanApp()

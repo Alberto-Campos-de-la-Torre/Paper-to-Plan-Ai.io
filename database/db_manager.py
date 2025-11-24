@@ -1,6 +1,7 @@
 import sqlite3
 import json
 import logging
+import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
@@ -189,14 +190,45 @@ class DBManager:
         except sqlite3.Error as e:
             logger.error(f"Error updating note text {note_id}: {e}")
 
-    def delete_note(self, note_id: int) -> bool:
-        """Delete a note by ID."""
+    def update_note_time(self, note_id: int, new_time: str):
+        """Update the implementation time of a note."""
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
+                cursor.execute("UPDATE notes SET implementation_time = ? WHERE id = ?", (new_time, note_id))
+                conn.commit()
+                logger.info(f"Note {note_id} time updated to {new_time}.")
+        except sqlite3.Error as e:
+            logger.error(f"Error updating note time {note_id}: {e}")
+
+    def delete_note(self, note_id: int) -> bool:
+        """Delete a note by ID and its associated image file."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                # First, get the image_path before deleting the note
+                cursor.execute("SELECT image_path FROM notes WHERE id = ?", (note_id,))
+                row = cursor.fetchone()
+                
+                # Delete the note from database
                 cursor.execute("DELETE FROM notes WHERE id = ?", (note_id,))
                 conn.commit()
-                logger.info(f"Note {note_id} deleted.")
+                
+                # Delete the associated image file if it exists
+                if row and row[0]:
+                    image_path = row[0]
+                    try:
+                        # Check if file exists and delete it
+                        if os.path.exists(image_path):
+                            os.remove(image_path)
+                            logger.info(f"Deleted image file: {image_path}")
+                        else:
+                            logger.warning(f"Image file not found (may have been deleted already): {image_path}")
+                    except OSError as e:
+                        logger.error(f"Error deleting image file {image_path}: {e}")
+                        # Don't fail the note deletion if file deletion fails
+                
+                logger.info(f"Note {note_id} deleted from database.")
                 return True
         except sqlite3.Error as e:
             logger.error(f"Error deleting note {note_id}: {e}")

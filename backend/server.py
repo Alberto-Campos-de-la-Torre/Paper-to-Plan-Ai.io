@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import logging
 from database.db_manager import DBManager
+from backend.session_manager import session_manager
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +16,11 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 # Directory setup
-UPLOAD_DIR = "."
+CAPTURES_DIR = "captures"
 WEB_DIR = "web"
 
-# Ensure web directory exists
+# Ensure directories exist
+os.makedirs(CAPTURES_DIR, exist_ok=True)
 os.makedirs(WEB_DIR, exist_ok=True)
 
 # Mount static files (for serving the PWA)
@@ -35,8 +37,6 @@ def set_upload_callback(callback):
     on_upload_callback = callback
 
 async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
-    from backend.session_manager import session_manager
-    
     if not x_auth_user or not x_auth_pin:
         raise HTTPException(status_code=401, detail="Missing Username or PIN")
     
@@ -48,8 +48,6 @@ async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str =
 @app.post("/api/login")
 async def login(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
     """Validates username and PIN for login."""
-    from backend.session_manager import session_manager
-    
     if not x_auth_user or not x_auth_pin:
         raise HTTPException(status_code=400, detail="Username and PIN required")
     
@@ -72,18 +70,19 @@ async def upload_image(file: UploadFile = File(...), user_id: str = Depends(veri
         # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
         filename = f"mobile_capture_{timestamp}.jpg"
-        file_path = os.path.join(UPLOAD_DIR, filename)
+        file_path = os.path.join(CAPTURES_DIR, filename)
         
-        # Save the file
+        # Save the file in captures directory
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
             
         logger.info(f"File uploaded from mobile: {file_path} by user {user_id}")
         
         # Trigger callback in main app to process the note
-        # We need to pass user_id to the callback now
+        # Pass absolute path and user_id to the callback
+        abs_file_path = os.path.abspath(file_path)
         if on_upload_callback:
-            on_upload_callback(file_path, user_id)
+            on_upload_callback(abs_file_path, user_id)
             
         return {"status": "success", "filename": filename, "message": "Image uploaded and processing started."}
         

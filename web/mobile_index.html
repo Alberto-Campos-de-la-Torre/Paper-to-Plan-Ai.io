@@ -138,13 +138,21 @@
         <div id="notes-container" style="text-align: left;"></div>
     </div>
 
-    <div id="detail-view" style="display:none; width: 100%; max-width: 600px; padding: 20px; text-align: left;">
+    <div id="detail-view" style="display:none; width: 100%; max-width: 600px; padding: 20px; text-align: left; overflow-y: auto; max-height: 100vh;">
         <button class="btn small" onclick="showNotesList()">⬅️ Volver a Lista</button>
         <h2 id="detail-title">Detalle de Nota</h2>
-        <div id="detail-content"></div>
+        <div id="detail-content" style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal;"></div>
     </div>
 
     <script>
+        // Helper function to escape HTML and prevent XSS
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         const fileInput = document.getElementById('fileInput');
         const statusDiv = document.getElementById('status');
         let currentPIN = localStorage.getItem('paper_pin');
@@ -247,13 +255,19 @@
                 notes.forEach(note => {
                     const card = document.createElement('div');
                     card.className = 'note-card';
+                    const title = note.ai_analysis?.title || 'Sin título';
+                    const status = note.status;
+                    const statusColor = status === 'processed' ? '#4CAF50' : status === 'error' ? '#f44336' : '#FF9800';
+                    const statusText = status === 'processed' ? 'Completado' : status === 'error' ? 'Error' : 'Pendiente';
+                    
                     card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between;">
-                            <strong>ID: ${note.id}</strong>
-                            <span class="status-${note.status}">${note.status}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
+                            <strong style="font-size: 1.1em; color: #fff;">${title}</strong>
+                            <span class="status-${status}" style="background: ${statusColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.8em; color: white;">${statusText}</span>
                         </div>
-                        <p style="font-size: 0.9em; color: #ccc;">${new Date(note.created_at).toLocaleString()}</p>
-                        <p>${note.ai_analysis?.title || 'Sin título'}</p>
+                        <p style="font-size: 0.85em; color: #aaa; margin: 5px 0;">
+                            ${note.implementation_time || 'Sin tiempo estimado'} • ${new Date(note.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                        </p>
                     `;
                     card.onclick = () => showNoteDetail(note.id);
                     container.appendChild(card);
@@ -269,6 +283,7 @@
             document.getElementById('detail-view').style.display = 'block';
 
             const content = document.getElementById('detail-content');
+            const titleElement = document.getElementById('detail-title');
             content.innerHTML = '<p class="loading">Cargando detalle...</p>';
 
             try {
@@ -276,18 +291,94 @@
                 response = await handleAuthError(response);
                 const note = await response.json();
 
-                const analysis = note.ai_analysis || {};
+                // Parse ai_analysis if it's a string
+                let analysis = {};
+                if (note.ai_analysis) {
+                    if (typeof note.ai_analysis === 'string') {
+                        try {
+                            analysis = JSON.parse(note.ai_analysis);
+                        } catch (e) {
+                            console.error('Error parsing ai_analysis:', e);
+                            analysis = {};
+                        }
+                    } else {
+                        analysis = note.ai_analysis;
+                    }
+                }
+                
+                const title = analysis.title || `Nota #${note.id}`;
+                
+                // Update title in the header
+                if (titleElement) {
+                    titleElement.textContent = title;
+                }
+
+                // Build stack tecnológico
+                let stackHtml = 'Sin stack recomendado';
+                if (analysis.recommended_stack) {
+                    if (Array.isArray(analysis.recommended_stack)) {
+                        stackHtml = analysis.recommended_stack.map(item => `<span style="background: #2196F3; padding: 5px 10px; border-radius: 15px; margin: 5px 5px 5px 0; display: inline-block; font-size: 0.9em;">${item}</span>`).join('');
+                    } else {
+                        stackHtml = analysis.recommended_stack;
+                    }
+                }
+
+                // Build consideraciones técnicas
+                let considerationsHtml = 'Sin consideraciones técnicas';
+                if (analysis.technical_considerations) {
+                    if (Array.isArray(analysis.technical_considerations)) {
+                        considerationsHtml = '<ul style="margin: 10px 0; padding-left: 20px;">' + 
+                            analysis.technical_considerations.map(item => `<li style="margin: 5px 0;">${item}</li>`).join('') + 
+                            '</ul>';
+                    } else {
+                        considerationsHtml = analysis.technical_considerations;
+                    }
+                }
+
+                // Status info
+                const statusColor = note.status === 'processed' ? '#4CAF50' : note.status === 'error' ? '#f44336' : '#FF9800';
+                const statusText = note.status === 'processed' ? 'Completado' : note.status === 'error' ? 'Error' : 'Pendiente';
+                const scoreColor = (analysis.feasibility_score || 0) >= 80 ? '#4CAF50' : (analysis.feasibility_score || 0) >= 50 ? '#FF9800' : '#f44336';
 
                 content.innerHTML = `
-                    <h3>${analysis.title || 'Nota #' + note.id}</h3>
-                    <p><strong>Estado:</strong> ${note.status}</p>
-                    <p><strong>Tiempo:</strong> ${note.implementation_time || 'N/A'}</p>
-                    <p><strong>Score:</strong> ${analysis.feasibility_score || 0}/100</p>
-                    <hr style="border-color: #333;">
-                    <h4>Resumen</h4>
-                    <p>${analysis.summary || 'Sin resumen'}</p>
-                    <h4>Stack Tecnológico</h4>
-                    <p>${(analysis.tech_stack || []).join(', ')}</p>
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="margin: 0; color: #4CAF50; font-size: 1.3em;">${title}</h3>
+                            <span style="background: ${statusColor}; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; color: white; font-weight: bold;">${statusText}</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                            <div>
+                                <p style="margin: 5px 0; color: #aaa; font-size: 0.9em;"><strong>Tiempo Estimado:</strong></p>
+                                <p style="margin: 5px 0; color: #fff; font-size: 1em;">${note.implementation_time || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p style="margin: 5px 0; color: #aaa; font-size: 0.9em;"><strong>Score de Viabilidad:</strong></p>
+                                <p style="margin: 5px 0; color: ${scoreColor}; font-size: 1.2em; font-weight: bold;">${analysis.feasibility_score || 0}/100</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
+                        <h4 style="margin-top: 0; color: #2196F3;">📝 Resumen Ejecutivo</h4>
+                        <p style="line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible; text-overflow: clip;">${escapeHtml(analysis.summary || 'Sin resumen')}</p>
+                    </div>
+                    
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
+                        <h4 style="margin-top: 0; color: #2196F3;">💻 Stack Tecnológico Recomendado</h4>
+                        <div style="margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible;">${stackHtml}</div>
+                    </div>
+                    
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
+                        <h4 style="margin-top: 0; color: #2196F3;">🔧 Consideraciones Técnicas</h4>
+                        <div style="margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible;">${considerationsHtml}</div>
+                    </div>
+                    
+                    ${note.raw_text ? `
+                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
+                        <h4 style="margin-top: 0; color: #2196F3;">📄 Texto Extraído</h4>
+                        <p style="line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; overflow: visible; text-overflow: clip;">${escapeHtml(note.raw_text)}</p>
+                    </div>
+                    ` : ''}
                 `;
             } catch (e) {
                 console.error(e);

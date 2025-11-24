@@ -1,5 +1,10 @@
 import customtkinter as ctk
-from typing import Dict, Any
+import json
+import os
+from typing import Dict, Any, Callable
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from tkinter import filedialog, messagebox
 
 class NoteDetail(ctk.CTkFrame):
     def __init__(self, master, on_delete_callback=None, on_regenerate_callback=None, on_mark_completed_callback=None):
@@ -7,7 +12,8 @@ class NoteDetail(ctk.CTkFrame):
         self.on_delete_callback = on_delete_callback
         self.on_regenerate_callback = on_regenerate_callback
         self.on_mark_completed_callback = on_mark_completed_callback
-        
+        self.note = None # To store the currently displayed note
+
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(2, weight=1) # Content scrollable (adjusted index)
 
@@ -25,10 +31,49 @@ class NoteDetail(ctk.CTkFrame):
         self.scrollable_content.grid(row=2, column=0, padx=20, pady=10, sticky="nsew")
         self.scrollable_content.grid_columnconfigure(0, weight=1)
 
+        # Editable Raw Text
+        self.raw_text_label = ctk.CTkLabel(self, text="Texto Extraído (Editable):", font=ctk.CTkFont(size=14, weight="bold"))
+        self.raw_text_label.grid(row=3, column=0, padx=20, pady=(20, 5), sticky="w")
+        self.raw_text_label.grid_remove() # Hide initially
+
+        self.raw_text_area = ctk.CTkTextbox(self, height=100)
+        self.raw_text_area.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
+        self.raw_text_area.grid_remove() # Hide initially
+
+        # Action Buttons Frame
+        self.actions_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.actions_frame.grid(row=5, column=0, padx=20, pady=20)
+        self.actions_frame.grid_remove() # Hide initially
+
+        self.delete_btn = ctk.CTkButton(self.actions_frame, text="Eliminar Nota", fg_color="red", hover_color="darkred", command=self.delete_note)
+        self.delete_btn.pack(side="left", padx=5)
+
+        self.regenerate_btn = ctk.CTkButton(self.actions_frame, text="Regenerar Plan", fg_color="blue", command=self.regenerate_note)
+        self.regenerate_btn.pack(side="left", padx=5)
+
+        self.complete_btn = ctk.CTkButton(self.actions_frame, text="✓ Marcar Completado", fg_color="green", hover_color="darkgreen", command=self.mark_completed)
+        # self.complete_btn.pack(side="left", padx=5) # Packed conditionally in show_note
+
+        # Export Buttons
+        self.export_pdf_btn = ctk.CTkButton(self.actions_frame, text="Exportar PDF", fg_color="#3F51B5", hover_color="#303F9F", command=self.export_pdf)
+        self.export_pdf_btn.pack(side="right", padx=5)
+
+        self.export_md_btn = ctk.CTkButton(self.actions_frame, text="Exportar MD", fg_color="#607D8B", hover_color="#455A64", command=self.export_md)
+        self.export_md_btn.pack(side="right", padx=5)
+
+
     def show_note(self, note: Dict[str, Any]):
+        self.note = note # Store the current note
+
+        # Check if note is completed first
+        is_completed = note.get('completed') == 1
+        
         # Update Banner
         status = note.get('status', 'pending')
-        if status == 'pending':
+        if is_completed:
+            self.status_banner.configure(text="🎉 PROYECTO COMPLETADO", fg_color="#27ae60", text_color="white")
+            self.status_banner.grid()
+        elif status == 'pending':
             self.status_banner.configure(text="⏳ Procesando...", fg_color="orange")
             self.status_banner.grid()
         elif status == 'error':
@@ -52,9 +97,13 @@ class NoteDetail(ctk.CTkFrame):
         elif isinstance(analysis_json, dict):
             analysis = analysis_json
 
-        # Title
+        # Title - Highlight if completed
         title = analysis.get('title', f"Nota {note['id']}")
-        self.title_label.configure(text=title)
+        if is_completed:
+            title = f"✓ {title}"
+            self.title_label.configure(text=title, text_color="#27ae60")
+        else:
+            self.title_label.configure(text=title, text_color="white")
 
         # Clear previous content
         for widget in self.scrollable_content.winfo_children():
@@ -66,28 +115,19 @@ class NoteDetail(ctk.CTkFrame):
         else:
             self._render_rich_content(analysis)
 
-        # Editable Raw Text
-        self.raw_text_label = ctk.CTkLabel(self, text="Texto Extraído (Editable):", font=ctk.CTkFont(size=14, weight="bold"))
-        self.raw_text_label.grid(row=3, column=0, padx=20, pady=(20, 5), sticky="w")
-
-        self.raw_text_area = ctk.CTkTextbox(self, height=100)
-        self.raw_text_area.grid(row=4, column=0, padx=20, pady=5, sticky="ew")
+        # Show/Update Editable Raw Text
+        self.raw_text_label.grid()
+        self.raw_text_area.grid()
+        self.raw_text_area.delete("0.0", "end")
         self.raw_text_area.insert("0.0", note.get('raw_text', ''))
 
-        # Buttons Frame
-        self.btn_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.btn_frame.grid(row=5, column=0, padx=20, pady=20)
-
-        self.regenerate_btn = ctk.CTkButton(self.btn_frame, text="Regenerar Plan", fg_color="blue", command=lambda: self.regenerate_note(note))
-        self.regenerate_btn.pack(side="left", padx=10)
-
-        # Mark as Completed button (only show if not already completed)
+        # Show/Update Buttons Frame
+        self.actions_frame.grid()
         if note.get('completed') != 1:
-            self.complete_btn = ctk.CTkButton(self.btn_frame, text="✓ Marcar Completado", fg_color="green", hover_color="darkgreen", command=lambda: self.mark_completed(note))
-            self.complete_btn.pack(side="left", padx=10)
+            self.complete_btn.pack(side="left", padx=5)
+        else:
+            self.complete_btn.pack_forget()
 
-        self.delete_btn = ctk.CTkButton(self.btn_frame, text="Eliminar Nota", fg_color="red", hover_color="darkred", command=lambda: self.delete_note(note))
-        self.delete_btn.pack(side="left", padx=10)
 
     def _render_rich_content(self, analysis):
         # 1. Header Stats (Score & Time)
@@ -144,10 +184,11 @@ class NoteDetail(ctk.CTkFrame):
                     ctk.CTkLabel(row, text="•", font=ctk.CTkFont(size=16, weight="bold"), width=20).pack(side="left", anchor="n")
                     ctk.CTkLabel(row, text=item, wraplength=480, justify="left").pack(side="left", fill="x")
 
-    def regenerate_note(self, note):
+    def regenerate_note(self):
+        if not self.note: return
         new_text = self.raw_text_area.get("0.0", "end").strip()
         if self.on_regenerate_callback:
-            self.on_regenerate_callback(note['id'], new_text)
+            self.on_regenerate_callback(self.note['id'], new_text)
             
             # Clear content and show loading
             for widget in self.scrollable_content.winfo_children():
@@ -155,9 +196,10 @@ class NoteDetail(ctk.CTkFrame):
             
             ctk.CTkLabel(self.scrollable_content, text="🔄 Regenerando plan...", font=ctk.CTkFont(size=16)).pack(pady=20)
 
-    def delete_note(self, note):
+    def delete_note(self):
+        if not self.note: return
         if self.on_delete_callback:
-            self.on_delete_callback(note['id'])
+            self.on_delete_callback(self.note['id'])
             
             # Clear content and show deleted message
             for widget in self.scrollable_content.winfo_children():
@@ -165,20 +207,128 @@ class NoteDetail(ctk.CTkFrame):
                 
             ctk.CTkLabel(self.scrollable_content, text="✅ Nota eliminada", font=ctk.CTkFont(size=16)).pack(pady=20)
             
-            self.btn_frame.destroy()
-            self.raw_text_area.destroy()
-            self.raw_text_label.destroy()
+            self.actions_frame.grid_remove()
+            self.raw_text_area.grid_remove()
+            self.raw_text_label.grid_remove()
+            self.title_label.configure(text="Selecciona una nota", text_color="white")
+            self.status_banner.grid_remove()
+            self.note = None # Clear the stored note
 
-    def mark_completed(self, note):
-        if self.on_mark_completed_callback:
-            self.on_mark_completed_callback(note['id'])
+    def mark_completed(self):
+        if self.note:
+            self.on_mark_completed_callback(self.note['id'])
+
+    def export_pdf(self):
+        if not self.note: return
+        
+        file_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF Files", "*.pdf")])
+        if not file_path: return
+
+        try:
+            c = canvas.Canvas(file_path, pagesize=letter)
+            width, height = letter
+            y = height - 50
             
-            # Clear content and show completed message
-            for widget in self.scrollable_content.winfo_children():
-                widget.destroy()
+            analysis = self.note.get('ai_analysis', {})
+            title = analysis.get('title', 'Sin Título')
             
-            ctk.CTkLabel(self.scrollable_content, text="✅ Nota marcada como completada", font=ctk.CTkFont(size=16), text_color="green").pack(pady=20)
+            c.setFont("Helvetica-Bold", 16)
+            c.drawString(50, y, f"Project Plan: {title}")
+            y -= 30
             
-            self.btn_frame.destroy()
-            self.raw_text_area.destroy()
-            self.raw_text_label.destroy()
+            c.setFont("Helvetica", 12)
+            c.drawString(50, y, f"Feasibility: {analysis.get('feasibility_score', 'N/A')}/100")
+            y -= 20
+            c.drawString(50, y, f"Time: {analysis.get('implementation_time', 'N/A')}") # Changed from self.note.get to analysis.get
+            y -= 40
+            
+            c.setFont("Helvetica-Bold", 14)
+            c.drawString(50, y, "Summary")
+            y -= 20
+            c.setFont("Helvetica", 10)
+            
+            summary = analysis.get('summary', '')
+            # Simple text wrapping
+            text_obj = c.beginText(50, y)
+            for line in summary.split('\n'):
+                text_obj.textLine(line)
+            c.drawText(text_obj)
+            
+            # Add Tech Stack
+            if "recommended_stack" in analysis:
+                y = text_obj.getY() - 30 # Get current y position and add some space
+                c.setFont("Helvetica-Bold", 14)
+                c.drawString(50, y, "Recommended Stack")
+                y -= 20
+                c.setFont("Helvetica", 10)
+                stack_items = analysis['recommended_stack']
+                if isinstance(stack_items, list):
+                    for item in stack_items:
+                        c.drawString(60, y, f"• {item}")
+                        y -= 15
+                else:
+                    c.drawString(60, y, str(stack_items))
+                    y -= 15
+
+            # Add Technical Considerations
+            if "technical_considerations" in analysis:
+                y -= 30
+                c.setFont("Helvetica-Bold", 14)
+                c.drawString(50, y, "Technical Considerations")
+                y -= 20
+                c.setFont("Helvetica", 10)
+                considerations = analysis['technical_considerations']
+                if isinstance(considerations, list):
+                    for item in considerations:
+                        c.drawString(60, y, f"• {item}")
+                        y -= 15
+            
+            c.save()
+            messagebox.showinfo("Success", "PDF Exported Successfully")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export PDF: {e}")
+
+    def export_md(self):
+        if not self.note: return
+        
+        file_path = filedialog.asksaveasfilename(defaultextension=".md", filetypes=[("Markdown Files", "*.md")])
+        if not file_path: return
+
+        try:
+            analysis = self.note.get('ai_analysis', {})
+            title = analysis.get('title', 'Sin Título')
+            
+            content = f"# {title}\n\n"
+            content += f"**Feasibility Score:** {analysis.get('feasibility_score', 'N/A')}/100\n"
+            content += f"**Implementation Time:** {analysis.get('implementation_time', 'N/A')}\n\n" # Changed from self.note.get to analysis.get
+            
+            if "summary" in analysis:
+                content += "## Summary\n"
+                content += f"{analysis.get('summary', '')}\n\n"
+            
+            if "recommended_stack" in analysis:
+                content += "## Recommended Stack\n"
+                stack_items = analysis['recommended_stack']
+                if isinstance(stack_items, list):
+                    for item in stack_items:
+                        content += f"- {item}\n"
+                else:
+                    content += f"{stack_items}\n"
+                content += "\n"
+
+            if "technical_considerations" in analysis:
+                content += "## Technical Considerations\n"
+                considerations = analysis['technical_considerations']
+                if isinstance(considerations, list):
+                    for item in considerations:
+                        content += f"- {item}\n"
+                else:
+                    content += f"{considerations}\n"
+                content += "\n"
+            
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(content)
+                
+            messagebox.showinfo("Success", "Markdown Exported Successfully")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to export Markdown: {e}")

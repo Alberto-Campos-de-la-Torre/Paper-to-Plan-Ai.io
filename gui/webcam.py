@@ -5,6 +5,12 @@ import threading
 import time
 import os
 
+# Directory for captures
+CAPTURES_DIR = "captures"
+
+# Ensure captures directory exists
+os.makedirs(CAPTURES_DIR, exist_ok=True)
+
 class WebcamWindow(ctk.CTkToplevel):
     def __init__(self, parent, on_capture_callback):
         super().__init__(parent)
@@ -52,8 +58,9 @@ class WebcamWindow(ctk.CTkToplevel):
         if hasattr(self, 'current_frame'):
             timestamp = int(time.time())
             filename = f"capture_{timestamp}.jpg"
-            cv2.imwrite(filename, self.current_frame)
-            self.on_capture_callback(os.path.abspath(filename))
+            file_path = os.path.join(CAPTURES_DIR, filename)
+            cv2.imwrite(file_path, self.current_frame)
+            self.on_capture_callback(os.path.abspath(file_path))
             self.on_close()
 
     def on_close(self):

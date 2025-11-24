@@ -54,3 +54,11 @@ class SessionManager:
 
 # Global instance - but DB won't be initialized until first use
 session_manager = SessionManager()
+
+# Lazy singleton accessor for SessionManager
+def get_session_manager() -> SessionManager:
+    """Return a singleton SessionManager, creating it on first call.
+    This prevents side‑effects during module import (e.g., when Sidebar imports this module)."""
+    if not hasattr(get_session_manager, "_instance"):
+        get_session_manager._instance = SessionManager()
+    return get_session_manager._instance
