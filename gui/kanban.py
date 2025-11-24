@@ -87,6 +87,9 @@ class KanbanBoard(ctk.CTkFrame):
 
         for note in notes:
             time_est = note.get('implementation_time', 'Unknown')
+            if not time_est:
+                time_est = 'Unknown'
+                
             if "Corto" in time_est or "Short" in time_est:
                 self.col_short.add_note(note)
             elif "Medio" in time_est or "Medium" in time_est:

@@ -54,6 +54,8 @@ class Dashboard(ctk.CTkFrame):
         time_counts = {"Corto Plazo": 0, "Medio Plazo": 0, "Largo Plazo": 0}
         for note in notes:
             t = note.get('implementation_time', 'Unknown')
+            if not t: t = 'Unknown'
+            
             if "Corto" in t or "Short" in t: time_counts["Corto Plazo"] += 1
             elif "Medio" in t or "Medium" in t: time_counts["Medio Plazo"] += 1
             elif "Largo" in t or "Long" in t: time_counts["Largo Plazo"] += 1

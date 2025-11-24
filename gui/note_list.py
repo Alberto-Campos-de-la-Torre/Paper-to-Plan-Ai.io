@@ -14,6 +14,8 @@ class NoteCard(ctk.CTkFrame):
         analysis = note.get('ai_analysis', {})
         title = analysis.get('title', 'Sin Título') if analysis else 'Procesando...'
         time_est = note.get('implementation_time', 'Unknown')
+        if not time_est:
+            time_est = 'Unknown'
         
         self.title_lbl = ctk.CTkLabel(self, text=title, font=ctk.CTkFont(size=16, weight="bold"))
         self.title_lbl.pack(padx=10, pady=(10, 5), anchor="w")
