@@ -5,7 +5,7 @@ import socket
 import qrcode
 import uvicorn
 from PIL import Image
-from backend.server import app as fastapi_app, set_upload_callback
+from backend.server import app as fastapi_app, set_upload_callback, broadcast_update_sync
 import os
 import sys
 import traceback

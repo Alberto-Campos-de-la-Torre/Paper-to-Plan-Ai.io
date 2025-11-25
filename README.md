@@ -92,9 +92,9 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * **Fase 14:** Multi-Usuario (Gestión de usuarios con PINs únicos).
 * **Fase 15:** Tracking & AI+ (Marcar proyectos completados, títulos creativos con IA).
 * **Fase 16:** UI Avanzada (Drag & Drop, Dashboard con gráficos, Export PDF/Markdown).
+* **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
 
 ### Próximas Fases 🚀
-* **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
 * **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
 
 ## **✨ Características Implementadas**

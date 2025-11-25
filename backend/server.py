@@ -1,11 +1,13 @@
 import os
 import shutil
 import json
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import logging
+import asyncio
+from typing import List, Dict
 from database.db_manager import DBManager
 from backend.session_manager import session_manager
 
@@ -36,6 +38,52 @@ def set_upload_callback(callback):
     global on_upload_callback
     on_upload_callback = callback
 
+# --- WebSocket Manager ---
+class ConnectionManager:
+    def __init__(self):
+        # Map user_id -> List[WebSocket]
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, user_id: str):
+        await websocket.accept()
+        if user_id not in self.active_connections:
+            self.active_connections[user_id] = []
+        self.active_connections[user_id].append(websocket)
+        logger.info(f"WebSocket connected for user {user_id}")
+
+    def disconnect(self, websocket: WebSocket, user_id: str):
+        if user_id in self.active_connections:
+            if websocket in self.active_connections[user_id]:
+                self.active_connections[user_id].remove(websocket)
+            if not self.active_connections[user_id]:
+                del self.active_connections[user_id]
+        logger.info(f"WebSocket disconnected for user {user_id}")
+
+    async def broadcast(self, message: str, user_id: str):
+        if user_id in self.active_connections:
+            for connection in self.active_connections[user_id]:
+                try:
+                    await connection.send_text(message)
+                except Exception as e:
+                    logger.error(f"Error sending WS message: {e}")
+
+manager = ConnectionManager()
+
+# We need a way to pass the loop to the external world or vice versa.
+# Let's add a startup event to capture the loop.
+global_loop = None
+
+@app.on_event("startup")
+async def startup_event():
+    global global_loop
+    global_loop = asyncio.get_running_loop()
+
+def broadcast_update_sync(user_id: str, message: str):
+    """Thread-safe broadcast"""
+    if global_loop and manager:
+        asyncio.run_coroutine_threadsafe(manager.broadcast(message, user_id), global_loop)
+
+
 async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
     if not x_auth_user or not x_auth_pin:
         raise HTTPException(status_code=401, detail="Missing Username or PIN")
@@ -55,6 +103,18 @@ async def login(x_auth_user: str = Header(None), x_auth_pin: str = Header(None))
         return {"status": "success", "message": "Login successful"}
     else:
         raise HTTPException(status_code=401, detail="Invalid username or PIN")
+
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
+    try:
+        while True:
+            # Keep alive / listen for messages
+            data = await websocket.receive_text()
+            if data == "ping":
+                await websocket.send_text("pong")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, user_id)
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
