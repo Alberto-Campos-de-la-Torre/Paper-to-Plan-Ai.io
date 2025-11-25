@@ -1,36 +1,38 @@
 package com.papertoplan.mobile.ui
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Call
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.papertoplan.mobile.network.ApiService
 import com.papertoplan.mobile.network.Note
 import com.papertoplan.mobile.network.RetrofitClient
+import com.papertoplan.mobile.network.SessionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(baseUrl: String) {
+fun HomeScreen(baseUrl: String, onCameraClick: () -> Unit, onAudioClick: () -> Unit) {
     val notes = remember { mutableStateListOf<Note>() }
+    val context = LocalContext.current
+    val sessionManager = remember { SessionManager(context) }
+    val username = sessionManager.getUsername() ?: ""
+    val pin = sessionManager.getPin() ?: ""
 
     LaunchedEffect(Unit) {
         val apiService = RetrofitClient.getClient(baseUrl).create(ApiService::class.java)
-        apiService.getNotes().enqueue(object : Callback<List<Note>> {
+        apiService.getNotes(username, pin).enqueue(object : Callback<List<Note>> {
             override fun onResponse(call: Call<List<Note>>, response: Response<List<Note>>) {
                 if (response.isSuccessful) {
                     notes.clear()
@@ -45,7 +47,21 @@ fun HomeScreen(baseUrl: String) {
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("PaperToPlan AI") }) }
+        topBar = { TopAppBar(title = { Text("PaperToPlan AI") }) },
+        floatingActionButton = {
+            Column(horizontalAlignment = Alignment.End) {
+                FloatingActionButton(
+                    onClick = onAudioClick,
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                ) {
+                    Icon(Icons.Default.Call, contentDescription = "Grabar Audio")
+                }
+                FloatingActionButton(onClick = onCameraClick) {
+                    Icon(Icons.Default.Add, contentDescription = "Tomar Foto")
+                }
+            }
+        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier

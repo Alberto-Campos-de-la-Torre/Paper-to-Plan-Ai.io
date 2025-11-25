@@ -1,0 +1,20 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.papertoplan.mobile.app-mergeDebugResources-52:/values-watch-v21/values-watch-v21.xml",
+            "map": [
+                {
+                    "source": "/home/ttech-main/.gradle/caches/9.0-milestone-1/transforms/fd945269d377e7ec6e908bf05e496ee2/transformed/appcompat-1.1.0/res/values-watch-v21/values-watch-v21.xml",
+                    "from": {
+                        "startLines": "2,6,10",
+                        "startColumns": "4,4,4",
+                        "startOffsets": "55,271,499",
+                        "endLines": "5,9,13",
+                        "endColumns": "12,12,12",
+                        "endOffsets": "266,494,724"
+                    }
+                }
+            ]
+        }
+    ]
+}

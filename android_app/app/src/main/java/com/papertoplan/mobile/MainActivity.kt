@@ -6,41 +6,59 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import com.papertoplan.mobile.network.SessionManager
+import com.papertoplan.mobile.ui.AudioScreen
+import com.papertoplan.mobile.ui.CameraScreen
+import com.papertoplan.mobile.ui.HomeScreen
+import com.papertoplan.mobile.ui.LoginScreen
+import com.papertoplan.mobile.ui.ScanScreen
 import com.papertoplan.mobile.ui.theme.PaperToPlanMobileTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val sessionManager = SessionManager(this)
+
         setContent {
             PaperToPlanMobileTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("PaperToPlan AI")
+                    var currentScreen by remember { mutableStateOf(getInitialScreen(sessionManager)) }
+
+                    when (currentScreen) {
+                        Screen.Scan -> ScanScreen(onScanSuccess = { currentScreen = Screen.Login })
+                        Screen.Login -> LoginScreen(onLoginSuccess = { currentScreen = Screen.Home })
+                        Screen.Home -> {
+                            val baseUrl = sessionManager.getBaseUrl()
+                            if (baseUrl != null) {
+                                HomeScreen(
+                                    baseUrl = baseUrl,
+                                    onCameraClick = { currentScreen = Screen.Camera },
+                                    onAudioClick = { currentScreen = Screen.Audio }
+                                )
+                            } else {
+                                currentScreen = Screen.Scan
+                            }
+                        }
+                        Screen.Camera -> CameraScreen(onCaptureSuccess = { currentScreen = Screen.Home })
+                        Screen.Audio -> AudioScreen(onRecordingSuccess = { currentScreen = Screen.Home })
+                    }
                 }
             }
         }
     }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    PaperToPlanMobileTheme {
-        Greeting("Android")
+    private fun getInitialScreen(sessionManager: SessionManager): Screen {
+        if (sessionManager.getBaseUrl() == null) return Screen.Scan
+        if (!sessionManager.isLoggedIn()) return Screen.Login
+        return Screen.Home
     }
+}
+
+enum class Screen {
+    Scan, Login, Home, Camera, Audio
 }

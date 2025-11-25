@@ -10,16 +10,38 @@ import retrofit2.http.Part
 
 interface ApiService {
     @GET("/api/notes")
-    fun getNotes(): Call<List<Note>>
+    fun getNotes(
+        @retrofit2.http.Header("x-auth-user") user: String,
+        @retrofit2.http.Header("x-auth-pin") pin: String
+    ): Call<List<Note>>
 
     @Multipart
     @POST("/api/upload")
-    fun uploadImage(@Part image: MultipartBody.Part): Call<ResponseBody>
+    fun uploadImage(
+        @retrofit2.http.Header("x-auth-user") user: String,
+        @retrofit2.http.Header("x-auth-pin") pin: String,
+        @Part image: MultipartBody.Part
+    ): Call<ResponseBody>
 
     @Multipart
     @POST("/api/upload_audio")
-    fun uploadAudio(@Part audio: MultipartBody.Part): Call<ResponseBody>
+    fun uploadAudio(
+        @retrofit2.http.Header("x-auth-user") user: String,
+        @retrofit2.http.Header("x-auth-pin") pin: String,
+        @Part audio: MultipartBody.Part
+    ): Call<ResponseBody>
+
+    @POST("/api/login")
+    fun login(
+        @retrofit2.http.Header("x-auth-user") user: String,
+        @retrofit2.http.Header("x-auth-pin") pin: String
+    ): Call<LoginResponse>
 }
+
+data class LoginResponse(
+    val status: String,
+    val message: String
+)
 
 data class Note(
     val id: Int,
