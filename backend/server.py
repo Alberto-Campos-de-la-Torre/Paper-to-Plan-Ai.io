@@ -33,10 +33,15 @@ db = DBManager()
 
 # We will use a simple callback mechanism if running in the same process
 on_upload_callback = None
+on_audio_callback = None
 
 def set_upload_callback(callback):
     global on_upload_callback
     on_upload_callback = callback
+
+def set_audio_callback(callback):
+    global on_audio_callback
+    on_audio_callback = callback
 
 # --- WebSocket Manager ---
 class ConnectionManager:
@@ -148,6 +153,37 @@ async def upload_image(file: UploadFile = File(...), user_id: str = Depends(veri
         
     except Exception as e:
         logger.error(f"Upload failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/upload_audio")
+async def upload_audio(file: UploadFile = File(...), user_id: str = Depends(verify_user_and_pin)):
+    try:
+        # Generate a unique filename
+        timestamp = int(datetime.now().timestamp())
+        # Use original extension or default to .webm (common for web recording)
+        ext = os.path.splitext(file.filename)[1]
+        if not ext:
+            ext = ".webm"
+            
+        filename = f"voice_note_{timestamp}{ext}"
+        # Save in captures dir for simplicity, or a new voice_notes dir
+        file_path = os.path.join(CAPTURES_DIR, filename)
+        
+        # Save the file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+        logger.info(f"Audio uploaded from mobile: {file_path} by user {user_id}")
+        
+        # Trigger callback
+        abs_file_path = os.path.abspath(file_path)
+        if on_audio_callback:
+            on_audio_callback(abs_file_path, user_id)
+            
+        return {"status": "success", "filename": filename, "message": "Audio uploaded and processing started."}
+        
+    except Exception as e:
+        logger.error(f"Audio upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/notes")

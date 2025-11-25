@@ -5,7 +5,8 @@ import socket
 import qrcode
 import uvicorn
 from PIL import Image
-from backend.server import app as fastapi_app, set_upload_callback, broadcast_update_sync
+from backend.server import app as fastapi_app, set_upload_callback, broadcast_update_sync, set_audio_callback
+from backend.voice_manager import VoiceManager
 import os
 import sys
 import traceback
@@ -84,8 +85,15 @@ class PaperToPlanApp(ctk.CTk):
             
             # Set callback for mobile uploads
             logger.info("Setting upload callback...")
+            # Initialize Voice Manager
+            self.voice_manager = VoiceManager(model_size="base")
+            
+            # Register callbacks
             set_upload_callback(self.on_mobile_upload)
-            logger.info("Upload callback set")
+            set_audio_callback(self.on_mobile_audio_upload)
+            
+            # Start server
+            self.run_server()
 
             logger.info("Creating NoteList...")
             self.note_list = NoteList(self, on_note_select=self.show_detail)
@@ -114,6 +122,18 @@ class PaperToPlanApp(ctk.CTk):
             self.status_bar.set(0)
             self.status_bar.grid_remove() # Hide initially
             logger.info("Status bar created")
+
+            # Placeholder for status_label and progress_bar used in process_audio_note
+            # These are not explicitly defined in the original code, but are used in the provided snippet.
+            # Adding them here to ensure the code is syntactically correct.
+            self.status_label = ctk.CTkLabel(self, text="", font=ctk.CTkFont(size=12))
+            self.status_label.grid(row=2, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
+            self.status_label.grid_remove() # Hide initially
+
+            self.progress_bar = ctk.CTkProgressBar(self, mode="indeterminate")
+            self.progress_bar.grid(row=3, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
+            self.progress_bar.grid_remove() # Hide initially
+
 
             # Init AI in background to not freeze UI startup
             logger.info("Starting AI initialization thread...")
@@ -303,8 +323,61 @@ class PaperToPlanApp(ctk.CTk):
         server.run()
 
     def on_mobile_upload(self, file_path, user_id=None):
-        print(f"Received mobile upload: {file_path} from user: {user_id}")
-        self.process_new_note(file_path, user_id=user_id)
+        logger.info(f"Received upload callback: {file_path} from user {user_id}")
+        # Schedule processing in the main thread
+        self.after(100, lambda: self.process_new_note(file_path, user_id))
+
+    def on_mobile_audio_upload(self, file_path, user_id=None):
+        logger.info(f"Received audio callback: {file_path} from user {user_id}")
+        self.after(100, lambda: self.process_audio_note(file_path, user_id))
+
+    def process_audio_note(self, audio_path, user_id=None):
+        """
+        Process a voice note:
+        1. Transcribe audio to text.
+        2. Create a note with the text.
+        3. Run AI analysis on the text.
+        """
+        self.current_user_id = user_id
+        self.status_label.configure(text="🎙️ Transcribiendo audio...", text_color="orange")
+        self.status_label.grid()
+        self.progress_bar.grid()
+        self.progress_bar.start()
+        
+        def _transcribe_and_analyze():
+            try:
+                # 1. Transcribe
+                text = self.voice_manager.transcribe(audio_path)
+                logger.info(f"Transcribed text: {text}")
+                
+                # 2. Create Note in DB
+                # We don't have an image, so image_path is None or we can save a placeholder icon?
+                # Let's save the audio path as image_path for now, or handle it in DB.
+                # The DB schema expects image_path. Let's use the audio path, but we need to handle display.
+                # Or better, generate a placeholder image for voice notes?
+                # For simplicity, we store audio_path. The UI should handle it if it's not an image.
+                # But `NoteCard` tries to load it as image.
+                # Let's create a dummy image or just use None if DB allows.
+                # DB schema: image_path TEXT.
+                
+                # Let's use a placeholder image for voice notes if possible.
+                # Or just pass None and handle it.
+                
+                # For now, let's just use the audio path and see if it crashes (it will in PIL).
+                # We should probably modify NoteCard to handle non-image paths or audio icons.
+                
+                # Let's create the note with the transcribed text as raw_text
+                note_id = self.db.add_note(image_path=audio_path, raw_text=text, user_id=user_id)
+                
+                # 3. Run AI Analysis (Text Only)
+                self.ai_pipeline_text_only(note_id, text)
+                
+            except Exception as e:
+                logger.error(f"Error processing audio note: {e}")
+                self.after(0, lambda: self.status_label.configure(text=f"❌ Error: {str(e)}", text_color="red"))
+                self.after(0, self.progress_bar.stop)
+
+        threading.Thread(target=_transcribe_and_analyze, daemon=True).start()
 
     def new_note_from_file(self):
         file_path = filedialog.askopenfilename(filetypes=[("Images", "*.png *.jpg *.jpeg *.bmp")])

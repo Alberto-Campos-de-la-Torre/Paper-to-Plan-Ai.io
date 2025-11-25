@@ -128,6 +128,11 @@
             <input type="file" name="file" id="galleryInput" accept="image/*">
         </div>
 
+        <div class="upload-btn-wrapper" style="margin-top: 15px;">
+            <button id="recordBtn" class="btn" style="border-color: #FF5722; color: #FF5722;">🎙️ Grabar Voz</button>
+        </div>
+        <p id="recording-time" style="display:none; color: #FF5722; font-weight: bold; margin-top: 5px;">00:00</p>
+
         <br><br>
         <button class="btn secondary" onclick="showNotesList()">📂 Ver Notas</button>
         <br><br>
@@ -548,6 +553,108 @@
         galleryInput.addEventListener('change', async (e) => {
             handleUpload(e.target.files[0]);
         });
+
+        // --- Audio Recording ---
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let startTime;
+        let timerInterval;
+
+        const recordBtn = document.getElementById('recordBtn');
+        const recordingTime = document.getElementById('recording-time');
+
+        recordBtn.addEventListener('click', async () => {
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
+            }
+        });
+
+        async function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Tu navegador no soporta grabación de audio.");
+                return;
+            }
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = event => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    handleAudioUpload(audioBlob);
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.textContent = "⏹️ Detener y Enviar";
+                recordBtn.style.backgroundColor = "#FF5722";
+                recordBtn.style.color = "white";
+                recordingTime.style.display = "block";
+
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            } catch (err) {
+                console.error("Error accessing microphone:", err);
+                alert("Error al acceder al micrófono.");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.textContent = "🎙️ Grabar Voz";
+                recordBtn.style.backgroundColor = "transparent";
+                recordBtn.style.color = "#FF5722";
+                recordingTime.style.display = "none";
+                clearInterval(timerInterval);
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+            const seconds = (elapsed % 60).toString().padStart(2, '0');
+            recordingTime.textContent = `${minutes}:${seconds}`;
+        }
+
+        async function handleAudioUpload(audioBlob) {
+            statusDiv.className = 'loading';
+            statusDiv.textContent = '⏳ Subiendo audio...';
+
+            const formData = new FormData();
+            formData.append('file', audioBlob, "voice_note.webm");
+
+            try {
+                let response = await fetch('/api/upload_audio', {
+                    method: 'POST',
+                    body: formData,
+                    headers: getHeaders()
+                });
+
+                response = await handleAuthError(response);
+
+                if (response.ok) {
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = '✅ Audio enviado. Transcribiendo...';
+                    setTimeout(() => { statusDiv.textContent = ''; }, 3000);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.className = 'error';
+                statusDiv.textContent = '❌ Error al subir audio.';
+            }
+        }
     </script>
     <style>
         /* Additions for new views */
