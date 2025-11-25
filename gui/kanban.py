@@ -42,7 +42,7 @@ class KanbanColumn(ctk.CTkFrame):
         label = ctk.CTkLabel(menu, text="Mover a:", font=ctk.CTkFont(weight="bold"))
         label.pack(pady=5)
 
-        options = ["Corto Plazo", "Medio Plazo", "Largo Plazo"]
+        options = ["Corto Plazo", "Mediano Plazo", "Largo Plazo"]
         for opt in options:
             if opt != self.title:
                 btn = ctk.CTkButton(menu, text=opt, command=lambda o=opt: self.move_note(menu, note, o))
@@ -71,13 +71,13 @@ class KanbanBoard(ctk.CTkFrame):
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.col_short = KanbanColumn(self, "Corto Plazo", "Short Term", on_note_click, self.handle_drop)
+        self.col_short = KanbanColumn(self, "Corto Plazo", "Corto Plazo", on_note_click, self.handle_drop)
         self.col_short.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
 
-        self.col_medium = KanbanColumn(self, "Medio Plazo", "Medium Term", on_note_click, self.handle_drop)
+        self.col_medium = KanbanColumn(self, "Mediano Plazo", "Mediano Plazo", on_note_click, self.handle_drop)
         self.col_medium.grid(row=0, column=1, sticky="nsew", padx=5, pady=5)
 
-        self.col_long = KanbanColumn(self, "Largo Plazo", "Long Term", on_note_click, self.handle_drop)
+        self.col_long = KanbanColumn(self, "Largo Plazo", "Largo Plazo", on_note_click, self.handle_drop)
         self.col_long.grid(row=0, column=2, sticky="nsew", padx=5, pady=5)
 
     def update_notes(self, notes: List[Dict[str, Any]]):
@@ -92,7 +92,7 @@ class KanbanBoard(ctk.CTkFrame):
                 
             if "Corto" in time_est or "Short" in time_est:
                 self.col_short.add_note(note)
-            elif "Medio" in time_est or "Medium" in time_est:
+            elif "Medio" in time_est or "Mediano" in time_est or "Medium" in time_est:
                 self.col_medium.add_note(note)
             elif "Largo" in time_est or "Long" in time_est:
                 self.col_long.add_note(note)
@@ -106,8 +106,8 @@ class KanbanBoard(ctk.CTkFrame):
         new_time = ""
         if target_column_title == "Corto Plazo":
             new_time = "Corto Plazo"
-        elif target_column_title == "Medio Plazo":
-            new_time = "Medio Plazo"
+        elif target_column_title == "Mediano Plazo":
+            new_time = "Mediano Plazo"
         elif target_column_title == "Largo Plazo":
             new_time = "Largo Plazo"
         

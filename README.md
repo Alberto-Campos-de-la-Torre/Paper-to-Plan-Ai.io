@@ -96,10 +96,15 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
 
 ### Próximas Fases 🚀
-* **Fase 19:** (Por definir)
+* **Fase 19:** Sincronización Opcional en Nube Encriptada.
+* **Fase 20:** App Nativa de Escritorio (Electron/Tauri).
+* **Fase 21:** Integración con Calendarios (Google/Outlook).
 
 ## **✨ Características Implementadas**
 
+* **🎙️ Notas de Voz:** Transcripción automática con Whisper para capturar ideas habladas.
+* **📊 Dashboard Inteligente:** Gráficos en tiempo real de progreso, tiempos de implementación y factibilidad.
+* **⚡ Análisis Refinado:** Prompt V2 con detección estricta de tiempos y scoring variado.
 * **🔐 Privacidad Total (Local-First):** Ejecución 100% offline con Ollama.
 * **📱 Compañero Móvil:** Escanea un QR y usa tu teléfono como cámara inalámbrica.
 * **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.

@@ -12,14 +12,14 @@ import sys
 import traceback
 import logging
 from tkinter import filedialog
-from gui.sidebar import Sidebar
+# from gui.sidebar import Sidebar
 from gui.note_list import NoteList
 from gui.note_list import NoteList
 from gui.note_detail import NoteDetail
-from gui.kanban import KanbanBoard
-from gui.dashboard import Dashboard
-from gui.webcam import WebcamWindow
-from backend.ai_manager import AIEngine
+# from gui.kanban import KanbanBoard
+# from gui.dashboard import Dashboard
+# from gui.webcam import WebcamWindow
+# from backend.ai_manager import AIEngine
 from database.db_manager import DBManager
 
 # Directory for captures
@@ -55,6 +55,7 @@ class PaperToPlanApp(ctk.CTk):
             logger.info("DBManager initialized")
             
             self.ai = None # Lazy init or init here
+            self.current_user_id = None # Initialize to None
             
             # Layout
             self.grid_columnconfigure(1, weight=1)
@@ -64,6 +65,7 @@ class PaperToPlanApp(ctk.CTk):
 
             # Components
             logger.info("Creating Sidebar...")
+            from gui.sidebar import Sidebar
             self.sidebar = Sidebar(
                 self,
                 on_new_note_file=self.new_note_from_file,
@@ -86,16 +88,29 @@ class PaperToPlanApp(ctk.CTk):
             # Set callback for mobile uploads
             logger.info("Setting upload callback...")
             # Initialize Voice Manager
-            # Import here to avoid segfault with tkinter/torch conflict
-            from backend.voice_manager import VoiceManager
-            self.voice_manager = VoiceManager(model_size="base")
+            try:
+                logger.info("Importing VoiceManager...")
+                # Import here to avoid segfault with tkinter/torch conflict
+                from backend.voice_manager import VoiceManager
+                logger.info("VoiceManager imported. Initializing...")
+                self.voice_manager = VoiceManager(model_size="base")
+                logger.info("VoiceManager initialized.")
+            except Exception as e:
+                logger.error(f"Error initializing VoiceManager: {e}")
+                logger.error(traceback.format_exc())
+                self.voice_manager = None
             
             # Register callbacks
+            logger.info("Registering callbacks...")
             set_upload_callback(self.on_mobile_upload)
             set_audio_callback(self.on_mobile_audio_upload)
+            logger.info("Callbacks registered.")
             
-            # Start server
-            self.run_server()
+            # Start server in a thread
+            logger.info("Starting server thread...")
+            self.server_thread = threading.Thread(target=self.run_server, daemon=True)
+            self.server_thread.start()
+            logger.info("Server thread started.")
 
             logger.info("Creating NoteList...")
             self.note_list = NoteList(self, on_note_select=self.show_detail)
@@ -108,11 +123,13 @@ class PaperToPlanApp(ctk.CTk):
             logger.info("NoteDetail created and gridded")
 
             # Kanban Board (Hidden initially)
+            from gui.kanban import KanbanBoard
             self.kanban = KanbanBoard(self, on_note_click=self.show_detail, on_move_note=self.move_note_kanban)
             self.kanban.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
             self.kanban.grid_remove()
 
             # Dashboard (Hidden initially)
+            from gui.dashboard import Dashboard
             self.dashboard = Dashboard(self)
             self.dashboard.grid(row=0, column=1, columnspan=2, sticky="nsew", padx=10, pady=10)
             self.dashboard.grid_remove()
@@ -132,9 +149,9 @@ class PaperToPlanApp(ctk.CTk):
             self.status_label.grid(row=2, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
             self.status_label.grid_remove() # Hide initially
 
-            self.progress_bar = ctk.CTkProgressBar(self, mode="indeterminate")
-            self.progress_bar.grid(row=3, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
-            self.progress_bar.grid_remove() # Hide initially
+            # self.progress_bar = ctk.CTkProgressBar(self, mode="indeterminate")
+            # self.progress_bar.grid(row=3, column=0, columnspan=3, sticky="ew", padx=10, pady=5)
+            # self.progress_bar.grid_remove() # Hide initially
 
 
             # Init AI in background to not freeze UI startup
@@ -157,6 +174,7 @@ class PaperToPlanApp(ctk.CTk):
             try:
                 print("Initializing AI Engine...")
                 logger.info("AI Engine initialization starting...")
+                from backend.ai_manager import AIEngine
                 self.ai = AIEngine()
                 logger.info("AI Engine initialization complete")
                 print("AI Engine Ready.")
@@ -193,7 +211,7 @@ class PaperToPlanApp(ctk.CTk):
         
         self.note_list.update_notes(filtered_notes)
         self.kanban.update_notes(filtered_notes)
-        self.dashboard.update_stats(filtered_notes)
+        self.dashboard.update_stats(notes) # Always show stats for ALL notes
 
     def show_list_view(self):
         self.kanban.grid_remove()
@@ -343,8 +361,8 @@ class PaperToPlanApp(ctk.CTk):
         self.current_user_id = user_id
         self.status_label.configure(text="🎙️ Transcribiendo audio...", text_color="orange")
         self.status_label.grid()
-        self.progress_bar.grid()
-        self.progress_bar.start()
+        self.status_bar.grid()
+        self.status_bar.start()
         
         def _transcribe_and_analyze():
             try:
@@ -371,13 +389,16 @@ class PaperToPlanApp(ctk.CTk):
                 # Let's create the note with the transcribed text as raw_text
                 note_id = self.db.add_note(image_path=audio_path, raw_text=text, user_id=user_id)
                 
+                # Update UI to show AI processing
+                self.after(0, lambda: self.status_label.configure(text="🤖 Generando plan...", text_color="blue"))
+
                 # 3. Run AI Analysis (Text Only)
                 self.ai_pipeline_text_only(note_id, text)
                 
             except Exception as e:
                 logger.error(f"Error processing audio note: {e}")
                 self.after(0, lambda: self.status_label.configure(text=f"❌ Error: {str(e)}", text_color="red"))
-                self.after(0, self.progress_bar.stop)
+                self.after(0, self.status_bar.stop)
 
         threading.Thread(target=_transcribe_and_analyze, daemon=True).start()
 
@@ -388,6 +409,7 @@ class PaperToPlanApp(ctk.CTk):
 
     def new_note_webcam(self):
         # Open webcam window
+        from gui.webcam import WebcamWindow
         WebcamWindow(self, self.process_new_note)
 
     def process_new_note(self, image_path, user_id=None):
@@ -456,7 +478,13 @@ class PaperToPlanApp(ctk.CTk):
     def finish_processing(self):
         self.status_bar.stop()
         self.status_bar.grid_remove()
+        self.status_label.configure(text="✅ Procesamiento completado", text_color="green")
         self.refresh_notes()
+        
+        # Notify mobile clients via WebSocket
+        if self.current_user_id:
+            logger.info(f"Broadcasting processing_complete to {self.current_user_id}")
+            broadcast_update_sync(self.current_user_id, "processing_complete")
     
     def show_qr_window(self, qr_image, qr_url):
         """Display QR code in a separate window."""

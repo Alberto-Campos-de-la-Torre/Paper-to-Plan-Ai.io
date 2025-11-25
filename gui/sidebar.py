@@ -42,11 +42,11 @@ class Sidebar(ctk.CTkFrame):
             # Action Buttons
             try:
                 logger.info("Sidebar.__init__: Creating action buttons...")
-                self.new_note_btn = ctk.CTkButton(self, text="📄 Nueva Nota (Archivo)", command=self.on_new_note_file, fg_color="#1f6aa5", hover_color="#144870")
+                self.new_note_btn = ctk.CTkButton(self, text="New Note", command=self.on_new_note_file)
                 self.new_note_btn.grid(row=1, column=0, padx=20, pady=(0, 10))
                 logger.info("Sidebar.__init__: New note button created")
 
-                self.webcam_btn = ctk.CTkButton(self, text="📸 Nueva Nota (Cámara)", command=self.on_new_note_webcam, fg_color="#8e44ad", hover_color="#6c3483")
+                self.webcam_btn = ctk.CTkButton(self, text="Webcam Note", command=self.on_new_note_webcam)
                 self.webcam_btn.grid(row=2, column=0, padx=20, pady=(0, 20))
                 logger.info("Sidebar.__init__: Webcam button created")
 
@@ -61,15 +61,15 @@ class Sidebar(ctk.CTkFrame):
                 self.views_label.grid(row=0, column=0, padx=20, pady=(0, 5), sticky="w")
                 logger.info("Sidebar.__init__: Views label created")
 
-                self.list_btn = ctk.CTkButton(self.views_frame, text="📋 Lista", command=self.on_show_list, fg_color="transparent", border_width=1, text_color=("gray10", "gray90"))
+                self.list_btn = ctk.CTkButton(self.views_frame, text="List", command=self.on_show_list)
                 self.list_btn.grid(row=1, column=0, padx=20, pady=(0, 5))
                 logger.info("Sidebar.__init__: List button created")
 
-                self.kanban_btn = ctk.CTkButton(self.views_frame, text="📊 Kanban", command=self.on_show_kanban, fg_color="transparent", border_width=1, text_color=("gray10", "gray90"))
+                self.kanban_btn = ctk.CTkButton(self.views_frame, text="Kanban", command=self.on_show_kanban)
                 self.kanban_btn.grid(row=2, column=0, padx=20, pady=(0, 5))
                 logger.info("Sidebar.__init__: Kanban button created")
 
-                self.dash_btn = ctk.CTkButton(self.views_frame, text="📈 Dashboard", command=self.on_show_dashboard, fg_color="transparent", border_width=1, text_color=("gray10", "gray90"))
+                self.dash_btn = ctk.CTkButton(self.views_frame, text="Dashboard", command=self.on_show_dashboard)
                 self.dash_btn.grid(row=3, column=0, padx=20, pady=(0, 5))
                 logger.info("Sidebar.__init__: Dashboard button created")
 
@@ -92,17 +92,17 @@ class Sidebar(ctk.CTkFrame):
                 self.filter_all.grid(row=5, column=0, padx=20, pady=5, sticky="w")
                 logger.info("Sidebar.__init__: Filter 'All' created")
 
-                self.filter_short = ctk.CTkRadioButton(self, text="Corto Plazo", variable=self.filter_var, value="Short Term", command=self.trigger_filter)
+                self.filter_short = ctk.CTkRadioButton(self, text="Corto Plazo", variable=self.filter_var, value="Corto Plazo", command=self.trigger_filter)
                 self.filter_short.grid(row=6, column=0, padx=20, pady=5, sticky="w")
-                logger.info("Sidebar.__init__: Filter 'Short Term' created")
+                logger.info("Sidebar.__init__: Filter 'Corto Plazo' created")
                 
-                self.filter_medium = ctk.CTkRadioButton(self, text="Medio Plazo", variable=self.filter_var, value="Medium Term", command=self.trigger_filter)
+                self.filter_medium = ctk.CTkRadioButton(self, text="Mediano Plazo", variable=self.filter_var, value="Mediano Plazo", command=self.trigger_filter)
                 self.filter_medium.grid(row=7, column=0, padx=20, pady=5, sticky="w")
-                logger.info("Sidebar.__init__: Filter 'Medium Term' created")
+                logger.info("Sidebar.__init__: Filter 'Mediano Plazo' created")
 
-                self.filter_long = ctk.CTkRadioButton(self, text="Largo Plazo", variable=self.filter_var, value="Long Term", command=self.trigger_filter)
+                self.filter_long = ctk.CTkRadioButton(self, text="Largo Plazo", variable=self.filter_var, value="Largo Plazo", command=self.trigger_filter)
                 self.filter_long.grid(row=8, column=0, padx=20, pady=5, sticky="w")
-                logger.info("Sidebar.__init__: Filter 'Long Term' created")
+                logger.info("Sidebar.__init__: Filter 'Largo Plazo' created")
 
                 logger.info("Sidebar.__init__: Creating 'Completed' filter...")
                 self.filter_completed = ctk.CTkRadioButton(self, text="✓ Completadas", variable=self.filter_var, value="Completed", command=self.trigger_filter)

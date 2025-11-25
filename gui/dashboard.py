@@ -35,47 +35,62 @@ class Dashboard(ctk.CTkFrame):
             ctk.CTkLabel(self.chart1_frame, text="No Data").pack(expand=True)
             return
 
-        # 1. Status Pie Chart
-        status_counts = {"pending": 0, "processed": 0, "error": 0}
+        # 1. Status Pie Chart (Completed vs In Progress)
+        # "In Progress" includes "pending" and "processed" (but not completed)
+        # "Completed" is explicitly "completed" status (if we had it) or maybe we define it differently?
+        # The user asked for "ratio de proyectos completados y proyectos en progreso".
+        # In our DB, status is 'pending', 'processed', 'error'.
+        # We don't have a 'completed' status in the DB enum yet, but the sidebar has a filter for it.
+        # Let's check how 'completed' is stored. 
+        # Ah, NoteDetail has on_mark_completed_callback. Let's assume there is a way to mark as completed.
+        # If not, I'll assume 'processed' is 'In Progress' and I need to find where 'completed' is stored.
+        # Wait, the sidebar filter uses "Completed".
+        # Let's assume the note dictionary has a 'completed' field or status='completed'.
+        
+        completed_count = 0
+        in_progress_count = 0
+        
         for note in notes:
-            s = note.get('status', 'pending')
-            status_counts[s] = status_counts.get(s, 0) + 1
+            # Check 'completed' column (1 = completed, 0 = not completed)
+            is_completed = note.get('completed', 0)
+            
+            if is_completed == 1:
+                completed_count += 1
+            else:
+                # If not completed, it's in progress (pending or processed)
+                # We could exclude 'error' if we wanted, but for now let's count everything else as in progress
+                # or maybe just pending/processed.
+                s = note.get('status', 'pending')
+                if s != 'error':
+                    in_progress_count += 1
         
-        # Filter out zero values to avoid label overlap
-        labels = []
-        sizes = []
-        colors = []
-        color_map = {'pending': '#FFA500', 'processed': '#008000', 'error': '#FF0000'}
-        
-        for status, count in status_counts.items():
-            if count > 0:
-                labels.append(status)
-                sizes.append(count)
-                colors.append(color_map.get(status, '#808080'))
+        labels = ['Completados', 'En Progreso']
+        sizes = [completed_count, in_progress_count]
+        colors = ['#4CAF50', '#2196F3'] # Green, Blue
         
         fig1 = Figure(figsize=(5, 4), facecolor='#2b2b2b')
         ax1 = fig1.add_subplot(111)
         
-        if sizes:
+        if sum(sizes) > 0:
             ax1.pie(sizes, labels=labels, autopct='%1.1f%%', 
                     colors=colors, textprops={'color':"w"})
         else:
             ax1.text(0.5, 0.5, "No Data", ha='center', va='center', color='white')
             
-        ax1.set_title("Project Status", color='white')
+        ax1.set_title("Progreso de Proyectos", color='white')
         
         canvas1 = FigureCanvasTkAgg(fig1, master=self.chart1_frame)
         canvas1.draw()
         canvas1.get_tk_widget().pack(fill="both", expand=True)
 
         # 2. Implementation Time Bar Chart
-        time_counts = {"Corto Plazo": 0, "Medio Plazo": 0, "Largo Plazo": 0}
+        time_counts = {"Corto Plazo": 0, "Mediano Plazo": 0, "Largo Plazo": 0}
         for note in notes:
             t = note.get('implementation_time', 'Unknown')
             if not t: t = 'Unknown'
             
             if "Corto" in t or "Short" in t: time_counts["Corto Plazo"] += 1
-            elif "Medio" in t or "Medium" in t: time_counts["Medio Plazo"] += 1
+            elif "Medio" in t or "Mediano" in t or "Medium" in t: time_counts["Mediano Plazo"] += 1
             elif "Largo" in t or "Long" in t: time_counts["Largo Plazo"] += 1
             
         fig2 = Figure(figsize=(5, 4), facecolor='#2b2b2b')

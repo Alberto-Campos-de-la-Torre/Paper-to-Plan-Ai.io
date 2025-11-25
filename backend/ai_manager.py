@@ -17,24 +17,32 @@ class AIEngine:
         
         # Master Prompt for Feasibility Analysis
         self.master_prompt = """
-        Eres un Ingeniero de Software Senior y Project Manager experto.
-        Tu tarea es analizar el siguiente texto crudo, que representa una idea de software o nota de proyecto.
-        
-        Analiza el contenido y proporciona una respuesta JSON estructurada con los siguientes campos:
-        1. "title": Un título CREATIVO, ATRACTIVO y profesional para el proyecto que capture la esencia de la idea (en Español). 
-           El título debe ser memorable y reflejar el contexto visual y conceptual de la idea.
-        2. "feasibility_score": Un entero de 0 a 100 indicando qué tan factible es el proyecto basado en tecnología actual y complejidad.
-        3. "technical_considerations": Una lista de desafíos técnicos clave, requisitos o decisiones de arquitectura (en Español).
-        4. "recommended_stack": Una lista de tecnologías recomendadas (lenguajes, frameworks, bases de datos).
-        5. "implementation_time": Uno de ["Short Term", "Medium Term", "Long Term"]. 
-           - Short Term: < 1 mes (Scripts simples, herramientas básicas)
-           - Medium Term: 1-3 meses (MVPs, apps web/móviles estándar)
-           - Long Term: > 3 meses (Sistemas complejos, IA pesada, investigación requerida)
-        6. "summary": Un breve resumen ejecutivo de la idea (máximo 2 oraciones, en Español).
+        Eres un Arquitecto de Soluciones de IA y Project Manager Senior con décadas de experiencia.
+        Tu tarea es realizar un análisis PROFUNDO, CRÍTICO y DETALLADO del siguiente texto, que describe una idea de software.
 
-        Salida SOLAMENTE JSON válido. No incluyas formato markdown como ```json ... ```.
-        
-        Texto Crudo a Analizar:
+        Analiza el contenido y genera un JSON válido con los siguientes campos:
+
+        1. "title": Un título profesional, innovador y en Español que capture la esencia del proyecto.
+        2. "feasibility_score": Un entero (0-100). Sé ESTRICTO y VARIADO. NO uses 75 por defecto.
+           - < 40: Ideas vagas, sin detalles técnicos o físicamente imposibles.
+           - 40-60: Ideas posibles pero con enormes barreras de entrada o costos prohibitivos.
+           - 60-80: Proyectos estándar, viables pero con desafíos claros.
+           - 80-90: Proyectos bien definidos, con alcance claro y tecnología madura.
+           - > 90: Proyectos triviales o extremadamente detallados y listos para implementar.
+           *CRITERIO*: Si el texto es muy corto o ambiguo, el puntaje DEBE ser bajo (< 60).
+        3. "technical_considerations": Lista detallada (en Español) de desafíos técnicos, seguridad y escalabilidad.
+        4. "recommended_stack": Lista de tecnologías específicas y modernas.
+        5. "implementation_time": Uno de ["Corto Plazo", "Mediano Plazo", "Largo Plazo"].
+           *REGLA DE ORO*: Si el texto menciona explícitamente "corto plazo", "mediano plazo" o "largo plazo", DEBES usar esa clasificación.
+           - Si no se menciona explícitamente:
+             - "Corto Plazo": < 1 mes (Prototipos, scripts).
+             - "Mediano Plazo": 1-4 meses (MVPs, apps CRUD).
+             - "Largo Plazo": > 4 meses (Sistemas complejos, IA avanzada, plataformas globales).
+        6. "summary": Un resumen ejecutivo persuasivo y claro (2-3 oraciones en Español).
+
+        Responde ÚNICAMENTE con el JSON válido. Sin bloques de código markdown.
+
+        Texto a Analizar:
         {text_content}
         """
 
