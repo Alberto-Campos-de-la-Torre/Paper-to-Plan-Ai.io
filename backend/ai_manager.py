@@ -12,8 +12,10 @@ logger = logging.getLogger(__name__)
 class AIEngine:
     def __init__(self):
         self.reader = easyocr.Reader(['es', 'en']) # Support Spanish and English
-        self.vision_model = 'llava'
-        self.logic_model = 'gemma3:4B'
+        # Update to remote host and new models
+        self.client = ollama.Client(host='http://192.168.1.81:11434')
+        self.vision_model = 'qwen3-vl'
+        self.logic_model = 'qwen3:8b'
         
         # Master Prompt for Feasibility Analysis
         self.master_prompt = """
@@ -51,18 +53,29 @@ class AIEngine:
         Hybrid extraction strategy:
         1. Try EasyOCR.
         2. If average confidence > 0.8, return OCR text.
-        3. Else, fallback to Ollama (LLaVA) for visual transcription.
+        3. Else, fallback to Ollama (Vision Model) for visual transcription.
         Uses 'examples' for few-shot prompting if available.
         """
         try:
             logger.info(f"Starting text extraction for: {image_path}")
             
+            # 0. Validate Image
+            if not os.path.exists(image_path):
+                logger.error(f"Image file not found: {image_path}")
+                return "Error: Image file not found."
+            
+            # Check if valid image
+            img = cv2.imread(image_path)
+            if img is None:
+                logger.error(f"Failed to load image with OpenCV: {image_path}")
+                return "Error: Could not load image. File may be corrupted or format not supported."
+            
             # 1. EasyOCR
-            results = self.reader.readtext(image_path)
+            results = self.reader.readtext(img) # Pass the loaded image directly to avoid re-loading
             
             if not results:
-                logger.info("EasyOCR found no text. Falling back to LLaVA.")
-                return self._transcribe_with_llava(image_path, examples)
+                logger.info("EasyOCR found no text. Falling back to Vision Model.")
+                return self._transcribe_with_vision(image_path, examples)
             
             text = ""
             confidences = []
@@ -76,22 +89,22 @@ class AIEngine:
             if avg_conf >= 0.80:
                 return text.strip()
             
-            # 2. Fallback to LLaVA
-            logger.info("Confidence too low (< 0.80). Falling back to LLaVA.")
-            return self._transcribe_with_llava(image_path, examples)
+            # 2. Fallback to Vision Model
+            logger.info("Confidence too low (< 0.80). Falling back to Vision Model.")
+            return self._transcribe_with_vision(image_path, examples)
 
         except Exception as e:
             logger.error(f"OCR Error: {e}")
             if "Connection refused" in str(e):
-                return "Error: Ollama service is not running. Please start 'ollama serve'."
+                return "Error: Ollama service is not running. Please check the remote host."
             return f"Error using Vision AI: {str(e)}"
 
-    def _transcribe_with_llava(self, image_path: str, examples: List[Dict[str, Any]] = []) -> str:
+    def _transcribe_with_vision(self, image_path: str, examples: List[Dict[str, Any]] = []) -> str:
         """
-        Helper method to transcribe text using LLaVA.
+        Helper method to transcribe text using Vision Model.
         """
         try:
-            logger.info("Sending image to Ollama (LLaVA)...")
+            logger.info(f"Sending image to Ollama ({self.vision_model})...")
             
             prompt = "Transcribe the handwritten text in this image exactly as it appears. Do not add any commentary."
             
@@ -103,7 +116,7 @@ class AIEngine:
                 
                 prompt += "\nNow, transcribe this new image in the same handwriting style. Pay close attention to unique letter formations.\n"
 
-            response = ollama.chat(
+            response = self.client.chat(
                 model=self.vision_model,
                 messages=[
                     {
@@ -115,22 +128,22 @@ class AIEngine:
             )
             return response['message']['content'].strip()
         except Exception as e:
-            logger.error(f"LLaVA Transcription Error: {e}")
-            return "Error during LLaVA transcription."
+            logger.error(f"Vision Model Transcription Error: {e}")
+            return "Error during Vision Model transcription."
 
     def analyze_text(self, text_content: str) -> Dict[str, Any]:
         """
-        Sends text to Ollama (gemma:3b) for analysis using the Master Prompt.
+        Sends text to Ollama (Logic Model) for analysis using the Master Prompt.
         Returns a dictionary (parsed JSON).
         """
         if not text_content or text_content.strip() == "":
             return {"error": "No text content to analyze"}
 
         try:
-            logger.info("Sending text to Ollama (gemma:3b) for analysis...")
+            logger.info(f"Sending text to Ollama ({self.logic_model}) for analysis...")
             formatted_prompt = self.master_prompt.format(text_content=text_content)
             
-            response = ollama.chat(
+            response = self.client.chat(
                 model=self.logic_model,
                 messages=[
                     {'role': 'user', 'content': formatted_prompt}

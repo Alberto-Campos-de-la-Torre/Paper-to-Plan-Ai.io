@@ -163,12 +163,26 @@ class NoteDetail(ctk.CTkFrame):
             
             stack_items = analysis['recommended_stack']
             if isinstance(stack_items, list):
-                for item in stack_items:
-                    chip = ctk.CTkFrame(stack_frame, fg_color="royalblue", corner_radius=15)
+                # Use a flow layout for chips
+                current_row = ctk.CTkFrame(stack_frame, fg_color="transparent")
+                current_row.pack(fill="x", pady=2)
+                
+                # Simple logic to wrap chips (approximate width check not possible easily in CTk without complex calculations)
+                # Instead, we just pack them and let them flow if we use a proper flow layout manager, but CTk doesn't have one built-in.
+                # We will use a grid-like approach or just pack them in rows of 3-4 to be safe.
+                
+                for i, item in enumerate(stack_items):
+                    if i > 0 and i % 3 == 0: # New row every 3 items
+                        current_row = ctk.CTkFrame(stack_frame, fg_color="transparent")
+                        current_row.pack(fill="x", pady=2)
+                        
+                    chip = ctk.CTkFrame(current_row, fg_color="royalblue", corner_radius=15)
                     chip.pack(side="left", padx=(0, 5), pady=5)
-                    ctk.CTkLabel(chip, text=item, text_color="white", font=ctk.CTkFont(size=11)).pack(padx=10, pady=2)
+                    # Limit text length in chip
+                    display_text = item[:20] + "..." if len(item) > 20 else item
+                    ctk.CTkLabel(chip, text=display_text, text_color="white", font=ctk.CTkFont(size=11)).pack(padx=10, pady=2)
             else:
-                 ctk.CTkLabel(stack_frame, text=str(stack_items)).pack(anchor="w")
+                 ctk.CTkLabel(stack_frame, text=str(stack_items), wraplength=480).pack(anchor="w")
 
         # 4. Technical Considerations
         if "technical_considerations" in analysis:
