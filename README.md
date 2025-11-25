@@ -96,7 +96,7 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
 
 ### Próximas Fases 🚀
-* **Fase 19:** Sincronización P2P Local (Sin Nube).
+* **Fase 19:** App Nativa Android (Kotlin/Flutter) - Mayor rendimiento y acceso nativo.
 * **Fase 20:** App Nativa de Escritorio (Electron/Tauri).
 * **Fase 21:** Integración con Calendarios (Google/Outlook).
 
