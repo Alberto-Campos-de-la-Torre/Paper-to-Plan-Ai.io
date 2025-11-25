@@ -76,8 +76,21 @@ class AIEngine:
             if avg_conf >= 0.80:
                 return text.strip()
             
-            # 2. Fallback to LLaVA (with Few-Shot if available)
+            # 2. Fallback to LLaVA
             logger.info("Confidence too low (< 0.80). Falling back to LLaVA.")
+            return self._transcribe_with_llava(image_path, examples)
+
+        except Exception as e:
+            logger.error(f"OCR Error: {e}")
+            if "Connection refused" in str(e):
+                return "Error: Ollama service is not running. Please start 'ollama serve'."
+            return f"Error using Vision AI: {str(e)}"
+
+    def _transcribe_with_llava(self, image_path: str, examples: List[Dict[str, Any]] = []) -> str:
+        """
+        Helper method to transcribe text using LLaVA.
+        """
+        try:
             logger.info("Sending image to Ollama (LLaVA)...")
             
             prompt = "Transcribe the handwritten text in this image exactly as it appears. Do not add any commentary."
@@ -101,13 +114,9 @@ class AIEngine:
                 ]
             )
             return response['message']['content'].strip()
-
         except Exception as e:
-            logger.error(f"OCR Error: {e}")
-            # Check if it's a connection error
-            if "Connection refused" in str(e):
-                return "Error: Ollama service is not running. Please start 'ollama serve'."
-            return f"Error using Vision AI: {str(e)}"
+            logger.error(f"LLaVA Transcription Error: {e}")
+            return "Error during LLaVA transcription."
 
     def analyze_text(self, text_content: str) -> Dict[str, Any]:
         """

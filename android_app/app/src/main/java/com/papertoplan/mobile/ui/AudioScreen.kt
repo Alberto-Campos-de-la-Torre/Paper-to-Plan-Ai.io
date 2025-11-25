@@ -5,6 +5,8 @@ import android.media.MediaRecorder
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Call
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.papertoplan.mobile.network.ApiService
 import com.papertoplan.mobile.network.RetrofitClient
 import com.papertoplan.mobile.network.SessionManager
@@ -39,6 +42,31 @@ fun AudioScreen(onRecordingSuccess: () -> Unit) {
     var isRecording by remember { mutableStateOf(false) }
     var recorder: MediaRecorder? by remember { mutableStateOf(null) }
     var audioFile: File? by remember { mutableStateOf(null) }
+    
+    var hasPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                android.Manifest.permission.RECORD_AUDIO
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasPermission = granted
+            if (!granted) {
+                Toast.makeText(context, "Permiso de audio requerido", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+
+    LaunchedEffect(Unit) {
+        if (!hasPermission) {
+            launcher.launch(android.Manifest.permission.RECORD_AUDIO)
+        }
+    }
 
     DisposableEffect(Unit) {
         onDispose {
@@ -47,7 +75,10 @@ fun AudioScreen(onRecordingSuccess: () -> Unit) {
     }
 
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (!hasPermission) {
+            Text("Se requiere permiso de micrófono")
+        } else {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = if (isRecording) "Grabando..." else "Presiona para grabar",
                 style = MaterialTheme.typography.headlineMedium,
@@ -79,6 +110,7 @@ fun AudioScreen(onRecordingSuccess: () -> Unit) {
                     if (isRecording) Icons.Default.Done else Icons.Default.Call,
                     contentDescription = if (isRecording) "Detener" else "Grabar"
                 )
+            }
             }
         }
     }

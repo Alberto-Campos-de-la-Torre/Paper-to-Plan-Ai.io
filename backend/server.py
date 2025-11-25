@@ -191,7 +191,19 @@ async def get_notes(user_id: str = Depends(verify_user_and_pin)):
     """Returns a list of all notes for the authenticated user."""
     try:
         notes = db.get_all_notes(user_id=user_id)
-        return notes
+        # Flatten the structure for the mobile app
+        flat_notes = []
+        for note in notes:
+            analysis = note.get('ai_analysis', {}) or {}
+            flat_note = {
+                "id": note['id'],
+                "status": note['status'],
+                "implementation_time": note['implementation_time'],
+                "title": analysis.get('title', 'Sin Título'),
+                "feasibility_score": analysis.get('feasibility_score', 0)
+            }
+            flat_notes.append(flat_note)
+        return flat_notes
     except Exception as e:
         logger.error(f"Error fetching notes: {e}")
         raise HTTPException(status_code=500, detail=str(e))
