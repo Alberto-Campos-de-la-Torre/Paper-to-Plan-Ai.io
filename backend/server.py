@@ -215,7 +215,22 @@ async def get_note_detail(note_id: int, user_id: str = Depends(verify_user_and_p
         note = db.get_note_by_id(note_id, user_id=user_id)
         if not note:
             raise HTTPException(status_code=404, detail="Note not found")
-        return note
+        
+        # Flatten structure
+        analysis = note.get('ai_analysis', {}) or {}
+        flat_note = {
+            "id": note['id'],
+            "status": note['status'],
+            "implementation_time": note['implementation_time'],
+            "created_at": note['created_at'],
+            "raw_text": note['raw_text'],
+            "title": analysis.get('title', 'Sin Título'),
+            "feasibility_score": analysis.get('feasibility_score', 0),
+            "summary": analysis.get('summary', ''),
+            "technical_considerations": analysis.get('technical_considerations', []),
+            "recommended_stack": analysis.get('recommended_stack', [])
+        }
+        return flat_note
     except Exception as e:
         logger.error(f"Error fetching note {note_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -223,3 +238,48 @@ async def get_note_detail(note_id: int, user_id: str = Depends(verify_user_and_p
 @app.get("/api/status")
 async def get_status():
     return {"status": "running", "service": "PaperToPlan AI Companion"}
+
+@app.get("/api/stats")
+async def get_stats(user_id: str = Depends(verify_user_and_pin)):
+    """Returns statistics for the user's notes."""
+    try:
+        notes = db.get_all_notes(user_id=user_id)
+        
+        # 1. Progress (Completed vs In Progress)
+        completed_count = 0
+        in_progress_count = 0
+        for note in notes:
+            if note.get('completed', 0) == 1:
+                completed_count += 1
+            elif note.get('status') != 'error':
+                in_progress_count += 1
+                
+        # 2. Implementation Time
+        time_counts = {"Corto Plazo": 0, "Mediano Plazo": 0, "Largo Plazo": 0}
+        for note in notes:
+            t = note.get('implementation_time', 'Unknown')
+            if not t: t = 'Unknown'
+            if "Corto" in t or "Short" in t: time_counts["Corto Plazo"] += 1
+            elif "Medio" in t or "Mediano" in t or "Medium" in t: time_counts["Mediano Plazo"] += 1
+            elif "Largo" in t or "Long" in t: time_counts["Largo Plazo"] += 1
+
+        # 3. Feasibility Scores
+        scores = []
+        for note in notes:
+            analysis = note.get('ai_analysis', {}) or {}
+            try:
+                s = int(analysis.get('feasibility_score', 0))
+                if s > 0: scores.append(s)
+            except: pass
+            
+        return {
+            "progress": {
+                "completed": completed_count,
+                "in_progress": in_progress_count
+            },
+            "implementation_time": time_counts,
+            "feasibility_scores": scores
+        }
+    except Exception as e:
+        logger.error(f"Error fetching stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

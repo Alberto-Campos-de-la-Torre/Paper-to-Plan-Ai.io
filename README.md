@@ -95,10 +95,12 @@ Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
 * **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
 * **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
 
+* **Fase 19:** App Nativa Android (MVP) - Implementación inicial en Kotlin/Compose.
+
 ### Próximas Fases 🚀
-* **Fase 19:** App Nativa Android (Kotlin/Flutter) - Mayor rendimiento y acceso nativo.
 * **Fase 20:** App Nativa de Escritorio (Electron/Tauri).
-* **Fase 21:** Integración con Calendarios (Google/Outlook).
+* **Fase 21:** Mejora Gráfica Android (UI/UX Premium).
+* **Fase 22:** Integración con Calendarios (Google/Outlook).
 
 ## **✨ Características Implementadas**
 

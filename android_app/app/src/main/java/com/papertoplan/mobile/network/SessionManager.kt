@@ -17,7 +17,14 @@ class SessionManager(context: Context) {
     }
 
     fun getBaseUrl(): String? {
-        return prefs.getString(KEY_BASE_URL, null)
+        return prefs.getString("base_url", null)
+    }
+
+    fun logout() {
+        val editor = prefs.edit()
+        editor.remove("username")
+        editor.remove("pin")
+        editor.apply()
     }
 
     fun saveCredentials(username: String, pin: String) {
