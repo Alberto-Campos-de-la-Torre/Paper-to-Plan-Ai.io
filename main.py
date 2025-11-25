@@ -6,7 +6,7 @@ import qrcode
 import uvicorn
 from PIL import Image
 from backend.server import app as fastapi_app, set_upload_callback, broadcast_update_sync, set_audio_callback
-from backend.voice_manager import VoiceManager
+# from backend.voice_manager import VoiceManager
 import os
 import sys
 import traceback
@@ -86,6 +86,8 @@ class PaperToPlanApp(ctk.CTk):
             # Set callback for mobile uploads
             logger.info("Setting upload callback...")
             # Initialize Voice Manager
+            # Import here to avoid segfault with tkinter/torch conflict
+            from backend.voice_manager import VoiceManager
             self.voice_manager = VoiceManager(model_size="base")
             
             # Register callbacks
