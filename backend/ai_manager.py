@@ -3,6 +3,7 @@ import cv2
 import ollama
 import json
 import logging
+import os
 from typing import Dict, Any, Optional, List
 
 # Configure logging
@@ -14,7 +15,7 @@ class AIEngine:
         self.reader = easyocr.Reader(['es', 'en']) # Support Spanish and English
         # Update to remote host and new models
         self.client = ollama.Client(host='http://192.168.1.81:11434')
-        self.vision_model = 'qwen3-vl'
+        self.vision_model = 'qwen3-vl:8b'
         self.logic_model = 'qwen3:8b'
         
         # Master Prompt for Feasibility Analysis
