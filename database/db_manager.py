@@ -9,7 +9,10 @@ from typing import List, Dict, Any, Optional
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-DB_NAME = "papertoplan.db"
+# Use absolute path for database to avoid CWD issues
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DB_NAME = os.path.join(PROJECT_ROOT, "papertoplan.db")
 
 class DBManager:
     def __init__(self, db_name=DB_NAME):

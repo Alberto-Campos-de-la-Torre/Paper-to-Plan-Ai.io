@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PaperToPlan - Iniciar Sesión</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#00d1ff", // Neon Cyan
+            "background-light": "#e0e7ff", // Light Indigo
+            "background-dark": "#0c0d17", // Near Black/Dark Navy
+            "surface-light": "#ffffff",
+            "surface-dark": "#1a1b26", // Dark Grayish Blue
+            "border-light": "#d1d5db",
+            "border-dark": "#4b5563",
+            "text-light": "#1f2937",
+            "text-dark": "#e5e7eb",
+            "text-secondary-light": "#6b7280",
+            "text-secondary-dark": "#9ca3ad",
+          },
+          fontFamily: {
+            display: ["Orbitron", "sans-serif"],
+            body: ["Roboto", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    body {
+      font-family: 'Roboto', sans-serif;
+    }
+    .font-display {
+      font-family: 'Orbitron', sans-serif;
+    }
+    .clip-path-custom {
+      clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark antialiased">
+<div class="flex items-center justify-center min-h-screen p-4">
+<div class="w-full max-w-md">
+<div class="text-center mb-8">
+<h1 class="font-display text-4xl md:text-5xl font-bold text-text-light dark:text-text-dark">PaperToPlan</h1>
+<p class="text-text-secondary-light dark:text-text-secondary-dark mt-2 text-lg">Inicia sesión para continuar</p>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark p-8 md:p-10 rounded-lg shadow-2xl shadow-primary/10">
+<form class="space-y-8">
+<div>
+<label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2" for="user">Usuario</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">person</span>
+<select class="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark" id="user" name="user">
+<option>Selecciona un usuario</option>
+<option>Beto May</option>
+<option>Admin</option>
+</select>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2" for="pin">PIN</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">lock</span>
+<input class="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark" id="pin" name="pin" placeholder="Ingresa tu PIN" type="password"/>
+</div>
+</div>
+<div>
+<button class="w-full bg-primary text-background-dark font-bold py-3 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-dark focus:ring-primary transition-opacity duration-200 clip-path-custom" type="submit">
+              Iniciar Sesión
+            </button>
+</div>
+</form>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PaperToPlan - Project Details</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#ffffff", // Primary color (white for text/icons in this theme)
+            "background-light": "#e5e7eb", // Light mode background (e.g., gray-200)
+            "background-dark": "#0d1117", // Dark mode background (from screenshots)
+          },
+          fontFamily: {
+            display: ["Roboto", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem", // 4px
+          },
+        },
+      },
+    };
+  </script>
+<style>
+    .material-icons {
+      font-size: inherit;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-300">
+<div class="p-4 sm:p-6 md:p-8">
+<header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<button class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+<span class="material-icons text-base">arrow_back</span>
+        Volver al Dashboard
+      </button>
+<div class="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+<span class="material-icons text-base">check_circle</span>
+<span>Análisis Completado</span>
+</div>
+</header>
+<main class="space-y-6">
+<section class="border border-gray-300 dark:border-gray-700 p-6">
+<h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+          Script de Búsqueda de Jergas Mexicanas en Internet: Innovación en la Captura de Lenguaje Regional
+        </h1>
+<div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+<span class="material-icons text-lg">schedule</span>
+<span>Viabilidad: 45/100</span>
+<span class="inline-block w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full mx-1"></span>
+<span>Mediano Plazo</span>
+</div>
+</section>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+<div class="space-y-6">
+<section class="border border-gray-300 dark:border-gray-700">
+<h2 class="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+<span class="material-icons">description</span>
+              Resumen Ejecutivo
+            </h2>
+<p class="p-4 leading-relaxed">
+              Este proyecto propone un script innovador para capturar y analizar jergas mexicanas en internet, combinando web scraping, procesamiento de lenguaje natural y análisis cultural. Aunque viable, enfrenta desafíos técnicos significativos en recolección de datos, seguridad y escalabilidad, requiriendo desarrollo a mediano plazo.
+            </p>
+</section>
+<section class="border border-gray-300 dark:border-gray-700">
+<h2 class="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+<span class="material-icons">code</span>
+              Stack Recomendado
+            </h2>
+<p class="p-4 leading-relaxed">
+              Python (scrappy/BeautifulSoup para web scraping)|NLP (spaCy o Hugging Face Transformers para análisis de lenguaje)|Base de datos NoSQL (MongoDB para almacenamiento flexible)|APIs de búsqueda (Google Programmable Search Engine)|Framework de frontend (React.js para interfaz interactiva)|Servidor cloud (AWS Lambda o Google Cloud Functions para escalamiento)
+            </p>
+</section>
+</div>
+<section class="border border-gray-300 dark:border-gray-700">
+<h2 class="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+<span class="material-icons">engineering</span>
+            Consideraciones Técnicas
+          </h2>
+<ul class="p-4 sm:p-6 space-y-3 list-disc list-inside">
+<li>Recolección y procesamiento de datos de múltiples fuentes en línea (foros, redes sociales, etc.) con riesgo de violación de términos de servicio</li>
+<li>Detección y clasificación de jergas regionales mediante procesamiento de lenguaje natural (NLP) con desafíos de contextualización cultural</li>
+<li>Seguridad de datos: protección de información sensible y cumplimiento de normativas GDPR/LCPD en caso de almacenamiento</li>
+<li>Escalabilidad para manejar volúmenes masivos de datos en tiempo real</li>
+<li>Interfaz de usuario para visualización de resultados y análisis semántico</li>
+<li>Integración con APIs de búsqueda de motores de internet con limitaciones de acceso</li>
+</ul>
+</section>
+</div>
+<section class="border border-gray-300 dark:border-gray-700">
+<h2 class="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+<span class="material-icons">edit_note</span>
+          Texto Extraído (Editable):
+        </h2>
+<div class="p-4">
+<textarea class="w-full bg-transparent border-none focus:ring-0 p-0 text-sm leading-relaxed text-gray-700 dark:text-gray-400" rows="2">El texto transcrito de la imagen dice:
+"Script de búsqueda en internet de jergas mexicanas"</textarea>
+</div>
+</section>
+<footer class="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+<div class="flex flex-wrap items-center gap-2">
+<button class="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-icons text-base">delete_outline</span>
+            Eliminar Nota
+          </button>
+<button class="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-icons text-base">refresh</span>
+            Regenerar Plan
+          </button>
+<button class="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-icons text-base">check_box_outline_blank</span>
+            Marcar Completado
+          </button>
+</div>
+<button class="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto">
+<span class="material-icons text-base">download</span>
+          Exportar MD
+        </button>
+</footer>
+</main>
+</div>
+
+</body></html>

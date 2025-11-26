@@ -316,7 +316,7 @@ class PaperToPlanApp(ctk.CTk):
 
         # Start Server
         ip = self.get_local_ip()
-        url = f"http://{ip}:8000"
+        url = f"http://{ip}:8001"
         
         # Generate QR
         qr = qrcode.QRCode(box_size=4, border=2)
@@ -338,7 +338,7 @@ class PaperToPlanApp(ctk.CTk):
 
     def run_server(self):
         # Disable access log to keep console clean
-        config = uvicorn.Config(fastapi_app, host="0.0.0.0", port=8000, log_level="error")
+        config = uvicorn.Config(fastapi_app, host="0.0.0.0", port=8001, log_level="error")
         server = uvicorn.Server(config)
         server.run()
 

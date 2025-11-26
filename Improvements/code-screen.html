@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>PaperToPlan Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#33bbcf",
+              "background-light": "#e0e7ff",
+              "background-dark": "#0c0a1a",
+            },
+            fontFamily: {
+              display: ["Roboto Mono", "monospace"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+        body {
+            font-family: 'Roboto Mono', monospace;
+        }
+        .material-icons-outlined {
+            font-size: inherit;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 font-display">
+<div class="flex h-screen">
+<aside class="w-64 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-sm flex flex-col border-r border-gray-300 dark:border-gray-700">
+<div class="p-4 border-b border-gray-300 dark:border-gray-700">
+<h1 class="text-2xl font-bold text-gray-900 dark:text-white">PaperToPlan</h1>
+<p class="text-xs text-gray-500 dark:text-gray-400">AI WORKSPACE</p>
+</div>
+<nav class="flex-grow p-4 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition-colors duration-200" href="#">
+<span class="material-icons-outlined">upload_file</span> Subir Nota
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition-colors duration-200" href="#">
+<span class="material-icons-outlined">camera_alt</span> Usar Cámara
+                </a>
+<p class="text-xs text-gray-500 dark:text-gray-400 pt-4 px-3">MENU</p>
+<a class="flex items-center gap-3 px-3 py-2 rounded bg-primary text-white font-bold transition-colors duration-200" href="#">
+<span class="material-icons-outlined">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition-colors duration-200" href="#">
+<span class="material-icons-outlined">view_kanban</span> Kanban Board
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 rounded text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition-colors duration-200" href="#">
+<span class="material-icons-outlined">settings</span> Configuración
+                </a>
+<div class="pt-4">
+<p class="text-xs text-gray-500 dark:text-gray-400 px-3 pb-2">FILTROS</p>
+<div class="flex flex-wrap gap-2 px-2">
+<button class="text-xs px-2 py-1 border border-gray-400 dark:border-gray-600 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">TODO</button>
+<button class="text-xs px-2 py-1 border border-gray-400 dark:border-gray-600 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">CORTO</button>
+<button class="text-xs px-2 py-1 border border-gray-400 dark:border-gray-600 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">MEDIO</button>
+<button class="text-xs px-2 py-1 border border-gray-400 dark:border-gray-600 rounded hover:bg-primary hover:text-white hover:border-primary transition-colors">LARGO</button>
+</div>
+<div class="flex items-center gap-2 mt-3 px-3">
+<input class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary bg-transparent dark:bg-transparent dark:checked:bg-primary dark:focus:ring-offset-background-dark" id="completed" type="checkbox"/>
+<label class="text-sm" for="completed">Mostrar Completados</label>
+</div>
+</div>
+</nav>
+<div class="p-4 border-t border-gray-300 dark:border-gray-700">
+<div class="flex items-center justify-between p-2 rounded hover:bg-gray-200 dark:hover:bg-gray-800 cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold">B</div>
+<div>
+<p class="font-semibold text-sm">Beto May</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Pro Plan</p>
+</div>
+</div>
+<button class="text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white">
+<span class="material-icons-outlined">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<main class="flex-1 flex flex-col p-8 overflow-y-auto">
+<header class="flex justify-between items-center mb-8">
+<div>
+<h2 class="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
+<p class="text-gray-600 dark:text-gray-400">Bienvenido de nuevo, Beto May.</p>
+</div>
+<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">hourglass_top</span>
+<span>PROGRESO</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">timer</span>
+<span>TIEMPOS</span>
+</div>
+</div>
+</header>
+<div class="relative mb-8">
+<input class="w-full pl-10 pr-4 py-3 rounded border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-primary placeholder-gray-500 dark:placeholder-gray-400" placeholder="Buscar proyectos..." type="search"/>
+<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">search</span>
+</div>
+<div class="space-y-6">
+<div class="bg-gray-100 dark:bg-gray-900/50 p-6 rounded border border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Script de Búsqueda de Jergas Mexicanas en Internet: Innovación en la Captura de Lenguaje Regional</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.</p>
+</div>
+<div class="flex items-center gap-4 ml-4">
+<div class="text-right">
+<span class="text-lg font-bold text-gray-900 dark:text-white">45%</span>
+<div class="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
+<div class="w-[45%] h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-icons-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">schedule</span>
+<span>MEDIANO PLAZO</span>
+</div>
+<span class="px-2 py-0.5 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">INDEXED</span>
+</div>
+</div>
+<div class="bg-gray-100 dark:bg-gray-900/50 p-6 rounded border border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Asistente Inteligente de Entrenamiento y Nutrición para Gimnasios</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.</p>
+</div>
+<div class="flex items-center gap-4 ml-4">
+<div class="text-right">
+<span class="text-lg font-bold text-gray-900 dark:text-white">80%</span>
+<div class="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
+<div class="w-[80%] h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-icons-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">schedule</span>
+<span>MEDIANO PLAZO</span>
+</div>
+<span class="px-2 py-0.5 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">INDEXED</span>
+</div>
+</div>
+<div class="bg-gray-100 dark:bg-gray-900/50 p-6 rounded border border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">Teatro en Casa: Solución DIY de Entretenimiento Doméstico</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.</p>
+</div>
+<div class="flex items-center gap-4 ml-4">
+<div class="text-right">
+<span class="text-lg font-bold text-gray-900 dark:text-white">65%</span>
+<div class="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
+<div class="w-[65%] h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-icons-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">schedule</span>
+<span>MEDIANO PLAZO</span>
+</div>
+<span class="px-2 py-0.5 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded-full">INDEXED</span>
+</div>
+</div>
+<div class="bg-gray-100 dark:bg-gray-900/50 p-6 rounded border border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all duration-300 group">
+<div class="flex justify-between items-start">
+<div>
+<h3 class="text-xl font-bold text-gray-900 dark:text-white">PaperToPlan AI: Transformación Inteligente de Documentos en Notas Digitales</h3>
+<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.</p>
+</div>
+<div class="flex items-center gap-4 ml-4">
+<div class="text-right">
+<span class="text-lg font-bold text-gray-900 dark:text-white">45%</span>
+<div class="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
+<div class="w-[45%] h-1 bg-primary rounded-full"></div>
+</div>
+</div>
+<button class="text-gray-500 dark:text-gray-400 group-hover:text-primary transition-colors">
+<span class="material-icons-outlined">more_horiz</span>
+</button>
+</div>
+</div>
+<div class="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+<div class="flex items-center gap-2">
+<span class="material-icons-outlined">schedule</span>
+<span>LARGO PLAZO</span>
+</div>
+<span class="px-2 py-0.5 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-full">IN PROGRESS</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        // Set dark mode by default for cyberpunk theme
+        document.documentElement.classList.add('dark');
+    </script>
+
+</body></html>
