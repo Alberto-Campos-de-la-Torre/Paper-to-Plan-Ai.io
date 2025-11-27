@@ -1,249 +1,166 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNoteDetail, deleteNote, regenerateNote, markCompleted, Note } from '../api/client';
-import { ArrowLeft, FileText, Trash2, RefreshCw, CheckCircle, Download, Clock, Zap, Code, AlertTriangle, Edit3 } from 'lucide-react';
+import { getNoteDetail, Note, deleteNote, regenerateNote, markCompleted } from '../api/client';
 
 const NoteDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [note, setNote] = useState<Note | null>(null);
     const [loading, setLoading] = useState(true);
-    const [rawText, setRawText] = useState('');
-    const [isRegenerating, setIsRegenerating] = useState(false);
+    const [error, setError] = useState('');
+    const [editableText, setEditableText] = useState('');
 
     useEffect(() => {
         if (id) {
-            loadNote(parseInt(id));
+            getNoteDetail(parseInt(id, 10))
+                .then(note => {
+                    setNote(note);
+                    setEditableText(note.raw_text || '');
+                })
+                .catch(() => setError('Failed to fetch note details.'))
+                .finally(() => setLoading(false));
         }
     }, [id]);
 
-    const loadNote = async (noteId: number) => {
-        try {
-            const data = await getNoteDetail(noteId);
-            setNote(data);
-            setRawText(data.raw_text || '');
-        } catch (error) {
-            console.error("Error loading note:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleDelete = async () => {
-        if (!note || !window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) return;
-
-        try {
+        if (note) {
             await deleteNote(note.id);
             navigate('/');
-        } catch (error) {
-            console.error("Error deleting note:", error);
-            alert('Error al eliminar la nota');
         }
     };
 
     const handleRegenerate = async () => {
-        if (!note) return;
-
-        setIsRegenerating(true);
-        try {
-            await regenerateNote(note.id, rawText);
-            await loadNote(note.id);
-        } catch (error) {
-            console.error("Error regenerating note:", error);
-            alert('Error al regenerar el plan');
-        } finally {
-            setIsRegenerating(false);
+        if (note) {
+            await regenerateNote(note.id, editableText);
+            // Optionally, refresh the note details
+            if (id) {
+                setLoading(true);
+                getNoteDetail(parseInt(id, 10))
+                    .then(note => {
+                        setNote(note);
+                        setEditableText(note.raw_text || '');
+                    })
+                    .catch(() => setError('Failed to fetch note details.'))
+                    .finally(() => setLoading(false));
+            }
         }
     };
 
     const handleMarkCompleted = async () => {
-        if (!note) return;
-
-        try {
+        if (note) {
             await markCompleted(note.id);
-            await loadNote(note.id);
-        } catch (error) {
-            console.error("Error marking as completed:", error);
-            alert('Error al marcar como completado');
+            // Optionally, refresh the note details
+            if (id) {
+                setLoading(true);
+                getNoteDetail(parseInt(id, 10))
+                    .then(note => {
+                        setNote(note);
+                        setEditableText(note.raw_text || '');
+                    })
+                    .catch(() => setError('Failed to fetch note details.'))
+                    .finally(() => setLoading(false));
+            }
         }
     };
 
-    const handleExportMD = () => {
-        if (!note) return;
+    if (loading) {
+        return <div className="flex items-center justify-center h-screen bg-background-dark text-text-dark">Loading...</div>;
+    }
 
-        let content = `# ${note.title || 'Sin Título'}\n\n`;
-        content += `**Feasibility Score:** ${note.feasibility_score}/100\n`;
-        content += `**Implementation Time:** ${note.implementation_time}\n\n`;
-
-        if (note.summary) {
-            content += `## Summary\n${note.summary}\n\n`;
-        }
-
-        if (note.recommended_stack && note.recommended_stack.length > 0) {
-            content += `## Recommended Stack\n`;
-            note.recommended_stack.forEach(item => {
-                content += `- ${item}\n`;
-            });
-            content += '\n';
-        }
-
-        if (note.technical_considerations && note.technical_considerations.length > 0) {
-            content += `## Technical Considerations\n`;
-            note.technical_considerations.forEach(item => {
-                content += `- ${item}\n`;
-            });
-        }
-
-        const blob = new Blob([content], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${note.title || 'nota'}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    if (loading) return (
-        <div className="flex justify-center items-center h-full bg-black">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-        </div>
-    );
-
-    if (!note) return <div className="text-white p-8">Nota no encontrada</div>;
+    if (error || !note) {
+        return <div className="flex items-center justify-center h-screen bg-background-dark text-red-500">{error || 'Note not found.'}</div>;
+    }
 
     return (
-        <div className="h-full overflow-y-auto bg-black font-mono text-gray-300">
-            <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
-                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        VOLVER AL DASHBOARD
-                    </button>
-
-                    <div className="flex items-center gap-2 text-sm text-green-400 font-bold">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>ANÁLISIS COMPLETADO</span>
-                    </div>
-                </header>
-
-                {/* Main Title Section */}
-                <section className="border border-gray-800 bg-[#0c0d17] p-6 rounded-lg">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-display tracking-wide leading-tight">
-                        {note.title || 'Sin Título'}
+        <div className="p-4 sm:p-6 md:p-8 bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-300 min-h-screen">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <span className="material-icons text-base">arrow_back</span>
+                    Volver al Dashboard
+                </button>
+                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                    <span className="material-icons text-base">check_circle</span>
+                    <span>Análisis Completado</span>
+                </div>
+            </header>
+            <main className="space-y-6">
+                <section className="border border-gray-300 dark:border-gray-700 p-6">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                        {note.title}
                     </h1>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 font-mono">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-yellow-400" />
-                            <span>VIABILIDAD: <span className="text-white font-bold">{note.feasibility_score}/100</span></span>
-                        </div>
-                        <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-cyan-400" />
-                            <span className="uppercase">{note.implementation_time}</span>
-                        </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="material-icons text-lg">schedule</span>
+                        <span>Viabilidad: {note.feasibility_score}/100</span>
+                        <span className="inline-block w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full mx-1"></span>
+                        <span>{note.implementation_time}</span>
                     </div>
                 </section>
-
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-6">
-                        {/* Summary Section */}
-                        <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                            <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                                <FileText className="w-4 h-4 text-cyan-400" />
-                                RESUMEN EJECUTIVO
+                        <section className="border border-gray-300 dark:border-gray-700">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+                                <span className="material-icons">description</span>
+                                Resumen Ejecutivo
                             </h2>
-                            <p className="p-6 leading-relaxed text-sm">
-                                {note.summary || 'No hay resumen disponible.'}
+                            <p className="p-4 leading-relaxed">
+                                {note.summary}
                             </p>
                         </section>
-
-                        {/* Tech Stack Section */}
-                        <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                            <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                                <Code className="w-4 h-4 text-purple-400" />
-                                STACK RECOMENDADO
+                        <section className="border border-gray-300 dark:border-gray-700">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+                                <span className="material-icons">code</span>
+                                Stack Recomendado
                             </h2>
-                            <p className="p-6 leading-relaxed text-sm font-mono text-cyan-300/80">
-                                {note.recommended_stack && note.recommended_stack.length > 0 ? (
-                                    note.recommended_stack.join(' | ')
-                                ) : 'No especificado'}
+                            <p className="p-4 leading-relaxed">
+                                {note.recommended_stack?.join(', ')}
                             </p>
                         </section>
                     </div>
-
-                    {/* Technical Considerations */}
-                    <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden h-full">
-                        <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                            <AlertTriangle className="w-4 h-4 text-orange-400" />
-                            CONSIDERACIONES TÉCNICAS
+                    <section className="border border-gray-300 dark:border-gray-700">
+                        <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+                            <span className="material-icons">engineering</span>
+                            Consideraciones Técnicas
                         </h2>
-                        <ul className="p-6 space-y-3 list-disc list-inside text-sm text-gray-400">
-                            {note.technical_considerations && note.technical_considerations.length > 0 ? (
-                                note.technical_considerations.map((item, index) => (
-                                    <li key={index} className="leading-relaxed">{item}</li>
-                                ))
-                            ) : (
-                                <li>No hay consideraciones técnicas especificadas.</li>
-                            )}
+                        <ul className="p-4 sm:p-6 space-y-3 list-disc list-inside">
+                            {note.technical_considerations?.map((item, index) => item.trim() && <li key={index}>{item.trim()}</li>)}
                         </ul>
                     </section>
                 </div>
-
-                {/* Raw Text Section */}
-                <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                    <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                        <Edit3 className="w-4 h-4 text-gray-400" />
-                        TEXTO EXTRAÍDO (EDITABLE)
+                <section className="border border-gray-300 dark:border-gray-700">
+                    <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
+                        <span className="material-icons">edit_note</span>
+                        Texto Extraído (Editable):
                     </h2>
                     <div className="p-4">
                         <textarea
-                            value={rawText}
-                            onChange={(e) => setRawText(e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm leading-relaxed text-gray-100 font-mono resize-y min-h-[100px]"
-                            placeholder="Texto extraído..."
+                            className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm leading-relaxed text-gray-700 dark:text-gray-400"
+                            value={editableText}
+                            onChange={(e) => setEditableText(e.target.value)}
+                            rows={2}
                         />
                     </div>
                 </section>
-
-                {/* Footer Actions */}
-                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-800">
-                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button
-                            onClick={handleDelete}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-red-900/20 hover:border-red-800 hover:text-red-400 transition-colors rounded"
-                        >
-                            <Trash2 className="w-3 h-3" />
-                            ELIMINAR NOTA
+                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button onClick={handleDelete} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <span className="material-icons text-base">delete_outline</span>
+                            Eliminar Nota
                         </button>
-                        <button
-                            onClick={handleRegenerate}
-                            disabled={isRegenerating}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-cyan-900/20 hover:border-cyan-800 hover:text-cyan-400 transition-colors rounded disabled:opacity-50"
-                        >
-                            <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
-                            {isRegenerating ? 'REGENERANDO...' : 'REGENERAR PLAN'}
+                        <button onClick={handleRegenerate} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <span className="material-icons text-base">refresh</span>
+                            Regenerar Plan
                         </button>
-                        <button
-                            onClick={handleMarkCompleted}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-green-900/20 hover:border-green-800 hover:text-green-400 transition-colors rounded"
-                        >
-                            <CheckCircle className="w-3 h-3" />
-                            MARCAR COMPLETADO
+                        <button onClick={handleMarkCompleted} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <span className="material-icons text-base">check_box_outline_blank</span>
+                            Marcar Completado
                         </button>
                     </div>
-
-                    <button
-                        onClick={handleExportMD}
-                        className="flex items-center justify-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-white/10 hover:text-white transition-colors rounded w-full sm:w-auto font-bold"
-                    >
-                        <Download className="w-3 h-3" />
-                        EXPORTAR MD
+                    <button className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto">
+                        <span className="material-icons text-base">download</span>
+                        Exportar MD
                     </button>
                 </footer>
-            </div>
+            </main>
         </div>
     );
 };
