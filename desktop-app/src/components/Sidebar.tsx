@@ -38,7 +38,6 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     const [showQRModal, setShowQRModal] = useState(false);
 
     const isActive = (path: string) => location.pathname === path;
