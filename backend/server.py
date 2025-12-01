@@ -11,6 +11,7 @@ import logging
 import asyncio
 from typing import List, Dict
 import sys
+import time
 
 # Add project root to sys.path
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -565,19 +566,33 @@ class CameraManager:
         self.lock = threading.Lock()
         self.last_frame = None
 
-    def get_frame(self):
+    def open_camera(self):
         with self.lock:
             if self.camera is None or not self.camera.isOpened():
+                logger.info("Opening camera...")
                 # Try index 0, then 1 with V4L2 backend explicitly
                 self.camera = cv2.VideoCapture(0, cv2.CAP_V4L2)
                 if not self.camera.isOpened():
+                     logger.warning("Camera 0 failed, trying Camera 1")
                      self.camera = cv2.VideoCapture(1, cv2.CAP_V4L2)
-            
-            if not self.camera or not self.camera.isOpened():
+                
+                if not self.camera.isOpened():
+                    logger.error("Could not open any camera.")
+                    self.camera = None
+                else:
+                    # Warmup
+                    for _ in range(5):
+                        self.camera.read()
+                    logger.info("Camera opened successfully.")
+
+    def get_frame(self):
+        with self.lock:
+            if self.camera is None or not self.camera.isOpened():
                 return None
 
             success, frame = self.camera.read()
             if not success:
+                logger.warning("Failed to read frame")
                 return None
             
             # Cache the frame for capture_image
@@ -603,7 +618,7 @@ class CameraManager:
                  raise Exception("Could not open camera device")
 
             # Read a few frames to let auto-exposure settle
-            for _ in range(5):
+            for _ in range(10):
                 cap.read()
                 
             ret, frame = cap.read()
@@ -616,18 +631,33 @@ class CameraManager:
     def release(self):
         with self.lock:
             if self.camera:
+                logger.info("Releasing camera...")
                 self.camera.release()
                 self.camera = None
 
 camera_manager = CameraManager()
 
 def generate_frames():
-    while True:
-        frame = camera_manager.get_frame()
-        if frame is None:
-            break
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    # Ensure camera is open
+    camera_manager.open_camera()
+    try:
+        while True:
+            frame = camera_manager.get_frame()
+            if frame is None:
+                # If we lose the frame, try to re-open or just wait a bit
+                time.sleep(0.1)
+                continue
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            time.sleep(0.03) # Limit to ~30fps
+    except GeneratorExit:
+        logger.info("Client disconnected from video stream.")
+    except Exception as e:
+        logger.error(f"Error in video stream: {e}")
+    finally:
+        logger.info("Releasing camera resource.")
+        camera_manager.release()
 
 @app.get("/api/video_feed")
 async def video_feed():

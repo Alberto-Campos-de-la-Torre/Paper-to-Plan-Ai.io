@@ -7,7 +7,6 @@ import NoteDetail from './components/NoteDetail';
 import WebcamModal from './components/WebcamModal';
 import Login from './components/Login';
 import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection, uploadImage } from './api/client';
-import { open } from '@tauri-apps/plugin-dialog';
 import { X, Trash2, Settings, Save, Wifi } from 'lucide-react';
 
 function App() {
@@ -63,7 +62,6 @@ function App() {
       setAuth(currentUser, pin);
 
       // Setup WebSocket for updates
-      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const wsUrl = `ws://localhost:8001/ws/${encodeURIComponent(currentUser)}`;
       const ws = new WebSocket(wsUrl);
 
@@ -99,13 +97,9 @@ function App() {
       setUsers(userList.map(u => u.username));
     } catch (error) {
       console.error("Error fetching users from API:", error);
-      // Fallback
-      const fallbackUsers = [
-        { username: 'Beto May', pin: '0295' },
-        { username: 'Alice Smith', pin: '1234' }
-      ];
-      setFullUsers(fallbackUsers);
-      setUsers(fallbackUsers.map(u => u.username));
+      // Don't use fallback, so we can see if it's actually failing
+      setFullUsers([]);
+      setUsers([]);
     }
   };
 

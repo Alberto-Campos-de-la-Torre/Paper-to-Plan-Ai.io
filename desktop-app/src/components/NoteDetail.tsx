@@ -64,34 +64,39 @@ const NoteDetail: React.FC = () => {
     const handleExportMarkdown = () => {
         if (!note) return;
 
-        const markdownContent = `
-# ${note.title}
+        try {
+            const markdownContent = `
+# ${note.title || 'Sin Título'}
 
-**Viabilidad:** ${note.feasibility_score}/100
-**Tiempo Estimado:** ${note.implementation_time}
+**Viabilidad:** ${note.feasibility_score || 0}/100
+**Tiempo Estimado:** ${note.implementation_time || 'Desconocido'}
 
 ## Resumen Ejecutivo
-${note.summary}
+${note.summary || 'No disponible'}
 
 ## Stack Recomendado
-${note.recommended_stack?.map(tech => `- ${tech}`).join('\n')}
+${note.recommended_stack?.map(tech => `- ${tech}`).join('\n') || 'No especificado'}
 
 ## Consideraciones Técnicas
-${note.technical_considerations?.map(item => `- ${item}`).join('\n')}
+${note.technical_considerations?.map(item => `- ${item}`).join('\n') || 'No especificadas'}
 
 ## Texto Original
-${note.raw_text}
-        `.trim();
+${note.raw_text || ''}
+            `.trim();
 
-        const blob = new Blob([markdownContent], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${note.title.replace(/\s+/g, '_').toLowerCase()}.md`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+            const blob = new Blob([markdownContent], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error("Error exporting markdown:", error);
+            alert("Error al exportar el archivo Markdown.");
+        }
     };
 
     if (loading) {
