@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getNoteDetail, Note, deleteNote, regenerateNote, markCompleted } from '../api/client';
 import { ArrowLeft, CheckCircle, Clock, FileText, Code, Settings, Edit3, Trash2, RefreshCw, CheckSquare, Download } from 'lucide-react';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
 
 const NoteDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -61,11 +63,10 @@ const NoteDetail: React.FC = () => {
         }
     };
 
-    const handleExportMarkdown = () => {
+    const handleExportMarkdown = async () => {
         if (!note) return;
 
-        try {
-            const markdownContent = `
+        const markdownContent = `
 # ${note.title || 'Sin Título'}
 
 **Viabilidad:** ${note.feasibility_score || 0}/100
@@ -82,20 +83,38 @@ ${note.technical_considerations?.map(item => `- ${item}`).join('\n') || 'No espe
 
 ## Texto Original
 ${note.raw_text || ''}
-            `.trim();
+        `.trim();
 
-            const blob = new Blob([markdownContent], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        try {
+            // Try Tauri Save Dialog
+            const filePath = await save({
+                filters: [{
+                    name: 'Markdown',
+                    extensions: ['md']
+                }],
+                defaultPath: `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`
+            });
+
+            if (filePath) {
+                await writeTextFile(filePath, markdownContent);
+                alert('Nota exportada correctamente.');
+            }
         } catch (error) {
-            console.error("Error exporting markdown:", error);
-            alert("Error al exportar el archivo Markdown.");
+            console.error("Tauri export failed, falling back to browser download:", error);
+            try {
+                const blob = new Blob([markdownContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (fallbackError) {
+                console.error("Browser export failed:", fallbackError);
+                alert("Error al exportar el archivo Markdown.");
+            }
         }
     };
 

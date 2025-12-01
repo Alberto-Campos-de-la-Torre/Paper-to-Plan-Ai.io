@@ -644,6 +644,7 @@ camera_manager = CameraManager()
 def generate_frames():
     # Ensure camera is open
     camera_manager.open_camera()
+    frame_count = 0
     try:
         while True:
             frame = camera_manager.get_frame()
@@ -654,6 +655,11 @@ def generate_frames():
 
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            
+            frame_count += 1
+            if frame_count % 30 == 0:
+                logger.info(f"Streaming frame {frame_count}, size: {len(frame)} bytes")
+            
             time.sleep(0.03) # Limit to ~30fps
     except GeneratorExit:
         logger.info("Client disconnected from video stream.")
