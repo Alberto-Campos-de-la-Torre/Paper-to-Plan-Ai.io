@@ -3,7 +3,7 @@ import shutil
 import json
 import cv2
 import threading
-from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends, WebSocket, WebSocketDisconnect, Response
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
@@ -672,6 +672,41 @@ def generate_frames():
 @app.get("/api/video_feed")
 async def video_feed():
     return StreamingResponse(generate_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
+
+@app.get("/api/current_frame")
+async def get_current_frame():
+    """Returns a single frame for frontend polling."""
+    camera_manager.open_camera()
+    frame = camera_manager.get_frame()
+    if frame is None:
+        raise HTTPException(status_code=503, detail="Camera not ready")
+    
+    return Response(content=frame, media_type="image/jpeg")
+
+class TextNoteRequest(BaseModel):
+    text: str
+
+@app.post("/api/notes/text")
+async def create_text_note(request: TextNoteRequest, user_id: str = Depends(verify_user_and_pin)):
+    """Creates a new note from raw text."""
+    try:
+        # Create initial note entry
+        note_id = db.add_note(
+            image_path="", # Empty for text-only notes
+            raw_text=request.text,
+            user_id=user_id
+        )
+        
+        if note_id == -1:
+             raise HTTPException(status_code=500, detail="Failed to create note in DB")
+
+        # Trigger background processing
+        asyncio.create_task(process_text_note_background(note_id, request.text, user_id))
+        
+        return {"status": "success", "message": "Text note created and processing started", "note_id": note_id}
+    except Exception as e:
+        logger.error(f"Error creating text note: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/capture_webcam")
 async def capture_webcam(user_id: str = Depends(verify_user_and_pin)):

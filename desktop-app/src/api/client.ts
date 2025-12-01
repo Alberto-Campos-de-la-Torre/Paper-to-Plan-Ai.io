@@ -102,4 +102,8 @@ export const testConnection = async (): Promise<any> => {
     return response.data;
 };
 
+export const createTextNote = async (text: string): Promise<void> => {
+    await api.post('/notes/text', { text });
+};
+
 export default api;

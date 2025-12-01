@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera, RefreshCw, AlertCircle } from 'lucide-react';
 import { uploadImage } from '../api/client';
 
@@ -10,6 +10,7 @@ interface WebcamModalProps {
 const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete }) => {
     const [error, setError] = useState<boolean>(false);
     const [capturing, setCapturing] = useState(false);
+    const [retryCount, setRetryCount] = useState(0);
     const imgRef = useRef<HTMLImageElement>(null);
 
     const handleCapture = async () => {
@@ -64,13 +65,49 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
         }
     };
 
-    const [retryCount, setRetryCount] = useState(0);
-    const [streamUrl, setStreamUrl] = useState(`http://localhost:8001/api/video_feed?t=${Date.now()}`);
+    const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        let intervalId: any;
+
+        const fetchFrame = async () => {
+            try {
+                const response = await fetch('http://localhost:8001/api/current_frame');
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+
+                    if (isMounted) {
+                        setImageSrc(prev => {
+                            if (prev) URL.revokeObjectURL(prev);
+                            return url;
+                        });
+                        setError(false);
+                    }
+                } else {
+                    throw new Error('Frame fetch failed');
+                }
+            } catch (err) {
+                console.error("Frame polling error:", err);
+                if (isMounted) setError(true);
+            }
+        };
+
+        // Start polling
+        fetchFrame(); // Initial fetch
+        intervalId = setInterval(fetchFrame, 100); // Poll every 100ms (10 FPS)
+
+        return () => {
+            isMounted = false;
+            clearInterval(intervalId);
+            if (imageSrc) URL.revokeObjectURL(imageSrc);
+        };
+    }, [retryCount]); // Restart polling on retry
 
     const handleRetry = () => {
         setError(false);
         setRetryCount(prev => prev + 1);
-        setStreamUrl(`http://localhost:8001/api/video_feed?t=${Date.now()}&retry=${retryCount + 1}`);
     };
 
     return (
@@ -106,22 +143,16 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
                         </div>
                     ) : (
                         <>
-                            <img
-                                ref={imgRef}
-                                crossOrigin="anonymous"
-                                src={streamUrl}
-                                alt="Webcam Stream"
-                                className="w-full h-full object-contain"
-                                onError={(e) => {
-                                    console.error("Webcam stream error:", e);
-                                    setError(true);
-                                }}
-                                onLoad={() => {
-                                    console.log("Webcam stream loaded successfully");
-                                    // Only clear error if it was previously set, to avoid unnecessary re-renders
-                                    if (error) setError(false);
-                                }}
-                            />
+                            {imageSrc ? (
+                                <img
+                                    ref={imgRef}
+                                    src={imageSrc}
+                                    alt="Webcam Stream"
+                                    className="w-full h-full object-contain"
+                                />
+                            ) : (
+                                <div className="text-white">Cargando cámara...</div>
+                            )}
                             {/* Overlay Guidelines */}
                             <div className="absolute inset-0 border-2 border-white/10 pointer-events-none">
                                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 border border-white/20 rounded-lg border-dashed"></div>

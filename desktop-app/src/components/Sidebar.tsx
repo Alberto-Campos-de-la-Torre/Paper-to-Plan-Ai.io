@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, Kanban, Settings, Camera, LogOut, Upload, CheckCircle2, QrCode, Wifi, X } from 'lucide-react';
+import { LayoutDashboard, Kanban, Settings, Camera, LogOut, Upload, CheckCircle2, QrCode, Wifi, X, FileText } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 
 interface SidebarProps {
     onUpload: () => void;
     onWebcam: () => void;
+    onTextNote: () => void;
     // Filter Props
     activeFilter: string;
     onFilterChange: (filter: string) => void;
@@ -27,6 +28,7 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({
     onUpload,
     onWebcam,
+    onTextNote,
     activeFilter,
     onFilterChange,
     showCompleted,
@@ -103,6 +105,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                         >
                             <Camera className="w-5 h-5 text-text-secondary-dark" />
                             <span className="tracking-wide text-sm">USAR CÁMARA</span>
+                        </button>
+                        <button
+                            onClick={onTextNote}
+                            className="w-full bg-surface-light/50 hover:bg-surface-light text-text-secondary-dark border border-border-dark p-3 rounded flex items-center gap-3 font-medium transition-all duration-300"
+                        >
+                            <FileText className="w-5 h-5 text-text-secondary-dark" />
+                            <span className="tracking-wide text-sm">CREAR NOTA DE TEXTO</span>
                         </button>
                     </div>
 

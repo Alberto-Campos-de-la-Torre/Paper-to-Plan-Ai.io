@@ -6,7 +6,8 @@ import Kanban from './components/Kanban';
 import NoteDetail from './components/NoteDetail';
 import WebcamModal from './components/WebcamModal';
 import Login from './components/Login';
-import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection, uploadImage } from './api/client';
+import TextNoteModal from './components/TextNoteModal';
+import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection, uploadImage, createTextNote } from './api/client';
 import { X, Trash2, Settings, Save, Wifi } from 'lucide-react';
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [showCompleted, setShowCompleted] = useState(false);
   const [isWebcamOpen, setIsWebcamOpen] = useState(false);
+  const [showTextNoteModal, setShowTextNoteModal] = useState(false);
 
   // Server State
   const [serverStatus, setServerStatus] = useState(false);
@@ -89,21 +91,26 @@ function App() {
     }
   }, [currentUser, fullUsers, isAuthenticated]);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (retries = 5, delay = 1000) => {
     try {
       const userList = await getUsers();
       console.log("Users loaded from API:", userList);
       setFullUsers(userList);
       setUsers(userList.map(u => u.username));
     } catch (error) {
-      console.error("Error fetching users from API:", error);
-      alert(`Error al cargar usuarios: ${error}`);
-      // Fallback
-      const fallbackUsers = [
-        { username: 'Beto May', pin: '0295' }
-      ];
-      setFullUsers(fallbackUsers);
-      setUsers(fallbackUsers.map(u => u.username));
+      console.error(`Error fetching users from API (attempts left: ${retries}):`, error);
+      if (retries > 0) {
+        console.log(`Retrying in ${delay}ms...`);
+        setTimeout(() => fetchUsers(retries - 1, delay), delay);
+      } else {
+        alert(`Error al cargar usuarios después de varios intentos: ${error}`);
+        // Fallback
+        const fallbackUsers = [
+          { username: 'Beto May', pin: '0295' }
+        ];
+        setFullUsers(fallbackUsers);
+        setUsers(fallbackUsers.map(u => u.username));
+      }
     }
   };
 
@@ -135,6 +142,17 @@ function App() {
     // Reset input value to allow uploading the same file again
     if (event.target) {
       event.target.value = '';
+    }
+  };
+
+  const handleTextNote = async (text: string) => {
+    try {
+      await createTextNote(text);
+      alert("Nota de texto enviada para procesamiento.");
+      // Trigger refresh or wait for websocket update
+    } catch (error) {
+      console.error("Error creating text note:", error);
+      alert("Error al crear la nota de texto.");
     }
   };
 
@@ -221,6 +239,7 @@ function App() {
       <Sidebar
         onUpload={handleUpload}
         onWebcam={() => setIsWebcamOpen(true)}
+        onTextNote={() => setShowTextNoteModal(true)}
         activeFilter={activeFilter}
         onFilterChange={setActiveFilter}
         showCompleted={showCompleted}
@@ -366,6 +385,13 @@ function App() {
 
       {isWebcamOpen && (
         <WebcamModal onClose={() => setIsWebcamOpen(false)} onCaptureComplete={() => setIsWebcamOpen(false)} />
+      )}
+
+      {showTextNoteModal && (
+        <TextNoteModal
+          onClose={() => setShowTextNoteModal(false)}
+          onSubmit={handleTextNote}
+        />
       )}
 
       {/* User Management Modal */}
