@@ -6,9 +6,9 @@ import Kanban from './components/Kanban';
 import NoteDetail from './components/NoteDetail';
 import WebcamModal from './components/WebcamModal';
 import Login from './components/Login';
-import { setAuth, getUsers } from './api/client';
+import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection } from './api/client';
 import { open } from '@tauri-apps/plugin-dialog';
-import { X } from 'lucide-react';
+import { X, Trash2, Settings, Save, Wifi } from 'lucide-react';
 
 function App() {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ function App() {
 
   // Server State
   const [serverStatus, setServerStatus] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // User State
   const [users, setUsers] = useState<string[]>([]);
@@ -30,6 +31,15 @@ function App() {
   const [newUsername, setNewUsername] = useState('');
   const [newPin, setNewPin] = useState('');
 
+  // Config State
+  const [config, setConfig] = useState({
+    host: 'http://192.168.1.81:11434',
+    logic_model: 'qwen3:8b',
+    vision_model: 'qwen3-vl:8b'
+  });
+  const [configStatus, setConfigStatus] = useState('');
+  const [mobileUrl, setMobileUrl] = useState(() => localStorage.getItem('mobileUrl') || `http://${window.location.hostname}:8001`);
+
   useEffect(() => {
     // Fetch users on mount
     fetchUsers();
@@ -37,11 +47,36 @@ function App() {
 
   useEffect(() => {
     if (currentUser && isAuthenticated) {
-      // In a real app, you'd look up the PIN for the user.
-      // For now, we use a default PIN or map it.
       const user = fullUsers.find(u => u.username === currentUser);
       const pin = user ? user.pin : '0295';
       setAuth(currentUser, pin);
+
+      // Setup WebSocket for updates
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const wsUrl = `ws://localhost:8001/ws/${encodeURIComponent(currentUser)}`;
+      const ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        console.log('WebSocket Connected');
+        setServerStatus(true);
+      };
+
+      ws.onmessage = (event) => {
+        console.log('WS Message:', event.data);
+        if (event.data === 'processing_complete') {
+          // Trigger refresh
+          setRefreshTrigger(prev => prev + 1);
+        }
+      };
+
+      ws.onclose = () => {
+        console.log('WebSocket Disconnected');
+        setServerStatus(false);
+      };
+
+      return () => {
+        ws.close();
+      };
     }
   }, [currentUser, fullUsers, isAuthenticated]);
 
@@ -51,17 +86,12 @@ function App() {
       console.log("Users loaded from API:", userList);
       setFullUsers(userList);
       setUsers(userList.map(u => u.username));
-      if (userList.length > 0 && !currentUser) {
-        // Don't auto-login, let user choose
-      }
     } catch (error) {
       console.error("Error fetching users from API:", error);
-      console.log("Using fallback users from database...");
-      // Fallback: Set default users if API fails
+      // Fallback
       const fallbackUsers = [
         { username: 'Beto May', pin: '0295' },
-        { username: 'Alice Smith', pin: '1234' },
-        { username: 'John Doe', pin: '5678' }
+        { username: 'Alice Smith', pin: '1234' }
       ];
       setFullUsers(fallbackUsers);
       setUsers(fallbackUsers.map(u => u.username));
@@ -85,14 +115,8 @@ function App() {
       });
 
       if (selected) {
-        // In Tauri v2, selected is string or string[] or null
         const path = Array.isArray(selected) ? selected[0] : selected;
         if (path) {
-          // Read file contents
-          // Note: For web upload we need a File object, but here we are in Tauri.
-          // The existing uploadImage expects a File object.
-          // We might need to adjust this for Tauri or use a different method.
-          // For now, let's just log.
           console.log("Selected file:", path);
           alert("Upload functionality needs adjustment for desktop file system access.");
         }
@@ -106,18 +130,57 @@ function App() {
     e.preventDefault();
     if (!newUsername || !newPin) return;
 
-    // Mock adding user for now since API might not support it yet
-    // In a real app, await api.post('/users', { username: newUsername, pin: newPin })
-    const newUser = { username: newUsername, pin: newPin };
-    const updatedUsers = [...fullUsers, newUser];
-    setFullUsers(updatedUsers);
-    setUsers(updatedUsers.map(u => u.username));
+    try {
+      await createUser(newUsername, newPin);
+      await fetchUsers();
+      setNewUsername('');
+      setNewPin('');
+      setActiveTab('list');
+      alert(`Usuario ${newUsername} añadido correctamente`);
+    } catch (error) {
+      console.error("Error adding user:", error);
+      alert("Error al añadir usuario");
+    }
+  };
 
-    // Reset form
-    setNewUsername('');
-    setNewPin('');
-    setActiveTab('list');
-    alert(`Usuario ${newUsername} añadido correctamente (Localmente)`);
+  const handleDeleteUser = async (username: string) => {
+    if (window.confirm(`¿Estás seguro de eliminar al usuario ${username}?`)) {
+      try {
+        await deleteUser(username);
+        await fetchUsers();
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Error al eliminar usuario");
+      }
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    try {
+      setConfigStatus('Guardando...');
+      await updateConfig(config);
+      localStorage.setItem('mobileUrl', mobileUrl);
+      setConfigStatus('Configuración guardada');
+      setTimeout(() => setConfigStatus(''), 3000);
+    } catch (error) {
+      console.error("Error saving config:", error);
+      setConfigStatus('Error al guardar');
+    }
+  };
+
+  const handleTestConnection = async () => {
+    try {
+      setConfigStatus('Probando...');
+      const result = await testConnection();
+      if (result.success) {
+        setConfigStatus(`Conectado: ${result.models.length} modelos encontrados`);
+      } else {
+        setConfigStatus(`Error: ${result.errors.join(', ')}`);
+      }
+    } catch (error) {
+      console.error("Error testing connection:", error);
+      setConfigStatus('Error de conexión');
+    }
   };
 
   const handleLogout = () => {
@@ -151,6 +214,7 @@ function App() {
         onAddUser={() => alert("Función para añadir usuario próximamente")}
         onLogout={handleLogout}
         onShowUsers={() => setShowUserModal(true)}
+        mobileUrl={mobileUrl}
       />
 
       <main className="flex-1 relative overflow-hidden bg-[#0f172a] m-2 rounded-3xl border border-white/5 shadow-2xl">
@@ -160,11 +224,101 @@ function App() {
               activeFilter={activeFilter}
               showCompleted={showCompleted}
               currentUser={currentUser}
+              refreshTrigger={refreshTrigger}
             />
           } />
           <Route path="/note/:id" element={<NoteDetail />} />
           <Route path="/kanban" element={<Kanban currentUser={currentUser} showCompleted={showCompleted} />} />
-          <Route path="/settings" element={<div className="p-8">Configuración (Próximamente)</div>} />
+          <Route path="/settings" element={
+            <div className="p-8 max-w-4xl mx-auto">
+              <h2 className="text-3xl font-bold mb-8 text-white font-display">Configuración</h2>
+
+              <div className="space-y-8">
+                {/* Mobile Server Config */}
+                <div className="bg-[#1a1b26] rounded-2xl p-8 border border-white/10 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                    <Wifi className="w-6 h-6 text-green-400" />
+                    <h3 className="text-xl font-semibold text-white">Configuración de Servidor Móvil</h3>
+                  </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-400 mb-1">URL del Servidor (para QR)</label>
+                      <p className="text-xs text-gray-500 mb-2">Esta es la dirección que se codificará en el QR para que la app móvil se conecte.</p>
+                      <input
+                        type="text"
+                        value={mobileUrl}
+                        onChange={(e) => setMobileUrl(e.target.value)}
+                        className="w-full bg-black/30 border border-gray-700 rounded p-3 text-white focus:border-green-500 outline-none font-mono"
+                        placeholder="http://192.168.1.x:8001"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI Config */}
+                <div className="bg-[#1a1b26] rounded-2xl p-8 border border-white/10 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                    <Settings className="w-6 h-6 text-cyan-400" />
+                    <h3 className="text-xl font-semibold text-white">Configuración de IA (Ollama)</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Ollama Host</label>
+                        <input
+                          type="text"
+                          value={config.host}
+                          onChange={(e) => setConfig({ ...config, host: e.target.value })}
+                          className="w-full bg-black/30 border border-gray-700 rounded p-3 text-white focus:border-cyan-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Logic Model</label>
+                        <input
+                          type="text"
+                          value={config.logic_model}
+                          onChange={(e) => setConfig({ ...config, logic_model: e.target.value })}
+                          className="w-full bg-black/30 border border-gray-700 rounded p-3 text-white focus:border-cyan-500 outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-400 mb-1">Vision Model</label>
+                        <input
+                          type="text"
+                          value={config.vision_model}
+                          onChange={(e) => setConfig({ ...config, vision_model: e.target.value })}
+                          className="w-full bg-black/30 border border-gray-700 rounded p-3 text-white focus:border-cyan-500 outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col justify-end gap-4">
+                      <button
+                        onClick={handleTestConnection}
+                        className="flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 rounded transition-colors"
+                      >
+                        <Wifi className="w-5 h-5" />
+                        Probar Conexión
+                      </button>
+                      <button
+                        onClick={handleSaveConfig}
+                        className="flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-3 rounded transition-colors"
+                      >
+                        <Save className="w-5 h-5" />
+                        Guardar Configuración
+                      </button>
+                      {configStatus && (
+                        <div className={`text-center p-2 rounded ${configStatus.includes('Error') ? 'bg-red-500/20 text-red-300' : 'bg-green-500/20 text-green-300'}`}>
+                          {configStatus}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          } />
         </Routes>
       </main>
 
@@ -208,6 +362,7 @@ function App() {
                     <tr>
                       <th className="px-6 py-3">Usuario</th>
                       <th className="px-6 py-3">PIN</th>
+                      <th className="px-6 py-3 text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
@@ -220,6 +375,15 @@ function App() {
                           {user.username}
                         </td>
                         <td className="px-6 py-4 font-mono text-blue-400 tracking-widest">{user.pin}</td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => handleDeleteUser(user.username)}
+                            className="text-red-400 hover:text-red-300 p-1 hover:bg-red-500/10 rounded transition-colors"
+                            title="Eliminar usuario"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>

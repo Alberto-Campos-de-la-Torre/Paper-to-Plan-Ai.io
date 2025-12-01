@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { X, Camera, RefreshCw } from 'lucide-react';
-import { captureWebcam } from '../api/client';
+import { uploadImage } from '../api/client';
 
 interface WebcamModalProps {
     onClose: () => void;
@@ -10,17 +10,55 @@ interface WebcamModalProps {
 const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete }) => {
     const [error, setError] = useState<string | null>(null);
     const [capturing, setCapturing] = useState(false);
+    const imgRef = useRef<HTMLImageElement>(null);
 
     const handleCapture = async () => {
+        console.log("Starting capture process...");
         try {
             setCapturing(true);
             setError(null);
-            await captureWebcam();
+
+            // Capture from the image element (which is streaming from backend)
+            if (!imgRef.current) {
+                console.error("imgRef.current is null");
+                throw new Error("No video stream available");
+            }
+
+            // Create a canvas to draw the image
+            const canvas = document.createElement('canvas');
+            canvas.width = imgRef.current.naturalWidth;
+            canvas.height = imgRef.current.naturalHeight;
+
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error("Could not get canvas context");
+
+            // Draw the current frame
+            try {
+                ctx.drawImage(imgRef.current, 0, 0);
+            } catch (drawError) {
+                console.error("Error drawing image to canvas (likely CORS):", drawError);
+                throw new Error("Security error: Cannot capture from video stream due to CORS. Ensure backend allows CORS.");
+            }
+
+            // Convert to blob
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+            if (!blob) {
+                throw new Error("Could not create image blob");
+            }
+
+            // Create file from blob
+            const file = new File([blob], "webcam_capture.jpg", { type: "image/jpeg" });
+
+            // Upload using existing uploadImage function
+            console.log("Uploading image...");
+            await uploadImage(file);
+            console.log("Upload successful");
+
             onCaptureComplete();
             onClose();
         } catch (err: any) {
             console.error("Capture failed:", err);
-            setError(err.response?.data?.detail || "Error al capturar imagen. Asegúrate de que la cámara no esté en uso.");
+            setError(err.message || err.response?.data?.detail || "Error al capturar imagen. Inténtalo de nuevo.");
         } finally {
             setCapturing(false);
         }
@@ -38,6 +76,8 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
 
                 <div className="relative bg-black aspect-video flex items-center justify-center overflow-hidden">
                     <img
+                        ref={imgRef}
+                        crossOrigin="anonymous"
                         src="http://localhost:8001/api/video_feed"
                         alt="Webcam Preview"
                         className="w-full h-full object-cover"

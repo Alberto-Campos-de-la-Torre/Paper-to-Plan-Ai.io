@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: theme('fontFamily.body');
+  @apply font-body;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -19,12 +19,11 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: theme('colors.surface-dark');
-  border-radius: 3px;
+  @apply bg-surface-dark rounded-[3px];
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: theme('colors.text-secondary-dark');
+  @apply bg-text-secondary-dark;
 }
 
 /* Animations */

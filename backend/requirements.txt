@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+opencv-python
+pillow
+numpy
+requests
+ollama
+easyocr
+python-multipart
+websockets

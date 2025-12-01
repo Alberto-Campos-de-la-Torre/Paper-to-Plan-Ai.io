@@ -98,6 +98,23 @@ class DBManager:
             logger.error(f"Error creating user: {e}")
             return False
 
+    def delete_user(self, username: str) -> bool:
+        """Deletes a user by username."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+                conn.commit()
+                if cursor.rowcount > 0:
+                    logger.info(f"User deleted: {username}")
+                    return True
+                else:
+                    logger.warning(f"User not found for deletion: {username}")
+                    return False
+        except sqlite3.Error as e:
+            logger.error(f"Error deleting user: {e}")
+            return False
+
     def verify_user(self, username: str, pin: str) -> bool:
         """Verifies if the username and PIN match."""
         try:

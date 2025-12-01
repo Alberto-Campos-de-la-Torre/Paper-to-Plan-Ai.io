@@ -44,8 +44,8 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
                         <div>
                             <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2" htmlFor="user">Usuario</label>
                             <div className="relative">
-                                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">person</span>
-                                <select
+                                <input
+                                    type="text"
                                     id="user"
                                     name="user"
                                     value={selectedUser}
@@ -53,21 +53,14 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
                                         setSelectedUser(e.target.value);
                                         setError('');
                                     }}
-                                    className="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
-                                >
-                                    <option>Selecciona un usuario</option>
-                                    {users.map((user) => (
-                                        <option key={user.username} value={user.username}>
-                                            {user.username}
-                                        </option>
-                                    ))}
-                                </select>
+                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
+                                    placeholder="Ingresa tu usuario"
+                                />
                             </div>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2" htmlFor="pin">PIN</label>
                             <div className="relative">
-                                <span className="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">lock</span>
                                 <input
                                     type="password"
                                     id="pin"
@@ -77,14 +70,13 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
                                         setPin(e.target.value)
                                         setError('');
                                     }}
-                                    className="w-full pl-10 pr-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
+                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
                                     placeholder="Ingresa tu PIN"
                                 />
                             </div>
                         </div>
                         {error && (
                             <div className="bg-red-900/20 border border-red-800/50 rounded px-4 py-3 text-red-400 text-sm flex items-center gap-2">
-                                <span className="material-icons text-base">error_outline</span>
                                 {error}
                             </div>
                         )}

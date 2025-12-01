@@ -21,6 +21,7 @@ interface SidebarProps {
     onAddUser: () => void;
     onLogout: () => void;
     onShowUsers: () => void;
+    mobileUrl?: string;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -34,7 +35,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onToggleServer,
     currentUser,
     onLogout,
-    onShowUsers
+    onShowUsers,
+    mobileUrl = `http://${window.location.hostname}:8001`
 }) => {
     const navigate = useNavigate();
     const location = useLocation();
@@ -191,7 +193,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-gray-400 text-sm mb-6">Escanea este código con tu dispositivo</p>
 
                         <div className="bg-white p-4 rounded-xl inline-block mb-6">
-                            <QRCodeSVG value={`http://${window.location.hostname}:8001`} size={200} />
+                            <QRCodeSVG value={mobileUrl} size={200} />
                         </div>
 
                         <div className="flex items-center justify-center gap-2 text-xs text-gray-500 font-mono bg-white/5 p-3 rounded-lg">
