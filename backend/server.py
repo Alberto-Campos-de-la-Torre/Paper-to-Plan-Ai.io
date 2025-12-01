@@ -570,12 +570,16 @@ class CameraManager:
         with self.lock:
             if self.camera is None or not self.camera.isOpened():
                 logger.info("Opening camera...")
-                # Try index 0, then 1 with V4L2 backend explicitly
+                # Try index 0 with V4L2
                 self.camera = cv2.VideoCapture(0, cv2.CAP_V4L2)
                 if not self.camera.isOpened():
-                     logger.warning("Camera 0 failed, trying Camera 1")
+                     logger.warning("Camera 0 (V4L2) failed, trying Camera 1 (V4L2)")
                      self.camera = cv2.VideoCapture(1, cv2.CAP_V4L2)
                 
+                if not self.camera.isOpened():
+                     logger.warning("V4L2 failed, trying default backend (CAP_ANY) on index 0")
+                     self.camera = cv2.VideoCapture(0, cv2.CAP_ANY)
+
                 if not self.camera.isOpened():
                     logger.error("Could not open any camera.")
                     self.camera = None
@@ -592,7 +596,7 @@ class CameraManager:
 
             success, frame = self.camera.read()
             if not success:
-                logger.warning("Failed to read frame")
+                logger.warning("Failed to read frame from camera")
                 return None
             
             # Cache the frame for capture_image
@@ -610,9 +614,9 @@ class CameraManager:
             
             # If no stream is active, we try to open just for one shot
             logger.info("No active stream, opening camera for single capture")
-            cap = cv2.VideoCapture(0, cv2.CAP_V4L2)
+            cap = cv2.VideoCapture(0, cv2.CAP_ANY)
             if not cap.isOpened():
-                cap = cv2.VideoCapture(1, cv2.CAP_V4L2)
+                cap = cv2.VideoCapture(1, cv2.CAP_ANY)
             
             if not cap.isOpened():
                  raise Exception("Could not open camera device")

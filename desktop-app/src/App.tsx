@@ -97,9 +97,12 @@ function App() {
       setUsers(userList.map(u => u.username));
     } catch (error) {
       console.error("Error fetching users from API:", error);
-      // Don't use fallback, so we can see if it's actually failing
-      setFullUsers([]);
-      setUsers([]);
+      // Fallback
+      const fallbackUsers = [
+        { username: 'Beto May', pin: '0295' }
+      ];
+      setFullUsers(fallbackUsers);
+      setUsers(fallbackUsers.map(u => u.username));
     }
   };
 

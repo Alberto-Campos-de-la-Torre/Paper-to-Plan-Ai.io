@@ -75,6 +75,13 @@ class DBManager:
                     cursor.execute("ALTER TABLE notes ADD COLUMN completed INTEGER DEFAULT 0")
                     conn.commit()
 
+                # Seed default user if not exists
+                cursor.execute("SELECT count(*) FROM users")
+                if cursor.fetchone()[0] == 0:
+                    logger.info("Seeding default user: Beto May")
+                    cursor.execute("INSERT INTO users (username, pin, created_at) VALUES (?, ?, ?)", ('Beto May', '0295', datetime.now()))
+                    conn.commit()
+
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")

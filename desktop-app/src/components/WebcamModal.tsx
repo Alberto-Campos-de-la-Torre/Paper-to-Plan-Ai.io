@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { X, Camera, RefreshCw } from 'lucide-react';
+import { X, Camera, RefreshCw, AlertCircle } from 'lucide-react';
 import { uploadImage } from '../api/client';
 
 interface WebcamModalProps {
@@ -8,7 +8,7 @@ interface WebcamModalProps {
 }
 
 const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete }) => {
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<boolean>(false);
     const [capturing, setCapturing] = useState(false);
     const imgRef = useRef<HTMLImageElement>(null);
 
@@ -16,7 +16,7 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
         console.log("Starting capture process...");
         try {
             setCapturing(true);
-            setError(null);
+            setError(false);
 
             // Capture from the image element (which is streaming from backend)
             if (!imgRef.current) {
@@ -58,43 +58,75 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
             onClose();
         } catch (err: any) {
             console.error("Capture failed:", err);
-            setError(err.message || err.response?.data?.detail || "Error al capturar imagen. Inténtalo de nuevo.");
+            setError(true); // Changed to boolean
         } finally {
             setCapturing(false);
         }
     };
 
+    const [retryCount, setRetryCount] = useState(0);
+
+    const handleRetry = () => {
+        setError(false);
+        setRetryCount(prev => prev + 1);
+    };
+
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fade-in">
-            <div className="bg-surface-dark rounded-2xl overflow-hidden max-w-md w-full border border-border-dark shadow-2xl">
-                <div className="p-4 flex justify-between items-center border-b border-border-dark">
-                    <h3 className="text-lg font-semibold text-text-light font-display">Capturar desde Backend</h3>
-                    <button onClick={onClose} className="text-text-secondary-dark hover:text-text-light transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+            <div className="relative w-full max-w-4xl mx-4 bg-surface-light dark:bg-surface-dark rounded-2xl overflow-hidden shadow-2xl border border-border-light dark:border-border-dark" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex justify-between items-center p-4 border-b border-border-light dark:border-border-dark bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md">
+                    <h3 className="text-xl font-bold text-text-light dark:text-text-dark font-display flex items-center gap-2">
+                        <Camera className="w-5 h-5 text-primary" />
+                        Captura de Cámara
+                    </h3>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-text-light dark:text-text-dark">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <div className="relative bg-black aspect-video flex items-center justify-center overflow-hidden">
-                    <img
-                        ref={imgRef}
-                        crossOrigin="anonymous"
-                        src={`http://localhost:8001/api/video_feed?t=${Date.now()}`}
-                        alt="Webcam Preview"
-                        className="w-full h-full object-cover"
-                        onLoad={() => setError(null)}
-                        onError={(e) => {
-                            console.error("Image load error", e);
-                            // Don't hide the image immediately, it might just be a frame drop
-                            // e.currentTarget.style.display = 'none'; 
-                            setError("Esperando señal de video...");
-                        }}
-                    />
-                    {error && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-red-500 p-4 text-center backdrop-blur-sm">
-                            <p>{error}</p>
+                {/* Camera View */}
+                <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden group">
+                    {error ? (
+                        <div className="text-center p-8">
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-500/20 flex items-center justify-center">
+                                <AlertCircle className="w-8 h-8 text-red-500" />
+                            </div>
+                            <p className="text-white text-lg font-medium mb-2">No se pudo conectar a la cámara</p>
+                            <p className="text-gray-400 text-sm mb-6">Asegúrate de que el servidor backend esté corriendo y la cámara no esté en uso.</p>
+                            <button
+                                onClick={handleRetry}
+                                className="px-6 py-2 bg-primary hover:bg-primary-dark text-white rounded-full transition-colors flex items-center gap-2 mx-auto"
+                            >
+                                <RefreshCw className="w-4 h-4" />
+                                Reintentar Conexión
+                            </button>
                         </div>
+                    ) : (
+                        <>
+                            <img
+                                ref={imgRef}
+                                crossOrigin="anonymous"
+                                src={`http://localhost:8001/api/video_feed?t=${Date.now()}&retry=${retryCount}`}
+                                alt="Webcam Stream"
+                                className="w-full h-full object-contain"
+                                onError={(e) => {
+                                    console.error("Webcam stream error:", e);
+                                    setError(true);
+                                }}
+                                onLoad={() => {
+                                    console.log("Webcam stream loaded successfully");
+                                    setError(false);
+                                }}
+                            />
+                            {/* Overlay Guidelines */}
+                            <div className="absolute inset-0 border-2 border-white/10 pointer-events-none">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3/4 h-3/4 border border-white/20 rounded-lg border-dashed"></div>
+                            </div>
+                        </>
                     )}
                 </div>
+                {/* The old error display div was removed as it's now handled by the conditional rendering above */}
 
                 <div className="p-6 flex flex-col items-center justify-center gap-4 bg-surface-dark">
                     {error && (
