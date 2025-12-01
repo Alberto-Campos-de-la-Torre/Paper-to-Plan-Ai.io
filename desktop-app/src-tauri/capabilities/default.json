@@ -10,6 +10,8 @@
     "shell:allow-open",
     "shell:default",
     "dialog:default",
-    "fs:default"
+    "fs:default",
+    "fs:allow-write-text-file",
+    "fs:allow-create"
   ]
 }

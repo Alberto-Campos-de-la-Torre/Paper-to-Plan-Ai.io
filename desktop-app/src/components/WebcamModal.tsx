@@ -65,10 +65,12 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
     };
 
     const [retryCount, setRetryCount] = useState(0);
+    const [streamUrl, setStreamUrl] = useState(`http://localhost:8001/api/video_feed?t=${Date.now()}`);
 
     const handleRetry = () => {
         setError(false);
         setRetryCount(prev => prev + 1);
+        setStreamUrl(`http://localhost:8001/api/video_feed?t=${Date.now()}&retry=${retryCount + 1}`);
     };
 
     return (
@@ -107,7 +109,7 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
                             <img
                                 ref={imgRef}
                                 crossOrigin="anonymous"
-                                src={`http://localhost:8001/api/video_feed?t=${Date.now()}&retry=${retryCount}`}
+                                src={streamUrl}
                                 alt="Webcam Stream"
                                 className="w-full h-full object-contain"
                                 onError={(e) => {
@@ -116,7 +118,8 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
                                 }}
                                 onLoad={() => {
                                     console.log("Webcam stream loaded successfully");
-                                    setError(false);
+                                    // Only clear error if it was previously set, to avoid unnecessary re-renders
+                                    if (error) setError(false);
                                 }}
                             />
                             {/* Overlay Guidelines */}
