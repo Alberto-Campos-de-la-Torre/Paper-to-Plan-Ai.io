@@ -39,6 +39,17 @@ function App() {
   });
   const [configStatus, setConfigStatus] = useState('');
   const [mobileUrl, setMobileUrl] = useState(() => localStorage.getItem('mobileUrl') || `http://${window.location.hostname}:8001`);
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'default');
+
+  useEffect(() => {
+    // Apply theme to body
+    if (theme === 'cyberpunk') {
+      document.body.classList.add('theme-cyberpunk');
+    } else {
+      document.body.classList.remove('theme-cyberpunk');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     // Fetch users on mount
@@ -234,6 +245,29 @@ function App() {
               <h2 className="text-3xl font-bold mb-8 text-white font-display">Configuración</h2>
 
               <div className="space-y-8">
+                {/* Theme Settings */}
+                <div className="bg-[#1a1b26] rounded-2xl p-8 border border-white/10 shadow-lg">
+                  <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">
+                    <Settings className="w-6 h-6 text-purple-400" /> {/* Changed icon color for theme */}
+                    <h3 className="text-xl font-semibold text-white">Apariencia</h3>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block font-medium text-gray-400">Modo Cyberpunk</label>
+                      <p className="text-sm text-gray-500">Activa una interfaz futurista de alto contraste.</p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        className="sr-only peer"
+                        checked={theme === 'cyberpunk'}
+                        onChange={(e) => setTheme(e.target.checked ? 'cyberpunk' : 'default')}
+                      />
+                      <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-500/30 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+                </div>
+
                 {/* Mobile Server Config */}
                 <div className="bg-[#1a1b26] rounded-2xl p-8 border border-white/10 shadow-lg">
                   <div className="flex items-center gap-3 mb-6 border-b border-white/10 pb-4">

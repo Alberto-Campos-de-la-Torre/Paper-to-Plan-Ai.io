@@ -65,11 +65,11 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
     };
 
     return (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-            <div className="bg-gray-900 rounded-2xl overflow-hidden max-w-md w-full border border-gray-800 shadow-2xl">
-                <div className="p-4 flex justify-between items-center border-b border-gray-800">
-                    <h3 className="text-lg font-semibold text-white">Capturar desde Backend</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4 backdrop-blur-sm animate-fade-in">
+            <div className="bg-surface-dark rounded-2xl overflow-hidden max-w-md w-full border border-border-dark shadow-2xl">
+                <div className="p-4 flex justify-between items-center border-b border-border-dark">
+                    <h3 className="text-lg font-semibold text-text-light font-display">Capturar desde Backend</h3>
+                    <button onClick={onClose} className="text-text-secondary-dark hover:text-text-light transition-colors">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
@@ -86,18 +86,23 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
                             setError("No se pudo cargar la vista previa. Verifica que la cámara no esté en uso.");
                         }}
                     />
+                    {error && !imgRef.current?.complete && (
+                        <div className="absolute inset-0 flex items-center justify-center text-red-500 p-4 text-center">
+                            {error}
+                        </div>
+                    )}
                 </div>
 
-                <div className="p-6 flex flex-col items-center justify-center gap-4 bg-gray-900">
+                <div className="p-6 flex flex-col items-center justify-center gap-4 bg-surface-dark">
                     {error && (
-                        <div className="text-red-400 text-sm text-center bg-red-900/20 p-3 rounded-lg w-full">
+                        <div className="text-red-400 text-sm text-center bg-red-900/20 p-3 rounded-lg w-full border border-red-900/50">
                             {error}
                         </div>
                     )}
                     <button
                         onClick={handleCapture}
                         disabled={capturing}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 text-white px-8 py-3 rounded-full flex items-center gap-2 font-medium transition-all transform hover:scale-105 w-full justify-center"
+                        className="bg-primary hover:bg-primary/80 disabled:bg-gray-700 text-surface-dark px-8 py-3 rounded-full flex items-center gap-2 font-bold transition-all transform hover:scale-105 w-full justify-center font-display"
                     >
                         {capturing ? (
                             <>

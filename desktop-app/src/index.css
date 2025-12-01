@@ -2,8 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Default Theme (Blue/Tech) */
+    --color-primary: #33bbcf;
+    --color-bg-light: #e0e7ff;
+    --color-bg-dark: #0c0a1a;
+    --color-surface-light: #ffffff;
+    --color-surface-dark: #1a1b26;
+    --color-border-light: #d1d5db;
+    --color-border-dark: #4b5563;
+    --color-text-light: #1f2937;
+    --color-text-dark: #e5e7eb;
+    --color-text-secondary-light: #6b7280;
+    --color-text-secondary-dark: #9ca3ad;
+  }
+
+  .theme-cyberpunk {
+    /* Cyberpunk Theme (Neon/Dark) */
+    --color-primary: #f000ff;
+    /* Neon Pink */
+    --color-bg-light: #050505;
+    /* Almost Black */
+    --color-bg-dark: #000000;
+    /* Pure Black */
+    --color-surface-light: #12051c;
+    /* Very Dark Purple */
+    --color-surface-dark: #0a0a0a;
+    --color-border-light: #f000ff;
+    /* Pink Border */
+    --color-border-dark: #00f3ff;
+    /* Cyan Border */
+    --color-text-light: #00f3ff;
+    /* Cyan Text */
+    --color-text-dark: #00f3ff;
+    /* Cyan Text */
+    --color-text-secondary-light: #ff00ff;
+    /* Pink Secondary Text */
+    --color-text-secondary-dark: #ff00ff;
+    /* Pink Secondary Text */
+  }
+}
+
 body {
-  @apply font-body;
+  @apply font-body bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -20,6 +62,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   @apply bg-surface-dark rounded-[3px];
+  background-color: var(--color-border-dark);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -46,4 +89,9 @@ body {
 /* Clip-path for angular buttons */
 .clip-path-custom {
   clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+}
+
+/* Cyberpunk Glitch Effect (Optional) */
+.theme-cyberpunk .glitch-text {
+  text-shadow: 2px 0 #f000ff, -2px 0 #00f3ff;
 }

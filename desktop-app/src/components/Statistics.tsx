@@ -40,8 +40,8 @@ const Statistics: React.FC = () => {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <h3 className="text-gray-900 dark:text-white text-lg font-bold mb-4">Progreso General</h3>
+            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm transition-colors duration-300">
+                <h3 className="text-text-light dark:text-text-dark text-lg font-bold mb-4 font-display">Progreso General</h3>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -61,12 +61,12 @@ const Statistics: React.FC = () => {
                             </Pie>
                             <Tooltip
                                 contentStyle={{
-                                    backgroundColor: 'var(--bg-surface-dark, #1f2937)',
-                                    borderColor: 'var(--border-dark, #374151)',
-                                    color: '#fff',
+                                    backgroundColor: 'var(--color-surface-dark)',
+                                    borderColor: 'var(--color-border-dark)',
+                                    color: 'var(--color-text-light)',
                                     borderRadius: '0.5rem'
                                 }}
-                                itemStyle={{ color: '#fff' }}
+                                itemStyle={{ color: 'var(--color-text-light)' }}
                             />
                             <Legend wrapperStyle={{ paddingTop: '20px' }} />
                         </PieChart>
@@ -74,20 +74,20 @@ const Statistics: React.FC = () => {
                 </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm">
-                <h3 className="text-gray-900 dark:text-white text-lg font-bold mb-4">Comparación de Viabilidad</h3>
+            <div className="bg-surface-light dark:bg-surface-dark p-6 rounded-xl border border-border-light dark:border-border-dark shadow-sm transition-colors duration-300">
+                <h3 className="text-text-light dark:text-text-dark text-lg font-bold mb-4 font-display">Comparación de Viabilidad</h3>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={stats.feasibility_scores}>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" className="dark:stroke-gray-700" />
-                            <XAxis dataKey="name" stroke="#6b7280" className="dark:stroke-gray-400" tick={{ fill: 'currentColor' }} />
-                            <YAxis stroke="#6b7280" className="dark:stroke-gray-400" tick={{ fill: 'currentColor' }} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border-light)" className="opacity-30" />
+                            <XAxis dataKey="name" stroke="var(--color-text-secondary-light)" tick={{ fill: 'currentColor' }} />
+                            <YAxis stroke="var(--color-text-secondary-light)" tick={{ fill: 'currentColor' }} />
                             <Tooltip
                                 cursor={{ fill: 'rgba(0,0,0,0.1)' }}
                                 contentStyle={{
-                                    backgroundColor: '#1f2937',
-                                    borderColor: '#374151',
-                                    color: '#fff',
+                                    backgroundColor: 'var(--color-surface-dark)',
+                                    borderColor: 'var(--color-border-dark)',
+                                    color: 'var(--color-text-light)',
                                     borderRadius: '0.5rem'
                                 }}
                             />

@@ -76,68 +76,73 @@ const NoteDetail: React.FC = () => {
                     <ArrowLeft className="w-4 h-4" />
                     Volver al Dashboard
                 </button>
-                <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
+                <div className={`flex items-center gap-2 text-sm ${note.status === 'completed' ? 'text-green-600 dark:text-green-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
                     <CheckCircle className="w-4 h-4" />
-                    <span>Análisis Completado</span>
+                    <span>{note.status === 'completed' ? 'Proyecto Completado' : 'Análisis Completado'}</span>
                 </div>
             </header>
             <main className="space-y-6">
-                <section className="border border-gray-300 dark:border-gray-700 p-6">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-3">
+                <section className="border border-border-light dark:border-border-dark p-6 bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-3 font-display">
                         {note.title}
                     </h1>
-                    <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <div className="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark font-mono">
                         <Clock className="w-4 h-4" />
                         <span>Viabilidad: {note.feasibility_score}/100</span>
-                        <span className="inline-block w-1.5 h-1.5 bg-gray-400 dark:bg-gray-600 rounded-full mx-1"></span>
+                        <span className="inline-block w-1.5 h-1.5 bg-text-secondary-light dark:bg-text-secondary-dark rounded-full mx-1"></span>
                         <span>{note.implementation_time}</span>
                     </div>
                 </section>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-6">
-                        <section className="border border-gray-300 dark:border-gray-700">
-                            <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
-                                <FileText className="w-5 h-5" />
+                        <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                                <FileText className="w-5 h-5 text-primary" />
                                 Resumen Ejecutivo
                             </h2>
-                            <p className="p-4 leading-relaxed">
+                            <p className="p-4 leading-relaxed text-text-light dark:text-text-dark font-body">
                                 {note.summary}
                             </p>
                         </section>
-                        <section className="border border-gray-300 dark:border-gray-700">
-                            <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
-                                <Code className="w-5 h-5" />
+                        <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                                <Code className="w-5 h-5 text-primary" />
                                 Stack Recomendado
                             </h2>
-                            <p className="p-4 leading-relaxed">
-                                {note.recommended_stack?.join(', ')}
-                            </p>
+                            <div className="p-4 flex flex-wrap gap-2">
+                                {note.recommended_stack?.map((tech, index) => (
+                                    <span key={index} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
+                                        {tech}
+                                    </span>
+                                ))}
+                            </div>
                         </section>
                     </div>
-                    <section className="border border-gray-300 dark:border-gray-700">
-                        <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
-                            <Settings className="w-5 h-5" />
+                    <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                        <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                            <Settings className="w-5 h-5 text-primary" />
                             Consideraciones Técnicas
                         </h2>
-                        <ul className="p-4 sm:p-6 space-y-3 list-disc list-inside">
-                            {note.technical_considerations?.map((item, index) => item.trim() && <li key={index}>{item.trim()}</li>)}
+                        <ul className="p-4 sm:p-6 space-y-3 list-disc list-inside text-text-light dark:text-text-dark font-body">
+                            {note.technical_considerations?.map((item, index) => item.trim() && <li key={index} className="pl-2">{item.trim()}</li>)}
                         </ul>
                     </section>
                 </div>
-                <section className="border border-gray-300 dark:border-gray-700">
-                    <h2 className="flex items-center gap-3 font-bold text-lg bg-gray-200 dark:bg-gray-800 text-gray-900 dark:text-white p-4 border-b border-gray-300 dark:border-gray-700">
-                        <Edit3 className="w-5 h-5" />
+                <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                    <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                        <Edit3 className="w-5 h-5 text-primary" />
                         Texto Extraído (Editable):
                     </h2>
                     <div className="p-4">
                         <textarea
-                            className="w-full bg-transparent border border-gray-700 rounded p-2 text-sm leading-relaxed text-gray-700 dark:text-gray-400 focus:border-primary outline-none"
+                            className="w-full bg-transparent border border-border-light dark:border-border-dark rounded p-2 text-sm leading-relaxed text-text-light dark:text-text-dark focus:border-primary outline-none font-mono"
                             value={editableText}
                             onChange={(e) => setEditableText(e.target.value)}
                             rows={6}
                         />
                     </div>
                 </section>
+
                 <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700">
                     <div className="flex flex-wrap items-center gap-2">
                         <button onClick={handleDelete} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-red-900/20 hover:text-red-400 hover:border-red-900/50 transition-colors">
@@ -146,15 +151,19 @@ const NoteDetail: React.FC = () => {
                         </button>
                         <button
                             onClick={handleRegenerate}
-                            disabled={regenerating}
-                            className={`flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-cyan-900/20 hover:text-cyan-400 hover:border-cyan-900/50 transition-colors ${regenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={regenerating || note.status === 'completed'}
+                            className={`flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-cyan-900/20 hover:text-cyan-400 hover:border-cyan-900/50 transition-colors ${regenerating || note.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
                             {regenerating ? 'Regenerando...' : 'Regenerar Plan'}
                         </button>
-                        <button onClick={handleMarkCompleted} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-green-900/20 hover:text-green-400 hover:border-green-900/50 transition-colors">
+                        <button
+                            onClick={handleMarkCompleted}
+                            disabled={note.status === 'completed'}
+                            className={`flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-green-900/20 hover:text-green-400 hover:border-green-900/50 transition-colors ${note.status === 'completed' ? 'opacity-50 cursor-not-allowed bg-green-900/10 text-green-500 border-green-900/30' : ''}`}
+                        >
                             <CheckSquare className="w-4 h-4" />
-                            Marcar Completado
+                            {note.status === 'completed' ? 'Completado' : 'Marcar Completado'}
                         </button>
                     </div>
                     <button className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto">

@@ -74,11 +74,11 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
     });
 
     return (
-        <main className="flex-1 flex flex-col p-8 overflow-y-auto bg-background-light dark:bg-background-dark text-gray-800 dark:text-gray-200 font-mono">
+        <main className="flex-1 flex flex-col p-8 overflow-y-auto bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-mono transition-colors duration-300">
             <header className="flex justify-between items-center mb-8">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Dashboard</h2>
-                    <p className="text-gray-600 dark:text-gray-400">Bienvenido de nuevo, {currentUser}.</p>
+                    <h2 className="text-3xl font-bold text-text-light dark:text-text-dark font-display">Dashboard</h2>
+                    <p className="text-text-secondary-light dark:text-text-secondary-dark">Bienvenido de nuevo, {currentUser}.</p>
                 </div>
                 <div className="flex items-center gap-4">
                     {isProcessing && (
@@ -99,28 +99,28 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
                     placeholder="Buscar proyectos..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 rounded border border-gray-300 dark:border-gray-700 bg-background-light dark:bg-gray-900 focus:ring-2 focus:ring-primary focus:border-primary placeholder-gray-500 dark:placeholder-gray-400"
+                    className="w-full px-4 py-3 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-2 focus:ring-primary focus:border-primary placeholder-text-secondary-light dark:placeholder-text-secondary-dark text-text-light dark:text-text-dark outline-none transition-colors duration-300"
                 />
             </div>
 
             <div className="space-y-6">
                 {loading ? (
-                    <div className="text-center py-20 text-gray-500">Cargando proyectos...</div>
+                    <div className="text-center py-20 text-text-secondary-light">Cargando proyectos...</div>
                 ) : filteredNotes.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">No se encontraron proyectos</div>
+                    <div className="text-center py-20 text-text-secondary-light">No se encontraron proyectos</div>
                 ) : (
                     filteredNotes.map((note) => (
                         <div
                             key={note.id}
                             onClick={() => navigate(`/note/${note.id}`)}
-                            className={`bg-gray-100 dark:bg-gray-900/50 p-6 rounded border transition-all duration-300 group cursor-pointer ${note.status === 'processing' || note.status === 'pending'
+                            className={`bg-surface-light dark:bg-surface-dark p-6 rounded border transition-all duration-300 group cursor-pointer ${note.status === 'processing' || note.status === 'pending'
                                 ? 'border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
-                                : 'border-gray-300 dark:border-gray-700 hover:border-primary dark:hover:border-primary'
+                                : 'border-border-light dark:border-border-dark hover:border-primary dark:hover:border-primary'
                                 }`}
                         >
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                                    <h3 className="text-xl font-bold text-text-light dark:text-text-dark flex items-center gap-3 font-display">
                                         {note.title || 'Sin Título'}
                                         {(note.status === 'processing' || note.status === 'pending') && (
                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
@@ -129,7 +129,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
                                             </span>
                                         )}
                                     </h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
                                         {(note.status === 'processing' || note.status === 'pending')
                                             ? 'La IA está analizando tu nota y generando el plan de implementación...'
                                             : 'Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.'}
@@ -137,14 +137,14 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
                                 </div>
                                 <div className="flex items-center gap-4 ml-4">
                                     <div className="text-right">
-                                        <span className="text-lg font-bold text-gray-900 dark:text-white">{note.feasibility_score}%</span>
+                                        <span className="text-lg font-bold text-text-light dark:text-text-dark">{note.feasibility_score}%</span>
                                         <div className="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
                                             <div className="h-1 bg-primary rounded-full" style={{ width: `${note.feasibility_score}%` }}></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-4 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+                            <div className="mt-4 flex items-center gap-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">
                                 <div className="flex items-center gap-2">
                                     <span>{note.implementation_time?.toUpperCase() || 'N/A'}</span>
                                 </div>

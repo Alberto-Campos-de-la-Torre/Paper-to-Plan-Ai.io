@@ -33,13 +33,13 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen p-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark">
+        <div className="flex items-center justify-center min-h-screen p-4 bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300">
             <div className="w-full max-w-md">
                 <div className="text-center mb-8">
                     <h1 className="font-display text-4xl md:text-5xl font-bold text-text-light dark:text-text-dark">PaperToPlan</h1>
                     <p className="text-text-secondary-light dark:text-text-secondary-dark mt-2 text-lg">Inicia sesión para continuar</p>
                 </div>
-                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark p-8 md:p-10 rounded-lg shadow-2xl shadow-primary/10">
+                <div className="bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark p-8 md:p-10 rounded-lg shadow-2xl shadow-primary/10 transition-colors duration-300">
                     <form onSubmit={handleLogin} className="space-y-8">
                         <div>
                             <label className="block text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark mb-2" htmlFor="user">Usuario</label>
@@ -53,7 +53,7 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
                                         setSelectedUser(e.target.value);
                                         setError('');
                                     }}
-                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
+                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark outline-none transition-colors duration-300"
                                     placeholder="Ingresa tu usuario"
                                 />
                             </div>
@@ -70,20 +70,20 @@ const Login: React.FC<LoginProps> = ({ users, onLoginSuccess }) => {
                                         setPin(e.target.value)
                                         setError('');
                                     }}
-                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark"
+                                    className="w-full px-4 py-3 bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark outline-none transition-colors duration-300"
                                     placeholder="Ingresa tu PIN"
                                 />
                             </div>
                         </div>
                         {error && (
-                            <div className="bg-red-900/20 border border-red-800/50 rounded px-4 py-3 text-red-400 text-sm flex items-center gap-2">
+                            <div className="bg-red-500/10 border border-red-500/50 rounded px-4 py-3 text-red-500 text-sm flex items-center gap-2">
                                 {error}
                             </div>
                         )}
                         <div>
                             <button
                                 type="submit"
-                                className="w-full bg-primary text-background-dark font-bold py-3 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-dark focus:ring-primary transition-opacity duration-200 clip-path-custom"
+                                className="w-full bg-primary text-surface-dark font-bold py-3 px-4 rounded-md hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-surface-dark focus:ring-primary transition-all duration-200 clip-path-custom font-display"
                             >
                                 Iniciar Sesión
                             </button>

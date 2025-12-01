@@ -146,7 +146,7 @@ class DBManager:
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE notes SET completed = 1 WHERE id = ?", (note_id,))
+                cursor.execute("UPDATE notes SET completed = 1, status = 'completed' WHERE id = ?", (note_id,))
                 conn.commit()
                 logger.info(f"Note {note_id} marked as completed")
                 return True
