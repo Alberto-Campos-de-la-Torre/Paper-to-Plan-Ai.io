@@ -19,28 +19,29 @@
   }
 
   .theme-cyberpunk {
-    /* Cyberpunk Theme (Neon/Dark) */
-    --color-primary: #f000ff;
+    /* Cyberpunk/Synthwave Theme */
+    --color-primary: #ff2a6d;
     /* Neon Pink */
-    --color-bg-light: #050505;
-    /* Almost Black */
-    --color-bg-dark: #000000;
-    /* Pure Black */
-    --color-surface-light: #12051c;
-    /* Very Dark Purple */
-    --color-surface-dark: #0a0a0a;
-    --color-border-light: #f000ff;
+    --color-bg-light: #050510;
+    /* Deep Dark Blue/Black */
+    --color-bg-dark: #02020a;
+    /* Almost Pure Black */
+    --color-surface-light: #120524;
+    /* Dark Purple Surface */
+    --color-surface-dark: #0b0c26;
+    /* Deep Blue Surface */
+    --color-border-light: #ff2a6d;
     /* Pink Border */
-    --color-border-dark: #00f3ff;
+    --color-border-dark: #05d9e8;
     /* Cyan Border */
-    --color-text-light: #00f3ff;
-    /* Cyan Text */
-    --color-text-dark: #00f3ff;
-    /* Cyan Text */
-    --color-text-secondary-light: #ff00ff;
-    /* Pink Secondary Text */
-    --color-text-secondary-dark: #ff00ff;
-    /* Pink Secondary Text */
+    --color-text-light: #d1f7ff;
+    /* Ice Blue Text */
+    --color-text-dark: #ffffff;
+    /* White Text */
+    --color-text-secondary-light: #05d9e8;
+    /* Cyan Secondary */
+    --color-text-secondary-dark: #ff9e42;
+    /* Orange/Peach Secondary (from sun) */
   }
 }
 

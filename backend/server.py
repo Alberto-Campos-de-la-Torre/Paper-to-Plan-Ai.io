@@ -1,6 +1,7 @@
 import os
 import shutil
 import json
+import cv2
 import threading
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
