@@ -97,6 +97,7 @@ function App() {
       setUsers(userList.map(u => u.username));
     } catch (error) {
       console.error("Error fetching users from API:", error);
+      alert(`Error al cargar usuarios: ${error}`);
       // Fallback
       const fallbackUsers = [
         { username: 'Beto May', pin: '0295' }

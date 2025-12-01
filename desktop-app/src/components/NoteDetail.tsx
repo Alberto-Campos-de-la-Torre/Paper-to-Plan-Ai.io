@@ -64,7 +64,11 @@ const NoteDetail: React.FC = () => {
     };
 
     const handleExportMarkdown = async () => {
-        if (!note) return;
+        console.log("Export button clicked");
+        if (!note) {
+            alert("Error: No hay datos de nota para exportar.");
+            return;
+        }
 
         const markdownContent = `
 # ${note.title || 'Sin Título'}
@@ -86,6 +90,7 @@ ${note.raw_text || ''}
         `.trim();
 
         try {
+            console.log("Attempting to open save dialog...");
             // Try Tauri Save Dialog
             const filePath = await save({
                 filters: [{
@@ -95,13 +100,21 @@ ${note.raw_text || ''}
                 defaultPath: `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`
             });
 
+            console.log("Save dialog result:", filePath);
+
             if (filePath) {
                 await writeTextFile(filePath, markdownContent);
                 alert('Nota exportada correctamente.');
+            } else {
+                console.log("User cancelled save dialog");
             }
         } catch (error) {
-            console.error("Tauri export failed, falling back to browser download:", error);
+            console.error("Tauri export failed:", error);
+            alert(`Error Tauri Export: ${JSON.stringify(error)}`);
+
+            // Fallback
             try {
+                console.log("Attempting browser fallback...");
                 const blob = new Blob([markdownContent], { type: 'text/markdown' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -111,9 +124,10 @@ ${note.raw_text || ''}
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                console.log("Browser fallback executed");
             } catch (fallbackError) {
                 console.error("Browser export failed:", fallbackError);
-                alert("Error al exportar el archivo Markdown.");
+                alert(`Error Fallback Export: ${JSON.stringify(fallbackError)}`);
             }
         }
     };

@@ -704,5 +704,12 @@ async def capture_webcam(user_id: str = Depends(verify_user_and_pin)):
 
 
 if __name__ == "__main__":
+    # Print existing users to verify persistence
+    try:
+        users = session_manager.get_all_users()
+        logger.info(f"Existing users in DB: {users}")
+    except Exception as e:
+        logger.error(f"Failed to list users on startup: {e}")
+
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)
