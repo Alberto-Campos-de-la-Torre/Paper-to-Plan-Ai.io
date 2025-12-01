@@ -78,17 +78,20 @@ const WebcamModal: React.FC<WebcamModalProps> = ({ onClose, onCaptureComplete })
                     <img
                         ref={imgRef}
                         crossOrigin="anonymous"
-                        src="http://localhost:8001/api/video_feed"
+                        src={`http://localhost:8001/api/video_feed?t=${Date.now()}`}
                         alt="Webcam Preview"
                         className="w-full h-full object-cover"
+                        onLoad={() => setError(null)}
                         onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            setError("No se pudo cargar la vista previa. Verifica que la cámara no esté en uso.");
+                            console.error("Image load error", e);
+                            // Don't hide the image immediately, it might just be a frame drop
+                            // e.currentTarget.style.display = 'none'; 
+                            setError("Esperando señal de video...");
                         }}
                     />
-                    {error && !imgRef.current?.complete && (
-                        <div className="absolute inset-0 flex items-center justify-center text-red-500 p-4 text-center">
-                            {error}
+                    {error && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-red-500 p-4 text-center backdrop-blur-sm">
+                            <p>{error}</p>
                         </div>
                     )}
                 </div>

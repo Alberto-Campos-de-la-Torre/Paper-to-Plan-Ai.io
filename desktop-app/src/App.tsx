@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -6,7 +6,7 @@ import Kanban from './components/Kanban';
 import NoteDetail from './components/NoteDetail';
 import WebcamModal from './components/WebcamModal';
 import Login from './components/Login';
-import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection } from './api/client';
+import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection, uploadImage } from './api/client';
 import { open } from '@tauri-apps/plugin-dialog';
 import { X, Trash2, Settings, Save, Wifi } from 'lucide-react';
 
@@ -115,25 +115,28 @@ function App() {
     navigate('/'); // Redirect to dashboard after successful login
   };
 
-  const handleUpload = async () => {
-    try {
-      const selected = await open({
-        multiple: false,
-        filters: [{
-          name: 'Image',
-          extensions: ['png', 'jpg', 'jpeg']
-        }]
-      });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-      if (selected) {
-        const path = Array.isArray(selected) ? selected[0] : selected;
-        if (path) {
-          console.log("Selected file:", path);
-          alert("Upload functionality needs adjustment for desktop file system access.");
-        }
+  const handleUpload = () => {
+    fileInputRef.current?.click();
+  };
+
+  const onFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      try {
+        console.log("Uploading file:", file.name);
+        await uploadImage(file);
+        alert("Imagen subida correctamente. Procesando...");
+        // Refresh or notify logic here if needed
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error al subir la imagen.");
       }
-    } catch (error) {
-      console.error(error);
+    }
+    // Reset input value to allow uploading the same file again
+    if (event.target) {
+      event.target.value = '';
     }
   };
 
@@ -210,6 +213,13 @@ function App() {
 
   return (
     <div className="flex h-screen bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark overflow-hidden font-sans selection:bg-primary/30 transition-colors duration-300">
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={onFileChange}
+        className="hidden"
+        accept="image/*"
+      />
       <Sidebar
         onUpload={handleUpload}
         onWebcam={() => setIsWebcamOpen(true)}

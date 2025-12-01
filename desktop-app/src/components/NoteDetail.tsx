@@ -61,6 +61,39 @@ const NoteDetail: React.FC = () => {
         }
     };
 
+    const handleExportMarkdown = () => {
+        if (!note) return;
+
+        const markdownContent = `
+# ${note.title}
+
+**Viabilidad:** ${note.feasibility_score}/100
+**Tiempo Estimado:** ${note.implementation_time}
+
+## Resumen Ejecutivo
+${note.summary}
+
+## Stack Recomendado
+${note.recommended_stack?.map(tech => `- ${tech}`).join('\n')}
+
+## Consideraciones Técnicas
+${note.technical_considerations?.map(item => `- ${item}`).join('\n')}
+
+## Texto Original
+${note.raw_text}
+        `.trim();
+
+        const blob = new Blob([markdownContent], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${note.title.replace(/\s+/g, '_').toLowerCase()}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
     if (loading) {
         return <div className="flex items-center justify-center h-screen bg-background-dark text-text-dark">Cargando...</div>;
     }
@@ -70,8 +103,8 @@ const NoteDetail: React.FC = () => {
     }
 
     return (
-        <div className="p-4 sm:p-6 md:p-8 bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-300 min-h-screen">
-            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="p-4 sm:p-6 md:p-8 bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-300 h-screen flex flex-col overflow-hidden transition-colors duration-300">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 flex-shrink-0">
                 <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
                     <ArrowLeft className="w-4 h-4" />
                     Volver al Dashboard
@@ -81,7 +114,7 @@ const NoteDetail: React.FC = () => {
                     <span>{note.status === 'completed' ? 'Proyecto Completado' : 'Análisis Completado'}</span>
                 </div>
             </header>
-            <main className="space-y-6">
+            <main className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
                 <section className="border border-border-light dark:border-border-dark p-6 bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm">
                     <h1 className="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-3 font-display">
                         {note.title}
@@ -143,7 +176,7 @@ const NoteDetail: React.FC = () => {
                     </div>
                 </section>
 
-                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700">
+                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700 pb-6">
                     <div className="flex flex-wrap items-center gap-2">
                         <button onClick={handleDelete} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-red-900/20 hover:text-red-400 hover:border-red-900/50 transition-colors">
                             <Trash2 className="w-4 h-4" />
@@ -166,7 +199,10 @@ const NoteDetail: React.FC = () => {
                             {note.status === 'completed' ? 'Completado' : 'Marcar Completado'}
                         </button>
                     </div>
-                    <button className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto">
+                    <button
+                        onClick={handleExportMarkdown}
+                        className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
+                    >
                         <Download className="w-4 h-4" />
                         Exportar MD
                     </button>
