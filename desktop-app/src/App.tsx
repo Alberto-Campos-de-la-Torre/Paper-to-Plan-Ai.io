@@ -7,7 +7,7 @@ import NoteDetail from './components/NoteDetail';
 import WebcamModal from './components/WebcamModal';
 import Login from './components/Login';
 import TextNoteModal from './components/TextNoteModal';
-import { setAuth, getUsers, createUser, deleteUser, updateConfig, testConnection, uploadImage, createTextNote } from './api/client';
+import { setAuth, getUsers, createUser, deleteUser, getConfig, updateConfig, testConnection, uploadImage, createTextNote } from './api/client';
 import { X, Trash2, Settings, Save, Wifi } from 'lucide-react';
 
 function App() {
@@ -53,8 +53,9 @@ function App() {
   }, [theme]);
 
   useEffect(() => {
-    // Fetch users on mount
+    // Fetch users and config on mount
     fetchUsers();
+    fetchConfig();
   }, []);
 
   useEffect(() => {
@@ -113,6 +114,18 @@ function App() {
       }
     }
   };
+
+  const fetchConfig = async () => {
+    try {
+      const savedConfig = await getConfig();
+      console.log("Config loaded from server:", savedConfig);
+      setConfig(savedConfig);
+    } catch (error) {
+      console.error("Error fetching config:", error);
+      // Keep default config if fetch fails
+    }
+  };
+
 
   const handleLoginSuccess = (username: string) => {
     setCurrentUser(username);

@@ -74,36 +74,38 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
     });
 
     return (
-        <main className="flex-1 flex flex-col p-8 overflow-y-auto bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-mono transition-colors duration-300">
-            <header className="flex justify-between items-center mb-8">
-                <div>
-                    <h2 className="text-3xl font-bold text-text-light dark:text-text-dark font-display">Dashboard</h2>
-                    <p className="text-text-secondary-light dark:text-text-secondary-dark">Bienvenido de nuevo, {currentUser}.</p>
-                </div>
-                <div className="flex items-center gap-4">
-                    {isProcessing && (
-                        <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-500 animate-pulse">
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                            <span className="text-xs font-bold tracking-wider">GENERANDO PLAN...</span>
-                        </div>
-                    )}
-                </div>
-            </header>
+        <main className="flex-1 flex flex-col h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-mono transition-colors duration-300 overflow-hidden">
+            <div className="flex-shrink-0 p-8 pb-0">
+                <header className="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 className="text-3xl font-bold text-text-light dark:text-text-dark font-display">Dashboard</h2>
+                        <p className="text-text-secondary-light dark:text-text-secondary-dark">Bienvenido de nuevo, {currentUser}.</p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                        {isProcessing && (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-500 animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-xs font-bold tracking-wider">GENERANDO PLAN...</span>
+                            </div>
+                        )}
+                    </div>
+                </header>
 
-            {/* ... Statistics and Search ... */}
-            <Statistics />
+                {/* ... Statistics and Search ... */}
+                <Statistics />
 
-            <div className="relative mb-8">
-                <input
-                    type="search"
-                    placeholder="Buscar proyectos..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full px-4 py-3 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-2 focus:ring-primary focus:border-primary placeholder-text-secondary-light dark:placeholder-text-secondary-dark text-text-light dark:text-text-dark outline-none transition-colors duration-300"
-                />
+                <div className="relative mb-8">
+                    <input
+                        type="search"
+                        placeholder="Buscar proyectos..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full px-4 py-3 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-2 focus:ring-primary focus:border-primary placeholder-text-secondary-light dark:placeholder-text-secondary-dark text-text-light dark:text-text-dark outline-none transition-colors duration-300"
+                    />
+                </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-6">
                 {loading ? (
                     <div className="text-center py-20 text-text-secondary-light">Cargando proyectos...</div>
                 ) : filteredNotes.length === 0 ? (

@@ -6,6 +6,12 @@ import logging
 import os
 from typing import Dict, Any, Optional, List
 
+# Import ConfigManager
+import sys
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, BASE_DIR)
+from config_manager import config_manager
+
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -13,10 +19,16 @@ logger = logging.getLogger(__name__)
 class AIEngine:
     def __init__(self):
         self.reader = easyocr.Reader(['es', 'en']) # Support Spanish and English
-        # Update to remote host and new models
-        self.client = ollama.Client(host='http://192.168.1.81:11434')
-        self.vision_model = 'qwen3-vl:8b'
-        self.logic_model = 'qwen3:8b'
+        
+        # Load configuration from ConfigManager
+        self.host = config_manager.get('host', 'http://localhost:11434')
+        self.logic_model = config_manager.get('logic_model', 'ministral-3:14b')
+        self.vision_model = config_manager.get('vision_model', 'qwen3-vl:latest')
+        
+        # Initialize Ollama client with configured host
+        self.client = ollama.Client(host=self.host)
+        
+        logger.info(f"AIEngine initialized with Host={self.host}, Logic={self.logic_model}, Vision={self.vision_model}")
         
         # Master Prompt for Feasibility Analysis
         self.master_prompt = """

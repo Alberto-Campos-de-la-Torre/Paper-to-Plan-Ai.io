@@ -165,19 +165,41 @@ class ConfigRequest(BaseModel):
     logic_model: str
     vision_model: str
 
+@app.get("/api/config")
+async def get_config():
+    """Get current AI configuration."""
+    try:
+        from backend.config_manager import config_manager
+        config = config_manager.get_all()
+        return config
+    except Exception as e:
+        logger.error(f"Error getting config: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/config")
 async def update_config(request: ConfigRequest):
     """Update AI configuration."""
     try:
+        from backend.config_manager import config_manager
+        
+        # Save to persistent config
+        config_manager.update({
+            'host': request.host,
+            'logic_model': request.logic_model,
+            'vision_model': request.vision_model
+        })
+        
+        # Update current engine instance
         engine = get_ai_engine()
-        # Update engine settings
         import ollama
+        engine.host = request.host
         engine.client = ollama.Client(host=request.host)
         engine.logic_model = request.logic_model
         engine.vision_model = request.vision_model
         
-        logger.info(f"Config updated: Host={request.host}, Logic={request.logic_model}, Vision={request.vision_model}")
-        return {"status": "success", "message": "Configuration updated"}
+        logger.info(f"Config updated and saved: Host={request.host}, Logic={request.logic_model}, Vision={request.vision_model}")
+        return {"status": "success", "message": "Configuration updated and saved"}
     except Exception as e:
         logger.error(f"Error updating config: {e}")
         raise HTTPException(status_code=500, detail=str(e))

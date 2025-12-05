@@ -172,7 +172,7 @@ ${note.raw_text || ''}
                                 Resumen Ejecutivo
                             </h2>
                             <p className="p-4 leading-relaxed text-text-light dark:text-text-dark font-body">
-                                {note.summary}
+                                {note.summary || 'No hay resumen disponible aún. El análisis está en proceso.'}
                             </p>
                         </section>
                         <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
@@ -181,11 +181,17 @@ ${note.raw_text || ''}
                                 Stack Recomendado
                             </h2>
                             <div className="p-4 flex flex-wrap gap-2">
-                                {note.recommended_stack?.map((tech, index) => (
-                                    <span key={index} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
-                                        {tech}
+                                {note.recommended_stack && note.recommended_stack.length > 0 ? (
+                                    note.recommended_stack.map((tech, index) => (
+                                        <span key={index} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
+                                            {tech}
+                                        </span>
+                                    ))
+                                ) : (
+                                    <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                                        No hay stack recomendado aún. El análisis está en proceso.
                                     </span>
-                                ))}
+                                )}
                             </div>
                         </section>
                     </div>
@@ -195,7 +201,13 @@ ${note.raw_text || ''}
                             Consideraciones Técnicas
                         </h2>
                         <ul className="p-4 sm:p-6 space-y-3 list-disc list-inside text-text-light dark:text-text-dark font-body">
-                            {note.technical_considerations?.map((item, index) => item.trim() && <li key={index} className="pl-2">{item.trim()}</li>)}
+                            {note.technical_considerations && note.technical_considerations.length > 0 ? (
+                                note.technical_considerations.map((item, index) => item.trim() && <li key={index} className="pl-2">{item.trim()}</li>)
+                            ) : (
+                                <li className="text-text-secondary-light dark:text-text-secondary-dark list-none">
+                                    No hay consideraciones técnicas aún. El análisis está en proceso.
+                                </li>
+                            )}
                         </ul>
                     </section>
                 </div>

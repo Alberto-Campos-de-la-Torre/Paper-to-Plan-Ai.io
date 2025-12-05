@@ -93,6 +93,12 @@ export const deleteUser = async (username: string): Promise<void> => {
     await api.delete(`/users/${username}`);
 };
 
+
+export const getConfig = async (): Promise<{ host: string, logic_model: string, vision_model: string }> => {
+    const response = await api.get('/config');
+    return response.data;
+};
+
 export const updateConfig = async (config: { host: string, logic_model: string, vision_model: string }): Promise<void> => {
     await api.post('/config', config);
 };
