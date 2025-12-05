@@ -180,13 +180,32 @@ ${note.raw_text || ''}
                                 <Code className="w-5 h-5 text-primary" />
                                 Stack Recomendado
                             </h2>
-                            <div className="p-4 flex flex-wrap gap-2">
+                            <div className="p-4 space-y-4">
                                 {note.recommended_stack && note.recommended_stack.length > 0 ? (
-                                    note.recommended_stack.map((tech, index) => (
-                                        <span key={index} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
-                                            {tech}
-                                        </span>
-                                    ))
+                                    note.recommended_stack.map((item, index) => {
+                                        // Check if item is an object with layer/technologies
+                                        if (typeof item === 'object' && item.layer && item.technologies) {
+                                            return (
+                                                <div key={index} className="space-y-2">
+                                                    <h3 className="text-sm font-bold text-primary uppercase tracking-wider">{item.layer}</h3>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {item.technologies.map((tech: string, techIndex: number) => (
+                                                            <span key={techIndex} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-mono">
+                                                                {tech}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        } else {
+                                            // Simple string format
+                                            return (
+                                                <span key={index} className="inline-block px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
+                                                    {typeof item === 'string' ? item : JSON.stringify(item)}
+                                                </span>
+                                            );
+                                        }
+                                    })
                                 ) : (
                                     <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
                                         No hay stack recomendado aún. El análisis está en proceso.
@@ -200,15 +219,33 @@ ${note.raw_text || ''}
                             <Settings className="w-5 h-5 text-primary" />
                             Consideraciones Técnicas
                         </h2>
-                        <ul className="p-4 sm:p-6 space-y-3 list-disc list-inside text-text-light dark:text-text-dark font-body">
+                        <div className="p-4 sm:p-6 space-y-4">
                             {note.technical_considerations && note.technical_considerations.length > 0 ? (
-                                note.technical_considerations.map((item, index) => item.trim() && <li key={index} className="pl-2">{item.trim()}</li>)
+                                note.technical_considerations.map((item, index) => {
+                                    // Check if item is an object with category/challenges
+                                    if (typeof item === 'object' && item.category && item.challenges) {
+                                        return (
+                                            <div key={index} className="space-y-2">
+                                                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">{item.category}</h3>
+                                                <ul className="space-y-2 list-disc list-inside text-text-light dark:text-text-dark font-body">
+                                                    {item.challenges.map((challenge, challengeIndex) => (
+                                                        <li key={challengeIndex} className="pl-2 text-sm">{challenge}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        );
+                                    } else if (typeof item === 'string' && item.trim()) {
+                                        // Simple string format
+                                        return <li key={index} className="pl-2 list-disc list-inside">{item.trim()}</li>;
+                                    }
+                                    return null;
+                                })
                             ) : (
-                                <li className="text-text-secondary-light dark:text-text-secondary-dark list-none">
+                                <p className="text-text-secondary-light dark:text-text-secondary-dark">
                                     No hay consideraciones técnicas aún. El análisis está en proceso.
-                                </li>
+                                </p>
                             )}
-                        </ul>
+                        </div>
                     </section>
                 </div>
                 <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">

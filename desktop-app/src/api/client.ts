@@ -24,6 +24,16 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export interface TechnicalConsideration {
+    category: string;
+    challenges: string[];
+}
+
+export interface StackLayer {
+    layer: string;
+    technologies: string[];
+}
+
 export interface Note {
     id: number;
     title: string;
@@ -33,8 +43,8 @@ export interface Note {
     created_at?: string;
     raw_text?: string;
     summary?: string;
-    technical_considerations?: string[];
-    recommended_stack?: string[];
+    technical_considerations?: (string | TechnicalConsideration)[];
+    recommended_stack?: (string | StackLayer)[];
 }
 
 export const captureWebcam = async () => {
