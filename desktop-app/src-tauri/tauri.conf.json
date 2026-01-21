@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "desktop-app",
-  "version": "0.1.0",
-  "identifier": "com.ttech-main.desktop-app",
+  "productName": "PaperToPlan AI",
+  "version": "1.0.0",
+  "identifier": "com.papertoplan.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "desktop-app",
-        "width": 800,
-        "height": 600
+        "title": "PaperToPlan AI - Gestión Inteligente de Proyectos",
+        "width": 1400,
+        "height": 900,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
       }
     ],
     "security": {
@@ -33,6 +36,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "TechMain",
+    "copyright": "Copyright © 2025 PaperToPlan AI",
+    "category": "Productivity",
+    "shortDescription": "Gestión inteligente de proyectos con IA",
+    "longDescription": "PaperToPlan AI es una aplicación de gestión de proyectos potenciada por inteligencia artificial que convierte notas, imágenes y texto en planes de implementación detallados."
   }
 }

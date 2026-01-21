@@ -1,32 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { getNotes, Note, getStats } from '../api/client';
+import { getNotes, Note } from '../api/client';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Activity, Search, BarChart3, MoreHorizontal, Timer, Hourglass } from 'lucide-react';
-import { BarChart, Bar, ResponsiveContainer, Cell, PieChart as RePieChart, Pie } from 'recharts';
+import Statistics from './Statistics';
+import { Loader2 } from 'lucide-react';
 
 interface DashboardProps {
     activeFilter?: string;
     showCompleted?: boolean;
     currentUser?: string;
+    refreshTrigger?: number;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showCompleted = false, currentUser = 'Beto May' }) => {
+const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showCompleted = false, currentUser = 'Beto May', refreshTrigger = 0 }) => {
     const [notes, setNotes] = useState<Note[]>([]);
-    const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const navigate = useNavigate();
 
+    // Check if any notes are processing
+    const isProcessing = notes.some(n => n.status === 'processing' || n.status === 'pending');
+
     useEffect(() => {
         setLoading(true);
         loadData();
-    }, [currentUser]);
+    }, [currentUser, refreshTrigger]);
 
     const loadData = async () => {
         try {
-            const [notesData, statsData] = await Promise.all([getNotes(), getStats()]);
+            const notesData = await getNotes();
             setNotes(notesData);
-            setStats(statsData);
         } catch (error) {
             console.error("Error loading data:", error);
         } finally {
@@ -36,17 +38,19 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'completed': return 'text-green-400 bg-green-400/10 border-green-400/20';
-            case 'processing': return 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
-            case 'error': return 'text-red-400 bg-red-400/10 border-red-400/20';
-            default: return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+            case 'completed': return 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200';
+            case 'processing':
+            case 'pending': return 'bg-cyan-200 dark:bg-cyan-800 text-cyan-800 dark:text-cyan-200';
+            case 'error': return 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200';
+            default: return 'bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200';
         }
     };
 
     const getStatusLabel = (status: string) => {
         switch (status) {
             case 'completed': return 'INDEXED';
-            case 'processing': return 'PROCESSING';
+            case 'processing':
+            case 'pending': return 'PROCESSING';
             case 'error': return 'ERROR';
             default: return 'IN PROGRESS';
         }
@@ -70,89 +74,84 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
     });
 
     return (
-        <div className="h-full overflow-y-auto px-8 py-8 bg-black relative font-mono">
-            {/* Background Gradients */}
-            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-950/10 to-transparent pointer-events-none" />
-
-            {/* Header */}
-            <div className="relative z-10 flex justify-between items-center mb-8">
-                <div>
-                    <h2 className="text-3xl font-bold text-white mb-1 tracking-tight font-display">Dashboard</h2>
-                    <p className="text-gray-400 text-sm">Bienvenido de nuevo, <span className="text-cyan-400 font-semibold">{currentUser}</span>.</p>
-                </div>
-
-                <div className="flex items-center gap-6 text-xs text-gray-500 font-mono">
-                    <div className="flex items-center gap-2">
-                        <Hourglass className="w-4 h-4" />
-                        <span>PROGRESO</span>
+        <main className="flex-1 flex flex-col h-full bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-mono transition-colors duration-300 overflow-hidden">
+            <div className="flex-shrink-0 p-8 pb-0">
+                <header className="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 className="text-3xl font-bold text-text-light dark:text-text-dark font-display">Dashboard</h2>
+                        <p className="text-text-secondary-light dark:text-text-secondary-dark">Bienvenido de nuevo, {currentUser}.</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <Timer className="w-4 h-4" />
-                        <span>TIEMPOS</span>
+                    <div className="flex items-center gap-4">
+                        {isProcessing && (
+                            <div className="flex items-center gap-2 px-4 py-2 bg-cyan-500/10 border border-cyan-500/20 rounded-full text-cyan-500 animate-pulse">
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-xs font-bold tracking-wider">GENERANDO PLAN...</span>
+                            </div>
+                        )}
                     </div>
-                </div>
-            </div>
+                </header>
 
-            {/* Search Bar */}
-            <div className="relative z-10 mb-8">
-                <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                {/* ... Statistics and Search ... */}
+                <Statistics />
+
+                <div className="relative mb-8">
                     <input
-                        type="text"
+                        type="search"
                         placeholder="Buscar proyectos..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#1a1b26] border border-gray-800 text-gray-200 pl-10 pr-4 py-3 rounded-lg focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all placeholder-gray-600 text-sm font-mono"
+                        className="w-full px-4 py-3 rounded border border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark focus:ring-2 focus:ring-primary focus:border-primary placeholder-text-secondary-light dark:placeholder-text-secondary-dark text-text-light dark:text-text-dark outline-none transition-colors duration-300"
                     />
                 </div>
             </div>
 
-            {/* Projects List */}
-            <div className="relative z-10 space-y-6">
+            <div className="flex-1 overflow-y-auto px-8 pb-8 space-y-6">
                 {loading ? (
-                    <div className="text-center py-20 text-gray-500 animate-pulse">Cargando proyectos...</div>
+                    <div className="text-center py-20 text-text-secondary-light">Cargando proyectos...</div>
                 ) : filteredNotes.length === 0 ? (
-                    <div className="text-center py-20 text-gray-500">No se encontraron proyectos</div>
+                    <div className="text-center py-20 text-text-secondary-light">No se encontraron proyectos</div>
                 ) : (
                     filteredNotes.map((note) => (
                         <div
                             key={note.id}
                             onClick={() => navigate(`/note/${note.id}`)}
-                            className="group bg-[#111827] border border-gray-800 hover:border-cyan-500/50 p-6 rounded-xl transition-all duration-300 cursor-pointer relative overflow-hidden shadow-lg hover:shadow-cyan-900/20"
+                            className={`bg-surface-light dark:bg-surface-dark p-6 rounded border transition-all duration-300 group cursor-pointer ${note.status === 'processing' || note.status === 'pending'
+                                ? 'border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)]'
+                                : 'border-border-light dark:border-border-dark hover:border-primary dark:hover:border-primary'
+                                }`}
                         >
-                            <div className="flex justify-between items-start mb-3">
-                                <div className="flex-1 pr-4">
-                                    <h3 className="text-lg font-bold text-gray-100 group-hover:text-cyan-400 transition-colors line-clamp-1 font-display">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-xl font-bold text-text-light dark:text-text-dark flex items-center gap-3 font-display">
                                         {note.title || 'Sin Título'}
+                                        {(note.status === 'processing' || note.status === 'pending') && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                                                <Loader2 className="w-3 h-3 animate-spin" />
+                                                GENERANDO
+                                            </span>
+                                        )}
                                     </h3>
-                                    <p className="text-xs text-gray-500 mt-1 line-clamp-1 font-mono">
-                                        Proyecto generado por IA. Haz clic para ver detalles.
+                                    <p className="text-sm text-text-secondary-light dark:text-text-secondary-dark mt-1">
+                                        {(note.status === 'processing' || note.status === 'pending')
+                                            ? 'La IA está analizando tu nota y generando el plan de implementación...'
+                                            : 'Proyecto generado por IA. Haz clic para ver los detalles completos y el plan de implementación.'}
                                     </p>
                                 </div>
-
-                                <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-4 ml-4">
                                     <div className="text-right">
-                                        <span className="text-lg font-bold text-white font-mono">{note.feasibility_score}%</span>
-                                        <div className="w-20 h-1 bg-gray-800 rounded-full mt-1 overflow-hidden">
-                                            <div
-                                                className="h-full bg-cyan-500 rounded-full"
-                                                style={{ width: `${note.feasibility_score}%` }}
-                                            ></div>
+                                        <span className="text-lg font-bold text-text-light dark:text-text-dark">{note.feasibility_score}%</span>
+                                        <div className="w-20 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mt-1">
+                                            <div className="h-1 bg-primary rounded-full" style={{ width: `${note.feasibility_score}%` }}></div>
                                         </div>
                                     </div>
-                                    <button className="text-gray-600 group-hover:text-cyan-400 transition-colors">
-                                        <MoreHorizontal className="w-5 h-5" />
-                                    </button>
                                 </div>
                             </div>
-
-                            <div className="flex items-center gap-4 text-[10px] text-gray-500 font-mono uppercase tracking-wider">
-                                <div className="flex items-center gap-1.5">
-                                    <Clock className="w-3 h-3" />
-                                    <span>{note.implementation_time || 'N/A'}</span>
+                            <div className="mt-4 flex items-center gap-4 text-xs text-text-secondary-light dark:text-text-secondary-dark">
+                                <div className="flex items-center gap-2">
+                                    <span>{note.implementation_time?.toUpperCase() || 'N/A'}</span>
                                 </div>
-
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold border ${getStatusColor(note.status)}`}>
+                                <span className={`px-2 py-0.5 rounded-full flex items-center gap-1 ${getStatusColor(note.status)}`}>
+                                    {(note.status === 'processing' || note.status === 'pending') && <Loader2 className="w-3 h-3 animate-spin" />}
                                     {getStatusLabel(note.status)}
                                 </span>
                             </div>
@@ -160,7 +159,7 @@ const Dashboard: React.FC<DashboardProps> = ({ activeFilter = 'all', showComplet
                     ))
                 )}
             </div>
-        </div>
+        </main>
     );
 };
 

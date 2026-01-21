@@ -24,6 +24,16 @@ api.interceptors.request.use((config) => {
     return config;
 });
 
+export interface TechnicalConsideration {
+    category: string;
+    challenges: string[];
+}
+
+export interface StackLayer {
+    layer: string;
+    technologies: string[];
+}
+
 export interface Note {
     id: number;
     title: string;
@@ -33,8 +43,8 @@ export interface Note {
     created_at?: string;
     raw_text?: string;
     summary?: string;
-    technical_considerations?: string[];
-    recommended_stack?: string[];
+    technical_considerations?: (string | TechnicalConsideration)[];
+    recommended_stack?: (string | StackLayer)[];
 }
 
 export const captureWebcam = async () => {
@@ -74,15 +84,42 @@ export const getUsers = async (): Promise<{ username: string, pin: string }[]> =
 };
 
 export const deleteNote = async (id: number): Promise<void> => {
-    await api.delete(`/api/notes/${id}`);
+    await api.delete(`/notes/${id}`);
 };
 
 export const regenerateNote = async (id: number, newText: string): Promise<void> => {
-    await api.post(`/api/notes/${id}/regenerate`, { raw_text: newText });
+    await api.post(`/notes/${id}/regenerate`, { raw_text: newText });
 };
 
 export const markCompleted = async (id: number): Promise<void> => {
-    await api.post(`/api/notes/${id}/complete`);
+    await api.post(`/notes/${id}/complete`);
+};
+
+export const createUser = async (username: string, pin: string): Promise<void> => {
+    await api.post('/users', { username, pin });
+};
+
+export const deleteUser = async (username: string): Promise<void> => {
+    await api.delete(`/users/${username}`);
+};
+
+
+export const getConfig = async (): Promise<{ host: string, logic_model: string, vision_model: string }> => {
+    const response = await api.get('/config');
+    return response.data;
+};
+
+export const updateConfig = async (config: { host: string, logic_model: string, vision_model: string }): Promise<void> => {
+    await api.post('/config', config);
+};
+
+export const testConnection = async (): Promise<any> => {
+    const response = await api.get('/config/test');
+    return response.data;
+};
+
+export const createTextNote = async (text: string): Promise<void> => {
+    await api.post('/notes/text', { text });
 };
 
 export default api;

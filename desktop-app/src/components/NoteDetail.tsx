@@ -1,249 +1,300 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getNoteDetail, deleteNote, regenerateNote, markCompleted, Note } from '../api/client';
-import { ArrowLeft, FileText, Trash2, RefreshCw, CheckCircle, Download, Clock, Zap, Code, AlertTriangle, Edit3 } from 'lucide-react';
+import { getNoteDetail, Note, deleteNote, regenerateNote, markCompleted } from '../api/client';
+import { ArrowLeft, CheckCircle, Clock, FileText, Code, Settings, Edit3, Trash2, RefreshCw, CheckSquare, Download } from 'lucide-react';
+import { save } from '@tauri-apps/plugin-dialog';
+import { writeTextFile } from '@tauri-apps/plugin-fs';
 
 const NoteDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const [note, setNote] = useState<Note | null>(null);
     const [loading, setLoading] = useState(true);
-    const [rawText, setRawText] = useState('');
-    const [isRegenerating, setIsRegenerating] = useState(false);
+    const [error, setError] = useState('');
+    const [editableText, setEditableText] = useState('');
+    const [regenerating, setRegenerating] = useState(false);
 
     useEffect(() => {
         if (id) {
-            loadNote(parseInt(id));
+            fetchNote();
         }
     }, [id]);
 
-    const loadNote = async (noteId: number) => {
-        try {
-            const data = await getNoteDetail(noteId);
-            setNote(data);
-            setRawText(data.raw_text || '');
-        } catch (error) {
-            console.error("Error loading note:", error);
-        } finally {
-            setLoading(false);
-        }
+    const fetchNote = () => {
+        setLoading(true);
+        getNoteDetail(parseInt(id!, 10))
+            .then(note => {
+                setNote(note);
+                setEditableText(note.raw_text || '');
+            })
+            .catch(() => setError('Failed to fetch note details.'))
+            .finally(() => setLoading(false));
     };
 
     const handleDelete = async () => {
-        if (!note || !window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) return;
-
-        try {
-            await deleteNote(note.id);
-            navigate('/');
-        } catch (error) {
-            console.error("Error deleting note:", error);
-            alert('Error al eliminar la nota');
+        if (note) {
+            if (window.confirm('¿Estás seguro de que quieres eliminar esta nota?')) {
+                await deleteNote(note.id);
+                navigate('/');
+            }
         }
     };
 
     const handleRegenerate = async () => {
-        if (!note) return;
-
-        setIsRegenerating(true);
-        try {
-            await regenerateNote(note.id, rawText);
-            await loadNote(note.id);
-        } catch (error) {
-            console.error("Error regenerating note:", error);
-            alert('Error al regenerar el plan');
-        } finally {
-            setIsRegenerating(false);
+        if (note) {
+            try {
+                setRegenerating(true);
+                await regenerateNote(note.id, editableText);
+                alert('Nota enviada para regeneración. El proceso puede tardar unos momentos.');
+                navigate('/'); // Go back to dashboard to see progress
+            } catch (error) {
+                console.error("Error regenerating note:", error);
+                alert('Error al regenerar la nota.');
+            } finally {
+                setRegenerating(false);
+            }
         }
     };
 
     const handleMarkCompleted = async () => {
-        if (!note) return;
+        if (note) {
+            await markCompleted(note.id);
+            fetchNote();
+        }
+    };
+
+    const handleExportMarkdown = async () => {
+        console.log("Export button clicked");
+        if (!note) {
+            alert("Error: No hay datos de nota para exportar.");
+            return;
+        }
+
+        const markdownContent = `
+# ${note.title || 'Sin Título'}
+
+**Viabilidad:** ${note.feasibility_score || 0}/100
+**Tiempo Estimado:** ${note.implementation_time || 'Desconocido'}
+
+## Resumen Ejecutivo
+${note.summary || 'No disponible'}
+
+## Stack Recomendado
+${note.recommended_stack?.map(tech => `- ${tech}`).join('\n') || 'No especificado'}
+
+## Consideraciones Técnicas
+${note.technical_considerations?.map(item => `- ${item}`).join('\n') || 'No especificadas'}
+
+## Texto Original
+${note.raw_text || ''}
+        `.trim();
 
         try {
-            await markCompleted(note.id);
-            await loadNote(note.id);
+            console.log("Attempting to open save dialog...");
+            // Try Tauri Save Dialog
+            const filePath = await save({
+                filters: [{
+                    name: 'Markdown',
+                    extensions: ['md']
+                }],
+                defaultPath: `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`
+            });
+
+            console.log("Save dialog result:", filePath);
+
+            if (filePath) {
+                await writeTextFile(filePath, markdownContent);
+                alert('Nota exportada correctamente.');
+            } else {
+                console.log("User cancelled save dialog");
+            }
         } catch (error) {
-            console.error("Error marking as completed:", error);
-            alert('Error al marcar como completado');
+            console.error("Tauri export failed:", error);
+            alert(`Error Tauri Export: ${JSON.stringify(error)}`);
+
+            // Fallback
+            try {
+                console.log("Attempting browser fallback...");
+                const blob = new Blob([markdownContent], { type: 'text/markdown' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${(note.title || 'nota').replace(/\s+/g, '_').toLowerCase()}.md`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                console.log("Browser fallback executed");
+            } catch (fallbackError) {
+                console.error("Browser export failed:", fallbackError);
+                alert(`Error Fallback Export: ${JSON.stringify(fallbackError)}`);
+            }
         }
     };
 
-    const handleExportMD = () => {
-        if (!note) return;
+    if (loading) {
+        return <div className="flex items-center justify-center h-screen bg-background-dark text-text-dark">Cargando...</div>;
+    }
 
-        let content = `# ${note.title || 'Sin Título'}\n\n`;
-        content += `**Feasibility Score:** ${note.feasibility_score}/100\n`;
-        content += `**Implementation Time:** ${note.implementation_time}\n\n`;
-
-        if (note.summary) {
-            content += `## Summary\n${note.summary}\n\n`;
-        }
-
-        if (note.recommended_stack && note.recommended_stack.length > 0) {
-            content += `## Recommended Stack\n`;
-            note.recommended_stack.forEach(item => {
-                content += `- ${item}\n`;
-            });
-            content += '\n';
-        }
-
-        if (note.technical_considerations && note.technical_considerations.length > 0) {
-            content += `## Technical Considerations\n`;
-            note.technical_considerations.forEach(item => {
-                content += `- ${item}\n`;
-            });
-        }
-
-        const blob = new Blob([content], { type: 'text/markdown' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${note.title || 'nota'}.md`;
-        a.click();
-        URL.revokeObjectURL(url);
-    };
-
-    if (loading) return (
-        <div className="flex justify-center items-center h-full bg-black">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500"></div>
-        </div>
-    );
-
-    if (!note) return <div className="text-white p-8">Nota no encontrada</div>;
+    if (error || !note) {
+        return <div className="flex items-center justify-center h-screen bg-background-dark text-red-500">{error || 'Nota no encontrada.'}</div>;
+    }
 
     return (
-        <div className="h-full overflow-y-auto bg-black font-mono text-gray-300">
-            <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto space-y-6">
-                <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <button
-                        onClick={() => navigate('/')}
-                        className="flex items-center gap-2 text-sm text-gray-500 hover:text-white transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        VOLVER AL DASHBOARD
-                    </button>
-
-                    <div className="flex items-center gap-2 text-sm text-green-400 font-bold">
-                        <CheckCircle className="w-4 h-4" />
-                        <span>ANÁLISIS COMPLETADO</span>
-                    </div>
-                </header>
-
-                {/* Main Title Section */}
-                <section className="border border-gray-800 bg-[#0c0d17] p-6 rounded-lg">
-                    <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-display tracking-wide leading-tight">
-                        {note.title || 'Sin Título'}
+        <div className="p-4 sm:p-6 md:p-8 bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-300 h-screen flex flex-col overflow-hidden transition-colors duration-300">
+            <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 flex-shrink-0">
+                <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <ArrowLeft className="w-4 h-4" />
+                    Volver al Dashboard
+                </button>
+                <div className={`flex items-center gap-2 text-sm ${note.status === 'completed' ? 'text-green-600 dark:text-green-400' : 'text-cyan-600 dark:text-cyan-400'}`}>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>{note.status === 'completed' ? 'Proyecto Completado' : 'Análisis Completado'}</span>
+                </div>
+            </header>
+            <main className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
+                <section className="border border-border-light dark:border-border-dark p-6 bg-surface-light dark:bg-surface-dark rounded-lg shadow-sm">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-text-light dark:text-text-dark mb-3 font-display">
+                        {note.title}
                     </h1>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 font-mono">
-                        <div className="flex items-center gap-2">
-                            <Zap className="w-4 h-4 text-yellow-400" />
-                            <span>VIABILIDAD: <span className="text-white font-bold">{note.feasibility_score}/100</span></span>
-                        </div>
-                        <span className="w-1 h-1 bg-gray-700 rounded-full"></span>
-                        <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-cyan-400" />
-                            <span className="uppercase">{note.implementation_time}</span>
-                        </div>
+                    <div className="flex items-center gap-2 text-sm text-text-secondary-light dark:text-text-secondary-dark font-mono">
+                        <Clock className="w-4 h-4" />
+                        <span>Viabilidad: {note.feasibility_score}/100</span>
+                        <span className="inline-block w-1.5 h-1.5 bg-text-secondary-light dark:bg-text-secondary-dark rounded-full mx-1"></span>
+                        <span>{note.implementation_time}</span>
                     </div>
                 </section>
-
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-6">
-                        {/* Summary Section */}
-                        <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                            <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                                <FileText className="w-4 h-4 text-cyan-400" />
-                                RESUMEN EJECUTIVO
+                        <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                                <FileText className="w-5 h-5 text-primary" />
+                                Resumen Ejecutivo
                             </h2>
-                            <p className="p-6 leading-relaxed text-sm">
-                                {note.summary || 'No hay resumen disponible.'}
+                            <p className="p-4 leading-relaxed text-text-light dark:text-text-dark font-body">
+                                {note.summary || 'No hay resumen disponible aún. El análisis está en proceso.'}
                             </p>
                         </section>
-
-                        {/* Tech Stack Section */}
-                        <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                            <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                                <Code className="w-4 h-4 text-purple-400" />
-                                STACK RECOMENDADO
+                        <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                            <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                                <Code className="w-5 h-5 text-primary" />
+                                Stack Recomendado
                             </h2>
-                            <p className="p-6 leading-relaxed text-sm font-mono text-cyan-300/80">
+                            <div className="p-4 space-y-4">
                                 {note.recommended_stack && note.recommended_stack.length > 0 ? (
-                                    note.recommended_stack.join(' | ')
-                                ) : 'No especificado'}
-                            </p>
+                                    note.recommended_stack.map((item, index) => {
+                                        // Check if item is an object with layer/technologies
+                                        if (typeof item === 'object' && item.layer && item.technologies) {
+                                            return (
+                                                <div key={index} className="space-y-2">
+                                                    <h3 className="text-sm font-bold text-primary uppercase tracking-wider">{item.layer}</h3>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {item.technologies.map((tech: string, techIndex: number) => (
+                                                            <span key={techIndex} className="px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-xs font-mono">
+                                                                {tech}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            );
+                                        } else {
+                                            // Simple string format
+                                            return (
+                                                <span key={index} className="inline-block px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-sm font-mono">
+                                                    {typeof item === 'string' ? item : JSON.stringify(item)}
+                                                </span>
+                                            );
+                                        }
+                                    })
+                                ) : (
+                                    <span className="text-text-secondary-light dark:text-text-secondary-dark text-sm">
+                                        No hay stack recomendado aún. El análisis está en proceso.
+                                    </span>
+                                )}
+                            </div>
                         </section>
                     </div>
-
-                    {/* Technical Considerations */}
-                    <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden h-full">
-                        <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                            <AlertTriangle className="w-4 h-4 text-orange-400" />
-                            CONSIDERACIONES TÉCNICAS
+                    <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                        <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                            <Settings className="w-5 h-5 text-primary" />
+                            Consideraciones Técnicas
                         </h2>
-                        <ul className="p-6 space-y-3 list-disc list-inside text-sm text-gray-400">
+                        <div className="p-4 sm:p-6 space-y-4">
                             {note.technical_considerations && note.technical_considerations.length > 0 ? (
-                                note.technical_considerations.map((item, index) => (
-                                    <li key={index} className="leading-relaxed">{item}</li>
-                                ))
+                                note.technical_considerations.map((item, index) => {
+                                    // Check if item is an object with category/challenges
+                                    if (typeof item === 'object' && item.category && item.challenges) {
+                                        return (
+                                            <div key={index} className="space-y-2">
+                                                <h3 className="text-sm font-bold text-primary uppercase tracking-wider">{item.category}</h3>
+                                                <ul className="space-y-2 list-disc list-inside text-text-light dark:text-text-dark font-body">
+                                                    {item.challenges.map((challenge, challengeIndex) => (
+                                                        <li key={challengeIndex} className="pl-2 text-sm">{challenge}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        );
+                                    } else if (typeof item === 'string' && item.trim()) {
+                                        // Simple string format
+                                        return <li key={index} className="pl-2 list-disc list-inside">{item.trim()}</li>;
+                                    }
+                                    return null;
+                                })
                             ) : (
-                                <li>No hay consideraciones técnicas especificadas.</li>
+                                <p className="text-text-secondary-light dark:text-text-secondary-dark">
+                                    No hay consideraciones técnicas aún. El análisis está en proceso.
+                                </p>
                             )}
-                        </ul>
+                        </div>
                     </section>
                 </div>
-
-                {/* Raw Text Section */}
-                <section className="border border-gray-800 bg-[#0c0d17] rounded-lg overflow-hidden">
-                    <h2 className="flex items-center gap-3 font-bold text-sm bg-[#1a1b26] text-white p-4 border-b border-gray-800 font-display tracking-wider">
-                        <Edit3 className="w-4 h-4 text-gray-400" />
-                        TEXTO EXTRAÍDO (EDITABLE)
+                <section className="border border-border-light dark:border-border-dark rounded-lg overflow-hidden bg-surface-light dark:bg-surface-dark shadow-sm">
+                    <h2 className="flex items-center gap-3 font-bold text-lg bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark p-4 border-b border-border-light dark:border-border-dark font-display">
+                        <Edit3 className="w-5 h-5 text-primary" />
+                        Texto Extraído (Editable):
                     </h2>
                     <div className="p-4">
                         <textarea
-                            value={rawText}
-                            onChange={(e) => setRawText(e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 p-0 text-sm leading-relaxed text-gray-100 font-mono resize-y min-h-[100px]"
-                            placeholder="Texto extraído..."
+                            className="w-full bg-transparent border border-border-light dark:border-border-dark rounded p-2 text-sm leading-relaxed text-text-light dark:text-text-dark focus:border-primary outline-none font-mono"
+                            value={editableText}
+                            onChange={(e) => setEditableText(e.target.value)}
+                            rows={6}
                         />
                     </div>
                 </section>
 
-                {/* Footer Actions */}
-                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-800">
-                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <button
-                            onClick={handleDelete}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-red-900/20 hover:border-red-800 hover:text-red-400 transition-colors rounded"
-                        >
-                            <Trash2 className="w-3 h-3" />
-                            ELIMINAR NOTA
+                <footer className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-gray-300 dark:border-gray-700 pb-6">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button onClick={handleDelete} className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-red-900/20 hover:text-red-400 hover:border-red-900/50 transition-colors">
+                            <Trash2 className="w-4 h-4" />
+                            Eliminar Nota
                         </button>
                         <button
                             onClick={handleRegenerate}
-                            disabled={isRegenerating}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-cyan-900/20 hover:border-cyan-800 hover:text-cyan-400 transition-colors rounded disabled:opacity-50"
+                            disabled={regenerating || note.status === 'completed'}
+                            className={`flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-cyan-900/20 hover:text-cyan-400 hover:border-cyan-900/50 transition-colors ${regenerating || note.status === 'completed' ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            <RefreshCw className={`w-3 h-3 ${isRegenerating ? 'animate-spin' : ''}`} />
-                            {isRegenerating ? 'REGENERANDO...' : 'REGENERAR PLAN'}
+                            <RefreshCw className={`w-4 h-4 ${regenerating ? 'animate-spin' : ''}`} />
+                            {regenerating ? 'Regenerando...' : 'Regenerar Plan'}
                         </button>
                         <button
                             onClick={handleMarkCompleted}
-                            className="flex items-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-green-900/20 hover:border-green-800 hover:text-green-400 transition-colors rounded"
+                            disabled={note.status === 'completed'}
+                            className={`flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-green-900/20 hover:text-green-400 hover:border-green-900/50 transition-colors ${note.status === 'completed' ? 'opacity-50 cursor-not-allowed bg-green-900/10 text-green-500 border-green-900/30' : ''}`}
                         >
-                            <CheckCircle className="w-3 h-3" />
-                            MARCAR COMPLETADO
+                            <CheckSquare className="w-4 h-4" />
+                            {note.status === 'completed' ? 'Completado' : 'Marcar Completado'}
                         </button>
                     </div>
-
                     <button
-                        onClick={handleExportMD}
-                        className="flex items-center justify-center gap-2 text-xs px-4 py-2 border border-gray-800 bg-[#1a1b26] hover:bg-white/10 hover:text-white transition-colors rounded w-full sm:w-auto font-bold"
+                        onClick={handleExportMarkdown}
+                        className="flex items-center gap-2 text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
                     >
-                        <Download className="w-3 h-3" />
-                        EXPORTAR MD
+                        <Download className="w-4 h-4" />
+                        Exportar MD
                     </button>
                 </footer>
-            </div>
+            </main>
         </div>
     );
 };

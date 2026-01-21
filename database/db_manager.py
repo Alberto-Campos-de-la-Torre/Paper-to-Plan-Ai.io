@@ -75,6 +75,13 @@ class DBManager:
                     cursor.execute("ALTER TABLE notes ADD COLUMN completed INTEGER DEFAULT 0")
                     conn.commit()
 
+                # Seed default user if not exists
+                cursor.execute("SELECT count(*) FROM users")
+                if cursor.fetchone()[0] == 0:
+                    logger.info("Seeding default user: Beto May")
+                    cursor.execute("INSERT INTO users (username, pin, created_at) VALUES (?, ?, ?)", ('Beto May', '0295', datetime.now()))
+                    conn.commit()
+
                 logger.info("Database initialized successfully.")
         except sqlite3.Error as e:
             logger.error(f"Error initializing database: {e}")
@@ -96,6 +103,23 @@ class DBManager:
             return False
         except sqlite3.Error as e:
             logger.error(f"Error creating user: {e}")
+            return False
+
+    def delete_user(self, username: str) -> bool:
+        """Deletes a user by username."""
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM users WHERE username = ?", (username,))
+                conn.commit()
+                if cursor.rowcount > 0:
+                    logger.info(f"User deleted: {username}")
+                    return True
+                else:
+                    logger.warning(f"User not found for deletion: {username}")
+                    return False
+        except sqlite3.Error as e:
+            logger.error(f"Error deleting user: {e}")
             return False
 
     def verify_user(self, username: str, pin: str) -> bool:
@@ -129,7 +153,7 @@ class DBManager:
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE notes SET completed = 1 WHERE id = ?", (note_id,))
+                cursor.execute("UPDATE notes SET completed = 1, status = 'completed' WHERE id = ?", (note_id,))
                 conn.commit()
                 logger.info(f"Note {note_id} marked as completed")
                 return True

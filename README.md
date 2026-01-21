@@ -1,126 +1,314 @@
- # **PaperToPlan AI 🧠📝**
+# 🎯 PaperToPlan AI
 
-**De Papel a Ejecución:** Digitaliza, Analiza y Estructura tus ideas manuscritas con IA 100% Local.
+**Gestión Inteligente de Proyectos con Inteligencia Artificial**
 
-## **📋 Descripción**
+PaperToPlan AI es una aplicación desktop que transforma notas manuscritas, texto e imágenes en planes de implementación detallados utilizando modelos de IA locales.
 
-**PaperToPlan AI** es una aplicación de escritorio diseñada para desarrolladores y gestores que necesitan transformar el caos de las notas manuscritas en planes de proyecto estructurados y ejecutables sin comprometer la privacidad.
+![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey)
 
-A diferencia de los OCR tradicionales que fallan con la caligrafía humana, PaperToPlan utiliza una estrategia híbrida de **Visión Multimodal (LLaVA/Moondream)** y **OCR** para interpretar diagramas y texto manuscrito. Todo el procesamiento ocurre localmente en tu máquina utilizando **Ollama**, garantizando que tus datos sensibles o propiedad intelectual nunca salgan de tu ordenador.
+---
 
-## **✨ Características Principales**
+## ✨ Características
 
-* **🔐 Privacidad Total (Local-First):** Ejecución 100% offline. Tus ideas no se suben a ninguna nube ni API de terceros.  
-* **👁️ Visión Inteligente:** Integración con modelos multimodales (LLaVA) para entender el contexto visual de una nota, flechas y listas desordenadas, no solo caracteres sueltos.  
-* **📊 Análisis de Factibilidad Automático:** La IA evalúa tu idea y genera un reporte JSON con:  
-  * Score de factibilidad (0-100).  
-  * Consideraciones técnicas y stack recomendado.  
-  * Tiempo estimado de implementación.  
-*   **🗂️ Gestión Temporal:** Clasificación automática de notas en el dashboard según su complejidad: *Corto, Medio o Largo Plazo*.  
-*   **📱 Web Companion App:** Escanea un código QR para conectar tu móvil (iOS/Android) y usarlo como escáner de notas o visor de planes.
-*   **🎨 UI Moderna:** Interfaz oscura, limpia y responsiva construida con CustomTkinter.
+### 🖼️ **Captura Multiformato**
+- 📸 **Webcam**: Captura notas directamente desde tu cámara
+- 📱 **Mobile**: Sube imágenes desde tu teléfono
+- ✍️ **Texto**: Escribe ideas directamente en la app
 
-## **🛠️ Stack Tecnológico**
+### 🤖 **Análisis Inteligente con IA**
+- 🔍 **OCR Híbrido**: EasyOCR + Modelos de Visión (Qwen3-VL)
+- 🧠 **Análisis Profundo**: Mistral 3 para análisis de viabilidad
+- 📊 **Scoring Automático**: Evaluación de factibilidad 0-100
+- ⏱️ **Estimación de Tiempo**: Corto, mediano o largo plazo
+- 🛠️ **Stack Recomendado**: Tecnologías sugeridas por categoría
 
-* **Lenguaje:** Python 3.10+  
-* **Interfaz Gráfica:** [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)  
-* **Motor de IA:** [Ollama](https://ollama.com/) (API Local)  
-* **Modelos IA:**  
-  * *Cerebro (Lógica):* llama3 o phi3  
-  * *Ojos (Visión):* llava (para GPUs potentes) o moondream (para eficiencia)  
-* **OCR Rápido:** EasyOCR \+ OpenCV (Pre-procesamiento de imagen)  
-* **Persistencia:** SQLite
-* **Web Companion:** FastAPI + HTML5/JS (PWA para iOS y Android)
+### 📋 **Gestión de Proyectos**
+- 📈 **Dashboard Interactivo**: Visualiza todos tus proyectos
+- 🎯 **Kanban Board**: Organiza por tiempo de implementación
+- 🔎 **Búsqueda Avanzada**: Filtra por estado, tiempo, score
+- 📝 **Edición en Tiempo Real**: Modifica notas sobre la marcha
 
-## **⚙️ Requisitos Previos**
+### 🌐 **Servidor Mobile**
+- 📱 **Companion App**: Acceso desde cualquier dispositivo móvil
+- 🔗 **QR Code**: Conexión instantánea
+- 🔐 **Autenticación**: Sistema de usuarios con PIN
 
-Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
+### 🎨 **Interfaz Moderna**
+- 🌙 **Dark Mode**: Modo oscuro elegante
+- 🎨 **Diseño Cyberpunk**: Tema futurista opcional
+- 📱 **Responsive**: Adapta a cualquier tamaño de pantalla
+- ⚡ **Animaciones Suaves**: Micro-interacciones pulidas
 
-1. **Python 3.10** o superior.  
-2. **Ollama** instalado y ejecutándose. [Descargar aquí](https://ollama.com).  
-3. Modelos descargados:  
-   Abre tu terminal y ejecuta:  
-   ollama pull llama3  
-   ollama pull llava  
-   \# Opcional: para equipos con menos RAM/GPU  
-   ollama pull moondream
+---
 
-## **🚀 Instalación y Uso**
+## 🚀 Inicio Rápido
 
-1. **Clonar el repositorio:**  
-   git clone \[https://github.com/tu-usuario/PaperToPlan.git\](https://github.com/tu-usuario/PaperToPlan.git)  
-   cd PaperToPlan
+### Prerequisitos
 
-2. **Crear un entorno virtual:**  
-   python \-m venv venv  
-   \# En Windows:  
-   .\\venv\\Scripts\\activate  
-   \# En macOS/Linux:  
-   source venv/bin/activate
+```bash
+# Python 3.10+
+python3 --version
 
-3. **Instalar dependencias:**  
-   pip install \-r requirements.txt
+# Node.js 18+
+node --version
 
-   *(El archivo requirements.txt debe incluir: customtkinter, ollama, easyocr, opencv-python, pillow)*  
-4. Ejecutar la aplicación:  
-   Asegúrate de que ollama serve esté corriendo en otra terminal o en segundo plano.  
-   python main.py
+# Ollama (para modelos de IA)
+curl https://ollama.ai/install.sh | sh
+```
 
-## **📖 Guía de Uso Rápida**
+### Instalación
 
-1. **Nueva Nota:** Haz clic en el botón "+" y selecciona una foto de tu libreta o servilleta.  
-2. **Procesamiento:** La app intentará leerla primero con OCR rápido. Si es confusa, usará LLaVA (esto puede tardar unos segundos dependiendo de tu GPU).  
-3. **Revisión:** Verás la tarjeta de la nota en el tablero. Haz clic para ver el "Plan de Mejora" generado por la IA.  
-4. **Filtrado:** Usa los filtros laterales para ver solo proyectos de "Corto Plazo" para victorias rápidas.
+```bash
+# 1. Clonar el repositorio
+git clone https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io.git
+cd Paper-to-Plan-Ai.io
 
-## **🗺️ Roadmap (Estado Actual)**
+# 2. Instalar dependencias de Python
+pip install -r backend/requirements.txt
 
-### Completado ✅
-* **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).
-* **Fase 2:** Módulo de Visión Híbrido (EasyOCR + LLaVA fallback).
-* **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
-* **Fase 4:** Base de datos y optimización de hilos (Threading).
-* **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
-* **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
-* **Fase 7:** Pulido UI (Banner de Estado, Validación).
-* **Fase 8:** Embellecimiento UI (Layout Rico, Sidebar Pulido).
-* **Fase 9:** Personalización de Escritura (Few-Shot Learning).
-* **Fase 10:** Compañero Móvil (PWA Local con QR).
-* **Fase 11:** Mobile Enhancements (Ver notas en móvil).
-* **Fase 12:** iOS Compatibility (Soporte nativo PWA).
-* **Fase 13:** Seguridad & Configuración (Autenticación PIN).
-* **Fase 14:** Multi-Usuario (Gestión de usuarios con PINs únicos).
-* **Fase 15:** Tracking & AI+ (Marcar proyectos completados, títulos creativos con IA).
-* **Fase 16:** UI Avanzada (Drag & Drop, Dashboard con gráficos, Export PDF/Markdown).
-* **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
-* **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
+# 3. Descargar modelos de IA
+ollama pull ministral-3:14b
+ollama pull qwen3-vl:latest
 
-* **Fase 19:** App Nativa Android (MVP) - Implementación inicial en Kotlin/Compose.
+# 4. Instalar dependencias de Node
+cd desktop-app
+npm install
 
-### Próximas Fases 🚀
-* **Fase 20:** App Nativa de Escritorio (Electron/Tauri).
-* **Fase 21:** Mejora Gráfica Android (UI/UX Premium).
-* **Fase 22:** Integración con Calendarios (Google/Outlook).
+# 5. Ejecutar en modo desarrollo
+npm run tauri dev
+```
 
-## **✨ Características Implementadas**
+---
 
-* **🎙️ Notas de Voz:** Transcripción automática con Whisper para capturar ideas habladas.
-* **📊 Dashboard Inteligente:** Gráficos en tiempo real de progreso, tiempos de implementación y factibilidad.
-* **⚡ Análisis Refinado:** Prompt V2 con detección estricta de tiempos y scoring variado.
-* **🔐 Privacidad Total (Local-First):** Ejecución 100% offline con Ollama.
-* **📱 Compañero Móvil:** Escanea un QR y usa tu teléfono como cámara inalámbrica.
-* **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.
-* **🧠 IA en Español:** Análisis de factibilidad y planes generados en español usando **gemma3:4B**.
-* **✍️ Aprendizaje Personalizado:** La IA aprende de tus correcciones para entender mejor tu letra.
-* **👁️ Visión Híbrida:** OCR rápido para texto claro, LLaVA para manuscritos complejos.
-* **🗑️ Gestión Completa:** Crea, visualiza, edita y elimina notas.
-* **🔄 Regeneración:** Corrige el texto extraído y regenera el plan si la IA falla.
-* **🛡️ Validación:** Banners de estado y validación de respuestas para evitar errores.
+## 📦 Build para Producción
 
-## **🤝 Contribución**
+### Método Rápido (Recomendado)
 
-¡Las contribuciones son bienvenidas\! Si tienes ideas para mejorar los prompts del sistema o la eficiencia del OCR, por favor abre un *issue* o envía un *pull request*.
+```bash
+# Ejecutar script automatizado
+./build-production.sh
+```
 
-## **📄 Licencia**
+### Método Manual
 
-Este proyecto está bajo la Licencia MIT \- eres libre de usarlo y modificarlo.
+```bash
+cd desktop-app
+npm run tauri build
+```
+
+Los archivos se generarán en:
+```
+desktop-app/src-tauri/target/release/bundle/
+```
+
+**Ver guía completa**: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+## 🛠️ Configuración
+
+### Configuración de IA
+
+La aplicación soporta configuración personalizada de modelos de Ollama:
+
+1. Abre **Configuración** desde el sidebar
+2. Configura:
+   - **Host**: URL de Ollama (default: `http://localhost:11434`)
+   - **Logic Model**: Modelo para análisis (default: `ministral-3:14b`)
+   - **Vision Model**: Modelo para OCR (default: `qwen3-vl:latest`)
+3. Prueba la conexión con el botón **Probar Conexión**
+4. Guarda los cambios
+
+La configuración se persiste en `ai_config.json` y se carga automáticamente.
+
+### Usuarios
+
+- **Usuario por defecto**: Beto May
+- **PIN**: 0295
+
+Puedes crear nuevos usuarios desde la configuración.
+
+---
+
+## 📱 Servidor Mobile
+
+### Activar el Servidor
+
+1. Click en **SERVIDOR MÓVIL** en el sidebar
+2. Escanea el código QR con tu teléfono
+3. Accede a la interfaz web móvil
+
+### URL Manual
+
+Si el QR no funciona, accede manualmente:
+```
+http://TU_IP_LOCAL:8001
+```
+
+---
+
+## 🏗️ Arquitectura
+
+```
+Paper-to-Plan-Ai.io/
+├── backend/              # Backend Python (FastAPI)
+│   ├── server.py        # API REST y WebSockets
+│   ├── ai_manager.py    # Motor de IA (OCR + Análisis)
+│   ├── config_manager.py # Gestión de configuración
+│   └── tauri_server.py  # Servidor para Tauri
+├── desktop-app/         # Frontend (React + Tauri)
+│   ├── src/
+│   │   ├── components/  # Componentes React
+│   │   ├── api/         # Cliente API
+│   │   └── App.tsx      # Aplicación principal
+│   └── src-tauri/       # Backend Rust (Tauri)
+├── database/            # Gestión de base de datos
+│   └── db_manager.py    # SQLite manager
+├── web/                 # Interfaz web móvil
+│   └── mobile_index.html
+└── captures/            # Imágenes capturadas
+```
+
+---
+
+## 🔧 Stack Tecnológico
+
+### Frontend
+- **React 18** - UI Library
+- **TypeScript** - Type Safety
+- **Vite** - Build Tool
+- **Tailwind CSS** - Styling
+- **Tauri** - Desktop Framework
+- **Lucide Icons** - Iconography
+
+### Backend
+- **Python 3.10+** - Language
+- **FastAPI** - API Framework
+- **SQLite** - Database
+- **Ollama** - AI Models
+- **EasyOCR** - Optical Character Recognition
+- **OpenCV** - Image Processing
+
+### AI Models
+- **Mistral 3 14B** - Logic & Analysis
+- **Qwen3-VL** - Vision & OCR
+
+---
+
+## 🧪 Desarrollo
+
+### Estructura de Ramas
+
+- `main` - Producción estable
+- `feat-ui-redesign` - Desarrollo activo
+- `feature/*` - Nuevas características
+- `fix/*` - Correcciones de bugs
+
+### Comandos de Desarrollo
+
+```bash
+# Desarrollo con hot-reload
+cd desktop-app
+npm run tauri dev
+
+# Build de producción
+npm run tauri build
+
+# Linter
+npm run lint
+
+# Type check
+npm run type-check
+```
+
+### Testing
+
+```bash
+# Backend
+cd backend
+pytest
+
+# Frontend
+cd desktop-app
+npm test
+```
+
+---
+
+## 📊 Roadmap
+
+### v1.0 (Actual)
+- [x] OCR híbrido (EasyOCR + Vision Models)
+- [x] Análisis con IA local (Ollama)
+- [x] Dashboard y Kanban
+- [x] Servidor mobile
+- [x] Sistema de configuración persistente
+- [x] Manejo de notas con estructura compleja
+
+### v1.1 (Próximo)
+- [ ] Exportar proyectos a Markdown/PDF
+- [ ] Colaboración multi-usuario en tiempo real
+- [ ] Integración con GitHub/GitLab
+- [ ] Templates de proyecto predefinidos
+- [ ] Análisis de tendencias y estadísticas
+
+### v2.0 (Futuro)
+- [ ] Fine-tuning de modelos personalizados
+- [ ] Asistente de voz
+- [ ] Integración con Jira/Trello
+- [ ] App móvil nativa
+- [ ] Sync en la nube
+
+---
+
+## 🤝 Contribuir
+
+¡Las contribuciones son bienvenidas! Por favor:
+
+1. Fork el proyecto
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
+
+---
+
+## 👨‍💻 Autor
+
+**Alberto Campos de la Torre**
+
+- GitHub: [@Alberto-Campos-de-la-Torre](https://github.com/Alberto-Campos-de-la-Torre)
+
+---
+
+## 🙏 Agradecimientos
+
+- [Ollama](https://ollama.ai/) - Modelos de IA locales
+- [Tauri](https://tauri.app/) - Framework desktop
+- [FastAPI](https://fastapi.tiangolo.com/) - Framework backend
+- [Mistral AI](https://mistral.ai/) - Modelos de lenguaje
+- [Qwen](https://github.com/QwenLM) - Modelos de visión
+
+---
+
+## 📞 Soporte
+
+¿Problemas? ¿Preguntas?
+
+- 📧 Email: [email protected]
+- 🐛 Issues: [GitHub Issues](https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io/issues)
+- 📖 Docs: [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+---
+
+<p align="center">
+  Hecho con ❤️ y 🤖 por Alberto Campos de la Torre
+</p>

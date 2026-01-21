@@ -1,0 +1,5 @@
+{
+    "host": "http://localhost:11434",
+    "logic_model": "ministral-3:14b",
+    "vision_model": "qwen3-vl:latest"
+}
