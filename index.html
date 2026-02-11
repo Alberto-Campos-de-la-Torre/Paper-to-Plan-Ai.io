@@ -4,24 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaperToPlan AI - Presentación de Proyecto</title>
+    <title>MEGI Records - Expedientes Medicos Digitales</title>
+    <meta name="description" content="Sistema de expedientes medicos digitales con IA local. Digitaliza notas clinicas, recetas y laboratorios en formato SOAP.">
+    <meta name="theme-color" content="#2d3b2d">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
+                        display: ['Cormorant Garamond', 'Georgia', 'serif'],
+                        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
-                        brand: {
-                            dark: '#0f172a',
-                            card: '#1e293b',
-                            accent: '#38bdf8', // Sky blue
-                            purple: '#818cf8', // Indigo
-                            success: '#34d399'
+                        megi: {
+                            forest: '#2d3b2d',
+                            'forest-light': '#3d5a3d',
+                            cream: '#f5f3ee',
+                            'cream-dark': '#ede9e0',
+                            gold: '#8b7355',
+                            'gold-light': '#a68b6b',
+                            olive: '#5e6a48',
+                            surface: '#ffffff',
+                            card: '#faf8f5',
+                            border: '#d4cfc7',
                         }
                     },
                     animation: {
@@ -39,29 +48,16 @@
         }
     </script>
     <style>
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f3ee; }
+        ::-webkit-scrollbar-thumb { background: #d4cfc7; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #b8b0a4; }
 
         .glass-effect {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(212, 207, 199, 0.5);
         }
 
         .reveal {
@@ -74,165 +70,138 @@
             opacity: 1;
             transform: translateY(0);
         }
+
+        .gradient-forest {
+            background: linear-gradient(135deg, #2d3b2d 0%, #3d5a3d 50%, #5e6a48 100%);
+        }
     </style>
 </head>
 
-<body class="bg-brand-dark text-gray-100 font-sans overflow-x-hidden">
+<body class="bg-megi-cream text-gray-800 font-sans overflow-x-hidden">
 
     <!-- Navigation -->
     <nav class="fixed w-full z-50 glass-effect px-6 py-4 top-0 left-0">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <i class="fas fa-brain text-brand-accent text-2xl"></i>
-                <span class="font-bold text-xl tracking-tight">PaperToPlan <span
-                        class="text-brand-accent">AI</span></span>
+                <i class="fas fa-notes-medical text-megi-forest text-2xl"></i>
+                <span class="font-display font-bold text-xl tracking-tight text-megi-forest">MEGI <span class="text-megi-gold">Records</span></span>
             </div>
-            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-300">
-                <a href="#concept" class="hover:text-white transition">Concepto</a>
-                <a href="#feasibility" class="hover:text-white transition">Factibilidad</a>
-                <a href="#tech" class="hover:text-white transition">Tecnología</a>
-                <a href="#roadmap" class="hover:text-white transition">Roadmap</a>
+            <div class="hidden md:flex gap-6 text-sm font-medium text-gray-500">
+                <a href="#problema" class="hover:text-megi-forest transition">Problema</a>
+                <a href="#features" class="hover:text-megi-forest transition">Funciones</a>
+                <a href="#tech" class="hover:text-megi-forest transition">Stack</a>
+                <a href="#workflow" class="hover:text-megi-forest transition">Flujo</a>
+                <a href="#roadmap" class="hover:text-megi-forest transition">Roadmap</a>
             </div>
-            <a href="#contact"
-                class="bg-brand-accent text-brand-dark font-bold py-2 px-4 rounded-full text-sm hover:bg-sky-300 transition transform hover:scale-105">
-                Ver Demo
+            <a href="https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io" target="_blank"
+                class="bg-megi-forest text-white font-bold py-2 px-4 rounded-full text-sm hover:bg-megi-forest-light transition transform hover:scale-105">
+                <i class="fab fa-github mr-1"></i> Repositorio
             </a>
         </div>
     </nav>
 
     <!-- Hero Section -->
     <header class="relative min-h-screen flex items-center justify-center pt-16 overflow-hidden">
-        <!-- Background Elements -->
-        <div
-            class="absolute top-0 left-1/4 w-96 h-96 bg-brand-purple rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow">
-        </div>
-        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-accent rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"
-            style="animation-delay: 1s;"></div>
+        <div class="absolute top-20 left-1/4 w-96 h-96 bg-megi-gold rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse-slow"></div>
+        <div class="absolute bottom-20 right-1/4 w-96 h-96 bg-megi-forest rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse-slow" style="animation-delay: 1s;"></div>
 
         <div class="container mx-auto px-4 text-center z-10">
-            <div class="inline-block mb-4 px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-xs font-semibold tracking-wider text-brand-accent uppercase opacity-0 animate-fade-in-up"
-                style="animation-delay: 0.1s;">
-                Inteligencia Artificial Local & Privada
+            <div class="inline-block mb-4 px-4 py-1.5 rounded-full bg-megi-forest/10 border border-megi-forest/20 text-xs font-semibold tracking-wider text-megi-forest uppercase opacity-0 animate-fade-in-up" style="animation-delay: 0.1s;">
+                IA Local &bull; Privacidad Total &bull; HIPAA-Friendly
             </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight opacity-0 animate-fade-in-up"
-                style="animation-delay: 0.3s;">
-                De Papel a <span
-                    class="text-transparent bg-clip-text bg-gradient-to-r from-brand-accent to-brand-purple">Ejecución</span>
+            <h1 class="font-display text-5xl md:text-7xl font-bold mb-6 leading-tight text-megi-forest opacity-0 animate-fade-in-up" style="animation-delay: 0.3s;">
+                Expedientes Medicos <br><span class="text-megi-gold">Digitales con IA</span>
             </h1>
-            <p class="text-xl md:text-2xl text-gray-400 max-w-2xl mx-auto mb-10 opacity-0 animate-fade-in-up"
-                style="animation-delay: 0.5s;">
-                Transforma notas manuscritas en planes de proyecto estructurados utilizando IA multimodal corriendo 100%
-                en tu equipo.
+            <p class="text-xl md:text-2xl text-gray-500 max-w-3xl mx-auto mb-10 opacity-0 animate-fade-in-up" style="animation-delay: 0.5s;">
+                Digitaliza documentos clinicos, genera notas SOAP estructuradas y gestiona pacientes con inteligencia artificial corriendo 100% en tu equipo.
             </p>
-            <div class="flex flex-col md:flex-row justify-center gap-4 opacity-0 animate-fade-in-up"
-                style="animation-delay: 0.7s;">
-                <a href="#concept"
-                    class="px-8 py-4 bg-gradient-to-r from-brand-accent to-brand-purple rounded-lg font-bold text-brand-dark shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 transition transform hover:-translate-y-1">
-                    Explorar Proyecto
+            <div class="flex flex-col md:flex-row justify-center gap-4 opacity-0 animate-fade-in-up" style="animation-delay: 0.7s;">
+                <a href="#features" class="px-8 py-4 gradient-forest rounded-lg font-bold text-white shadow-lg hover:shadow-xl transition transform hover:-translate-y-1">
+                    Explorar Funciones
                 </a>
-                <button
-                    onclick="window.open('https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io','_blank')"
-                    class="px-8 py-4 glass-effect rounded-lg font-bold hover:bg-gray-800 transition flex items-center justify-center gap-2"
-                    target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-github"></i> Ver Repositorio
-                </button>
+                <a href="https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io" target="_blank"
+                    class="px-8 py-4 bg-white border border-megi-border rounded-lg font-bold text-megi-forest hover:bg-megi-card transition flex items-center justify-center gap-2">
+                    <i class="fab fa-github"></i> Ver Codigo
+                </a>
             </div>
         </div>
 
-        <!-- Scroll Indicator -->
-        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-gray-500">
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce text-megi-gold">
             <i class="fas fa-chevron-down"></i>
         </div>
     </header>
 
-    <!-- Concept Section -->
-    <section id="concept" class="py-20 bg-brand-dark relative">
+    <!-- Problem Section -->
+    <section id="problema" class="py-20 bg-white relative">
         <div class="max-w-7xl mx-auto px-4">
             <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div class="reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">El Problema: <span class="text-gray-400">Caos
-                            Analógico</span></h2>
-                    <p class="text-gray-300 mb-6 text-lg leading-relaxed">
-                        Las mejores ideas nacen en servilletas y cuadernos, pero mueren allí porque digitalizarlas es
-                        tedioso. Los OCR tradicionales fallan con la letra manuscrita y subir datos confidenciales a la
-                        nube es un riesgo.
+                    <h2 class="font-display text-3xl md:text-4xl font-bold mb-6 text-megi-forest">El Problema: <span class="text-gray-400">Documentos Clinicos en Papel</span></h2>
+                    <p class="text-gray-500 mb-6 text-lg leading-relaxed">
+                        Los profesionales de la salud generan diariamente notas clinicas, recetas y resultados de laboratorio en papel. Digitalizarlos manualmente consume tiempo valioso y subir datos de pacientes a la nube compromete la privacidad.
                     </p>
                     <ul class="space-y-4">
                         <li class="flex items-start gap-3">
-                            <div
-                                class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-times text-xs"></i>
                             </div>
-                            <span class="text-gray-400">OCR tradicional falla con letra humana.</span>
+                            <span class="text-gray-500">OCR tradicional falla con letra medica manuscrita.</span>
                         </li>
                         <li class="flex items-start gap-3">
-                            <div
-                                class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-times text-xs"></i>
                             </div>
-                            <span class="text-gray-400">Riesgo de privacidad en APIs en la nube.</span>
+                            <span class="text-gray-500">Datos de pacientes en APIs en la nube = riesgo de privacidad.</span>
                         </li>
                         <li class="flex items-start gap-3">
-                            <div
-                                class="mt-1 w-6 h-6 rounded bg-red-500/20 text-red-400 flex items-center justify-center flex-shrink-0">
+                            <div class="mt-1 w-6 h-6 rounded bg-red-100 text-red-500 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-times text-xs"></i>
                             </div>
-                            <span class="text-gray-400">Falta de estructura y seguimiento temporal.</span>
+                            <span class="text-gray-500">Falta de estructura: sin formato SOAP, sin codigos CIE-10 automaticos.</span>
                         </li>
                     </ul>
                 </div>
 
-                <div
-                    class="glass-effect p-8 rounded-2xl border border-gray-700 reveal delay-200 relative overflow-hidden group">
-                    <div
-                        class="absolute -right-10 -top-10 w-32 h-32 bg-brand-accent opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition">
-                    </div>
-                    <h3 class="text-2xl font-bold text-white mb-4 flex items-center gap-3">
-                        <i class="fas fa-robot text-brand-accent"></i> La Solución
+                <div class="bg-megi-card p-8 rounded-2xl border border-megi-border reveal delay-200 relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-megi-gold opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition"></div>
+                    <h3 class="font-display text-2xl font-bold text-megi-forest mb-4 flex items-center gap-3">
+                        <i class="fas fa-stethoscope text-megi-gold"></i> La Solucion: MEGI Records
                     </h3>
                     <div class="space-y-6">
                         <div class="flex gap-4">
-                            <div
-                                class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-megi-cream flex items-center justify-center text-megi-forest border border-megi-border">
                                 <i class="fas fa-eye text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-200">Visión Multimodal (LLaVA)</h4>
-                                <p class="text-sm text-gray-400">No solo lee letras, "entiende" diagramas y garabatos
-                                    visuales.</p>
+                                <h4 class="font-bold text-gray-700">Vision Multimodal</h4>
+                                <p class="text-sm text-gray-500">Interpreta documentos manuscritos e impresos con modelos de vision (qwen3-vl).</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
-                            <div
-                                class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
-                                <i class="fas fa-server text-xl"></i>
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-megi-cream flex items-center justify-center text-megi-forest border border-megi-border">
+                                <i class="fas fa-file-medical text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-200">Soberanía de Datos</h4>
-                                <p class="text-sm text-gray-400">Todo corre en localhost con Ollama. Tus secretos
-                                    industriales no salen de tu PC.</p>
+                                <h4 class="font-bold text-gray-700">Analisis SOAP + CIE-10</h4>
+                                <p class="text-sm text-gray-500">Estructura automatica en Subjetivo, Objetivo, Evaluacion y Plan con codigos diagnosticos.</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
-                            <div
-                                class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
-                                <i class="fas fa-tasks text-xl"></i>
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-megi-cream flex items-center justify-center text-megi-forest border border-megi-border">
+                                <i class="fas fa-lock text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-200">Gestión Automatizada</h4>
-                                <p class="text-sm text-gray-400">La IA clasifica tareas por tiempo de implementación y
-                                    genera planes de acción.</p>
+                                <h4 class="font-bold text-gray-700">100% Local con Ollama</h4>
+                                <p class="text-sm text-gray-500">Los datos clinicos nunca salen de tu equipo. Sin nube, sin riesgos.</p>
                             </div>
                         </div>
                         <div class="flex gap-4">
-                            <div
-                                class="flex-shrink-0 w-12 h-12 rounded-lg bg-gray-800 flex items-center justify-center text-brand-purple border border-gray-700">
+                            <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-megi-cream flex items-center justify-center text-megi-forest border border-megi-border">
                                 <i class="fas fa-mobile-alt text-xl"></i>
                             </div>
                             <div>
-                                <h4 class="font-bold text-gray-200">Web Companion App</h4>
-                                <p class="text-sm text-gray-400">Escanea el QR y usa tu móvil como escáner de notas.
-                                    Compatible con iOS y Android.</p>
+                                <h4 class="font-bold text-gray-700">Companion Movil</h4>
+                                <p class="text-sm text-gray-500">Escanea QR y usa tu celular como escaner de documentos medicos.</p>
                             </div>
                         </div>
                     </div>
@@ -241,293 +210,430 @@
         </div>
     </section>
 
-    <!-- Feasibility Analysis -->
-    <section id="feasibility" class="py-20 bg-gray-900 relative">
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-megi-cream relative">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-16 reveal">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">Análisis de Factibilidad</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">
-                    Evaluación técnica basada en la integración de modelos LLaVA y optimización con Ollama.
-                </p>
+                <h2 class="font-display text-3xl md:text-4xl font-bold mb-4 text-megi-forest">Funciones Principales</h2>
+                <p class="text-gray-500 max-w-2xl mx-auto">Todo lo que necesita un consultorio para digitalizar y gestionar expedientes clinicos.</p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-10">
-                <!-- Score Cards -->
-                <div class="space-y-6 reveal">
-                    <!-- Score Item -->
-                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700">
-                        <div class="flex justify-between mb-2">
-                            <span class="font-bold text-gray-200">Privacidad de Datos</span>
-                            <span class="text-brand-success font-mono">100/100</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2.5">
-                            <div class="bg-brand-success h-2.5 rounded-full" style="width: 100%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Ejecución 100% offline sin dependencias externas.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-user-injured text-xl"></i>
                     </div>
-
-                    <!-- Score Item -->
-                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700">
-                        <div class="flex justify-between mb-2">
-                            <span class="font-bold text-gray-200">Procesamiento NLP (Llama 3)</span>
-                            <span class="text-brand-accent font-mono">90/100</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2.5">
-                            <div class="bg-brand-accent h-2.5 rounded-full" style="width: 90%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Modelos cuantizados (4-bit) ofrecen alto rendimiento en
-                            local.</p>
-                    </div>
-
-                    <!-- Score Item -->
-                    <div class="bg-brand-card p-6 rounded-xl border border-gray-700 relative overflow-hidden">
-                        <div
-                            class="absolute right-0 top-0 bg-brand-purple text-xs px-2 py-1 rounded-bl font-bold text-white">
-                            MEJORADO</div>
-                        <div class="flex justify-between mb-2">
-                            <span class="font-bold text-gray-200">Digitalización (LLaVA/Moondream)</span>
-                            <span class="text-brand-purple font-mono">85/100</span>
-                        </div>
-                        <div class="w-full bg-gray-700 rounded-full h-2.5">
-                            <div class="bg-brand-purple h-2.5 rounded-full" style="width: 85%"></div>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-2">Subió de 40 a 85 gracias a la integración de modelos de
-                            Visión Multimodal.</p>
-                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Gestion de Pacientes</h4>
+                    <p class="text-sm text-gray-500">CRUD completo: datos demograficos, alergias, condiciones, tipo de sangre, contactos de emergencia.</p>
                 </div>
 
-                <!-- Stats/Visual -->
-                <div
-                    class="bg-brand-card rounded-2xl p-8 border border-gray-700 flex flex-col justify-center items-center text-center reveal delay-200">
-                    <div class="relative w-48 h-48 mb-6">
-                        <!-- FIX: Movida la animación de spin al SVG para centrado perfecto -->
-                        <svg class="w-full h-full animate-[spin_3s_linear_infinite_reverse]" viewBox="0 0 36 36">
-                            <path class="text-gray-700"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="currentColor" stroke-width="2" />
-                            <path class="text-brand-accent" stroke-dasharray="76, 100"
-                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                        </svg>
-                        <div class="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center">
-                            <span class="text-4xl font-bold text-white">76%</span>
-                            <span class="text-xs text-gray-400">Score Promedio</span>
-                        </div>
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-100">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-notes-medical text-xl"></i>
                     </div>
-                    <p class="text-gray-300 font-medium">Viable para MVP</p>
-                    <p class="text-sm text-gray-500 mt-2">La principal barrera es el hardware (GPU), mitigada por el uso
-                        de modelos ligeros como Moondream.</p>
+                    <h4 class="font-bold text-gray-800 mb-2">Notas SOAP</h4>
+                    <p class="text-sm text-gray-500">La IA estructura cada documento en formato SOAP con diagnosticos CIE-10 y score de confianza.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-200">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-pills text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Extraccion de Recetas</h4>
+                    <p class="text-sm text-gray-500">Medicamentos, dosis, frecuencia, duracion e instrucciones extraidos automaticamente.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-flask text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Resultados de Laboratorio</h4>
+                    <p class="text-sm text-gray-500">Valores con unidades, rangos de referencia e indicadores de anomalia.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-100">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-file-pdf text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Generacion de PDFs</h4>
+                    <p class="text-sm text-gray-500">Notas medicas y recetas en PDF profesional listo para imprimir y archivar.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-200">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-columns text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Tablero Kanban</h4>
+                    <p class="text-sm text-gray-500">Flujo visual: Pendiente &rarr; En Proceso &rarr; Procesado &rarr; Revisado.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-chart-pie text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Estadisticas</h4>
+                    <p class="text-sm text-gray-500">Graficas de tipos de documento, estados de consulta, pacientes y metricas del consultorio.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-100">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-users text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Multi-Usuario</h4>
+                    <p class="text-sm text-gray-500">Multiples doctores y staff con autenticacion por PIN individual.</p>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl border border-megi-border hover:shadow-lg transition reveal delay-200">
+                    <div class="w-12 h-12 rounded-lg gradient-forest flex items-center justify-center text-white mb-4">
+                        <i class="fas fa-bolt text-xl"></i>
+                    </div>
+                    <h4 class="font-bold text-gray-800 mb-2">Tiempo Real</h4>
+                    <p class="text-sm text-gray-500">WebSockets para actualizaciones instantaneas cuando el analisis de IA completa.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Tech Stack -->
-    <section id="tech" class="py-20 bg-brand-dark border-t border-gray-800">
+    <section id="tech" class="py-20 bg-white border-t border-megi-border">
         <div class="max-w-7xl mx-auto px-4">
             <div class="text-center mb-12 reveal">
-                <h2 class="text-3xl font-bold">Stack Tecnológico</h2>
+                <h2 class="font-display text-3xl font-bold text-megi-forest">Stack Tecnologico</h2>
+                <p class="text-gray-500 mt-2">Arquitectura moderna, completamente local</p>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <!-- Tech Card -->
-                <div
-                    class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal">
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal">
+                    <i class="fab fa-react text-5xl text-sky-500 mb-4"></i>
+                    <h4 class="font-bold text-sm">React 19</h4>
+                    <p class="text-xs text-gray-500 mt-1">Frontend + TypeScript</p>
+                </div>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-100">
+                    <i class="fab fa-rust text-5xl text-orange-600 mb-4"></i>
+                    <h4 class="font-bold text-sm">Tauri v2</h4>
+                    <p class="text-xs text-gray-500 mt-1">App Desktop</p>
+                </div>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-200">
                     <i class="fab fa-python text-5xl text-yellow-500 mb-4"></i>
-                    <h4 class="font-bold">Python</h4>
-                    <p class="text-xs text-gray-500 mt-1">Core Logic</p>
+                    <h4 class="font-bold text-sm">FastAPI</h4>
+                    <p class="text-xs text-gray-500 mt-1">Backend API</p>
                 </div>
-                <!-- Tech Card -->
-                <div
-                    class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-100">
-                    <div class="text-5xl mb-4">🦙</div>
-                    <h4 class="font-bold">Ollama</h4>
-                    <p class="text-xs text-gray-500 mt-1">Local AI Runner</p>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-300">
+                    <div class="text-5xl mb-4">&#129433;</div>
+                    <h4 class="font-bold text-sm">Ollama</h4>
+                    <p class="text-xs text-gray-500 mt-1">IA Local</p>
                 </div>
-                <!-- Tech Card -->
-                <div
-                    class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-200">
-                    <i class="fas fa-desktop text-5xl text-blue-400 mb-4"></i>
-                    <h4 class="font-bold">CustomTkinter</h4>
-                    <p class="text-xs text-gray-500 mt-1">Modern GUI</p>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-400">
+                    <i class="fas fa-database text-5xl text-megi-forest mb-4"></i>
+                    <h4 class="font-bold text-sm">SQLite</h4>
+                    <p class="text-xs text-gray-500 mt-1">Base de Datos Local</p>
                 </div>
-                <!-- Tech Card -->
-                <div
-                    class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-300">
-                    <i class="fas fa-database text-5xl text-green-500 mb-4"></i>
-                    <h4 class="font-bold">SQLite</h4>
-                    <p class="text-xs text-gray-500 mt-1">Local DB</p>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal">
+                    <i class="fab fa-css3-alt text-5xl text-sky-400 mb-4"></i>
+                    <h4 class="font-bold text-sm">Tailwind v4</h4>
+                    <p class="text-xs text-gray-500 mt-1">Estilos</p>
                 </div>
-                <!-- Tech Card -->
-                <div
-                    class="p-6 bg-gray-800 rounded-xl border border-gray-700 flex flex-col items-center hover:border-brand-accent transition reveal delay-400">
-                    <i class="fas fa-mobile-alt text-5xl text-purple-500 mb-4"></i>
-                    <h4 class="font-bold">PWA / FastAPI</h4>
-                    <p class="text-xs text-gray-500 mt-1">iOS & Android</p>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-100">
+                    <i class="fas fa-file-pdf text-5xl text-red-500 mb-4"></i>
+                    <h4 class="font-bold text-sm">fpdf2</h4>
+                    <p class="text-xs text-gray-500 mt-1">Generacion PDFs</p>
+                </div>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-200">
+                    <i class="fas fa-plug text-5xl text-megi-gold mb-4"></i>
+                    <h4 class="font-bold text-sm">WebSockets</h4>
+                    <p class="text-xs text-gray-500 mt-1">Tiempo Real</p>
+                </div>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-300">
+                    <i class="fas fa-camera text-5xl text-purple-500 mb-4"></i>
+                    <h4 class="font-bold text-sm">EasyOCR</h4>
+                    <p class="text-xs text-gray-500 mt-1">OCR + OpenCV</p>
+                </div>
+                <div class="p-6 bg-megi-card rounded-xl border border-megi-border flex flex-col items-center hover:shadow-lg transition reveal delay-400">
+                    <i class="fas fa-mobile-alt text-5xl text-megi-olive mb-4"></i>
+                    <h4 class="font-bold text-sm">PWA</h4>
+                    <p class="text-xs text-gray-500 mt-1">Companion Movil</p>
+                </div>
+            </div>
+
+            <!-- AI Models -->
+            <div class="mt-12 bg-megi-card rounded-xl border border-megi-border p-8 reveal">
+                <h3 class="font-display text-xl font-bold text-megi-forest mb-4">Modelos de IA</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-lg gradient-forest flex items-center justify-center text-white flex-shrink-0">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">gemma3 <span class="text-xs text-gray-400 font-normal">— Logica y Analisis</span></h4>
+                            <p class="text-xs text-gray-500 mt-1">Clasificacion de documentos, analisis SOAP, extraccion de recetas y laboratorios, generacion de codigos CIE-10.</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-4 items-start">
+                        <div class="w-10 h-10 rounded-lg gradient-forest flex items-center justify-center text-white flex-shrink-0">
+                            <i class="fas fa-eye"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">qwen3-vl:8b <span class="text-xs text-gray-400 font-normal">— Vision</span></h4>
+                            <p class="text-xs text-gray-500 mt-1">Interpretacion visual de documentos medicos manuscritos e impresos. Transcripcion de datos clinicos, medicamentos y valores de laboratorio.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section id="workflow" class="py-20 bg-megi-cream">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="font-display text-3xl md:text-4xl font-bold text-megi-forest mb-4">Flujo de Trabajo</h2>
+                <p class="text-gray-500">Del papel al expediente digital en 7 pasos automatizados</p>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Captura</h4>
+                        <p class="text-sm text-gray-500">Sube imagen, usa webcam, companion movil o escribe manualmente una consulta.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">OCR</h4>
+                        <p class="text-sm text-gray-500">Extraccion de texto del documento fisico via EasyOCR + vision multimodal.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Clasificacion</h4>
+                        <p class="text-sm text-gray-500">La IA identifica el tipo: consulta, receta, resultado de laboratorio o referencia.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">4</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Analisis SOAP</h4>
+                        <p class="text-sm text-gray-500">Estructuracion en Subjetivo / Objetivo / Evaluacion / Plan con codigos CIE-10 y score de confianza.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">5</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Extraccion</h4>
+                        <p class="text-sm text-gray-500">Recetas (medicamento, dosis, frecuencia) y valores de laboratorio se guardan en tablas dedicadas.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">6</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Revision</h4>
+                        <p class="text-sm text-gray-500">El doctor revisa el analisis, corrige si es necesario y marca como revisado.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start reveal">
+                    <div class="w-10 h-10 rounded-full gradient-forest flex items-center justify-center text-white font-bold flex-shrink-0">7</div>
+                    <div class="bg-white p-4 rounded-xl border border-megi-border flex-1">
+                        <h4 class="font-bold text-megi-forest">Exportacion</h4>
+                        <p class="text-sm text-gray-500">Genera PDFs profesionales de notas medicas y recetas listos para imprimir.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Database Schema -->
+    <section class="py-20 bg-white border-t border-megi-border">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-display text-3xl font-bold text-megi-forest">Esquema de Datos</h2>
+                <p class="text-gray-500 mt-2">Base de datos SQLite local (<code class="font-mono text-xs bg-megi-cream px-2 py-0.5 rounded">megirecords.db</code>)</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4 reveal">
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-user-injured text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">patients</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Nombre, nacimiento, genero, tipo de sangre, alergias (JSON), condiciones (JSON), codigos CIE-10, contactos.</p>
+                </div>
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-stethoscope text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">consultations</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Paciente, doctor, tipo de documento, texto raw, analisis SOAP (JSON), estado, imagen, prioridad.</p>
+                </div>
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-pills text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">prescriptions</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Medicamento, dosis, frecuencia, duracion, instrucciones. Vinculado a consulta y paciente.</p>
+                </div>
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-flask text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">lab_results</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Estudio, valor, unidad, rango de referencia, indicador de anomalia, fecha.</p>
+                </div>
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-users text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">users</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Doctores y staff con username y PIN de autenticacion.</p>
+                </div>
+                <div class="bg-megi-card p-5 rounded-xl border border-megi-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-spell-check text-megi-forest"></i>
+                        <h4 class="font-bold text-sm font-mono">corrections</h4>
+                    </div>
+                    <p class="text-xs text-gray-500">Historial de correcciones OCR para mejorar la precision con el tiempo.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Roadmap -->
-    <section id="roadmap" class="py-20 px-4 bg-gradient-to-b from-brand-dark to-black">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl font-bold mb-12 text-center reveal">Roadmap de Implementación</h2>
+    <section id="roadmap" class="py-20 bg-megi-cream">
+        <div class="max-w-6xl mx-auto px-4">
+            <h2 class="font-display text-3xl font-bold mb-12 text-center text-megi-forest reveal">Roadmap</h2>
 
-            <!-- Phase Ranges -->
             <div class="grid md:grid-cols-3 gap-8 mb-12">
-                <!-- Phases 1-5: Foundation -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
+                <div class="bg-white rounded-xl p-6 border border-megi-border hover:shadow-lg transition reveal">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fases 1-5</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
-                            Completado</span>
+                        <span class="text-megi-forest font-bold">Fases 1-12</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-semibold">Completado</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Fundación</h3>
-                    <p class="text-sm text-gray-400 mb-4">Backend AI, Base de Datos, GUI Desktop y Pipeline de Visión
-                        Híbrida.</p>
-                    <ul class="text-xs text-gray-500 space-y-1">
-                        <li>• AI Engine (LLaVA + Gemma)</li>
-                        <li>• SQLite + CustomTkinter</li>
-                        <li>• OCR Híbrido (EasyOCR + LLaVA)</li>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">PaperToPlan AI (Base)</h3>
+                    <p class="text-sm text-gray-500 mb-4">Fundacion original: OCR hibrido, analisis IA, GUI desktop, Mobile PWA.</p>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>&#8226; Backend AI (LLaVA + Gemma)</li>
+                        <li>&#8226; CustomTkinter Desktop UI</li>
+                        <li>&#8226; OCR Hibrido + Vision</li>
+                        <li>&#8226; Companion Movil (QR + PWA)</li>
                     </ul>
                 </div>
 
-                <!-- Phases 6-9: Enhancement -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-100">
+                <div class="bg-white rounded-xl p-6 border border-megi-border hover:shadow-lg transition reveal delay-100">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fases 6-9</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
-                            Completado</span>
+                        <span class="text-megi-forest font-bold">Fases 13-19</span>
+                        <span class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded font-semibold">Completado</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Mejoras</h3>
-                    <p class="text-sm text-gray-400 mb-4">Funciones avanzadas, UI pulida y personalización de escritura.
-                    </p>
-                    <ul class="text-xs text-gray-500 space-y-1">
-                        <li>• Edición y regeneración de planes</li>
-                        <li>• Rich UI con chips y banners</li>
-                        <li>• Few-Shot Learning personalizado</li>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Ecosistema Completo</h3>
+                    <p class="text-sm text-gray-500 mb-4">Seguridad, multi-usuario, voz, dashboard avanzado y app Android.</p>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>&#8226; Autenticacion PIN + Multi-usuario</li>
+                        <li>&#8226; Notas de voz (Whisper)</li>
+                        <li>&#8226; Dashboard con graficas</li>
+                        <li>&#8226; WebSockets en tiempo real</li>
+                        <li>&#8226; App nativa Android (Kotlin)</li>
                     </ul>
                 </div>
 
-                <!-- Phases 10-12: Mobile -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal delay-200">
+                <div class="bg-white rounded-xl p-6 border border-megi-forest/30 hover:shadow-lg transition reveal delay-200">
                     <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fases 10-12</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
-                            Completado</span>
+                        <span class="text-megi-gold font-bold">MEGI Records</span>
+                        <span class="text-xs bg-megi-gold/10 text-megi-gold px-2 py-1 rounded font-semibold">Actual</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Mobile Companion</h3>
-                    <p class="text-sm text-gray-400 mb-4">PWA multiplataforma con captura de imágenes y visualización de
-                        notas.</p>
-                    <ul class="text-xs text-gray-500 space-y-1">
-                        <li>• FastAPI + PWA local</li>
-                        <li>• Ver notas en móvil</li>
-                        <li>• Soporte iOS/Android</li>
+                    <h3 class="text-lg font-bold text-gray-800 mb-3">Port Medico</h3>
+                    <p class="text-sm text-gray-500 mb-4">Transformacion completa a sistema de expedientes medicos digitales.</p>
+                    <ul class="text-xs text-gray-400 space-y-1">
+                        <li>&#8226; React 19 + Tauri v2 + Tailwind v4</li>
+                        <li>&#8226; Gestion de pacientes completa</li>
+                        <li>&#8226; Analisis SOAP + CIE-10</li>
+                        <li>&#8226; Recetas y laboratorios</li>
+                        <li>&#8226; PDFs profesionales</li>
+                        <li>&#8226; Kanban medico + Estadisticas</li>
                     </ul>
                 </div>
             </div>
 
-            <!-- Recent Phases (13-17) -->
-            <!-- Recent Phases (13-18) -->
-            <div class="grid md:grid-cols-1 gap-8 mb-12">
-                <!-- Phases 13-18: Complete Ecosystem -->
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fases 13-18</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
-                            Completado</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">Ecosistema Completo</h3>
-                    <p class="text-sm text-gray-400 mb-4">Seguridad, Multi-usuario, Notas de Voz y Dashboard Avanzado.
-                    </p>
-                    <ul class="text-xs text-gray-500 grid grid-cols-2 gap-2">
-                        <li>• Autenticación & Multi-usuario</li>
-                        <li>• Dashboard con Gráficos Reales</li>
-                        <li>• Notas de Voz (Whisper)</li>
-                        <li>• Análisis IA Estricto (Gemma V2)</li>
-                        <li>• WebSockets en Tiempo Real</li>
-                        <li>• Exportación PDF/MD</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Recent Phases (19) -->
-            <div class="grid md:grid-cols-1 gap-8 mb-12">
-                <div
-                    class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-brand-success transition reveal">
-                    <div class="flex justify-between items-center mb-4">
-                        <span class="text-brand-success font-bold">Fase 19</span>
-                        <span class="text-xs bg-brand-success/10 text-brand-success px-2 py-1 rounded">✓
-                            Completado</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-3">App Nativa Android (MVP)</h3>
-                    <p class="text-sm text-gray-400 mb-4">Aplicación nativa en Kotlin con Jetpack Compose.</p>
-                    <ul class="text-xs text-gray-500 grid grid-cols-2 gap-2">
-                        <li>• Dashboard & Navegación</li>
-                        <li>• Captura de Cámara & Audio</li>
-                        <li>• Visualización de Notas & Detalles</li>
-                        <li>• Estadísticas en Tiempo Real</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Future Phases -->
-            <div
-                class="mt-12 bg-gradient-to-r from-brand-purple/10 to-brand-accent/10 rounded-xl p-8 border border-brand-purple/30 reveal">
-                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                    <i class="fas fa-rocket text-brand-accent"></i>
-                    Próximas Fases
+            <!-- Future -->
+            <div class="mt-8 bg-white rounded-xl p-8 border border-megi-border reveal">
+                <h3 class="font-display text-xl font-bold text-megi-forest mb-4 flex items-center gap-2">
+                    <i class="fas fa-rocket text-megi-gold"></i> Proximas Fases
                 </h3>
                 <div class="grid md:grid-cols-3 gap-6 text-sm">
                     <div>
-                        <span class="text-brand-purple font-bold">Fase 20</span>
-                        <p class="text-gray-400 mt-1">App Nativa de Escritorio (Electron/Tauri)</p>
+                        <span class="text-megi-gold font-bold">Proxima</span>
+                        <p class="text-gray-500 mt-1">Historial clinico con timeline visual por paciente</p>
                     </div>
                     <div>
-                        <span class="text-brand-purple font-bold">Fase 21</span>
-                        <p class="text-gray-400 mt-1">Mejora Gráfica Android (UI/UX Premium)</p>
+                        <span class="text-megi-gold font-bold">Planeada</span>
+                        <p class="text-gray-500 mt-1">Backup/exportacion de base de datos y reportes por rango de fechas</p>
                     </div>
                     <div>
-                        <span class="text-brand-purple font-bold">Fase 22</span>
-                        <p class="text-gray-400 mt-1">Integración con Calendarios (Google/Outlook)</p>
+                        <span class="text-megi-gold font-bold">Futura</span>
+                        <p class="text-gray-500 mt-1">App Android nativa adaptada para MEGI Records</p>
                     </div>
                 </div>
             </div>
-
         </div>
     </section>
 
-    <!-- CTA / Footer -->
-    <footer id="contact" class="py-12 bg-black text-center">
+    <!-- Installation -->
+    <section class="py-20 bg-white border-t border-megi-border">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-12 reveal">
+                <h2 class="font-display text-3xl font-bold text-megi-forest">Instalacion</h2>
+            </div>
+
+            <div class="bg-gray-900 rounded-xl p-6 text-sm font-mono text-gray-300 overflow-x-auto reveal">
+                <p class="text-gray-500"># Clonar y cambiar a branch MEGI Records</p>
+                <p>git clone https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io.git</p>
+                <p>cd Paper-to-Plan-Ai.io</p>
+                <p>git checkout feat/megi-records</p>
+                <br>
+                <p class="text-gray-500"># Backend</p>
+                <p>python -m venv venv && source venv/bin/activate</p>
+                <p>pip install -r requirements.txt</p>
+                <p>python backend/server.py</p>
+                <br>
+                <p class="text-gray-500"># Frontend</p>
+                <p>cd desktop-app && npm install && npm run dev</p>
+                <br>
+                <p class="text-gray-500"># Desktop (Tauri)</p>
+                <p>npm run tauri dev</p>
+                <br>
+                <p class="text-gray-500"># Modelos de IA (requiere Ollama instalado)</p>
+                <p>ollama pull gemma3</p>
+                <p>ollama pull qwen3-vl:8b</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 gradient-forest text-center">
         <div class="max-w-2xl mx-auto px-4">
-            <p class="text-xs text-gray-600">
-                © 2025 PaperToPlan AI. Implemented by TTECH12.
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <i class="fas fa-notes-medical text-megi-gold"></i>
+                <span class="font-display font-bold text-white">MEGI Records</span>
+            </div>
+            <p class="text-xs text-gray-400">
+                Sistema de Expedientes Medicos Digitales con IA Local
+            </p>
+            <p class="text-xs text-gray-500 mt-2">
+                &copy; 2025 MEGI Records. Built by TTECH12.
             </p>
         </div>
     </footer>
 
     <script>
-        // Scroll Reveal Animation
         const revealElements = document.querySelectorAll('.reveal');
-
         const revealOnScroll = () => {
             const windowHeight = window.innerHeight;
-            const elementVisible = 100;
-
-            revealElements.forEach((element) => {
-                const elementTop = element.getBoundingClientRect().top;
-                if (elementTop < windowHeight - elementVisible) {
-                    element.classList.add('active');
+            revealElements.forEach((el) => {
+                if (el.getBoundingClientRect().top < windowHeight - 100) {
+                    el.classList.add('active');
                 }
             });
         };
-
         window.addEventListener('scroll', revealOnScroll);
-        // Trigger once on load
         revealOnScroll();
     </script>
 </body>

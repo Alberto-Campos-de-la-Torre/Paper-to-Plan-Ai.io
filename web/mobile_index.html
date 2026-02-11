@@ -4,36 +4,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PaperToPlan Companion</title>
+    <title>MEGI Records - Companion</title>
 
     <!-- iOS / PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="PaperToPlan">
-    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/note.png">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MEGI Records">
+    <meta name="theme-color" content="#2d3b2d">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/color/96/000000/medical-doctor.png">
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f3ee;
+            color: #1a1a1a;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            margin: 0;
             text-align: center;
         }
 
         h1 {
-            color: #4CAF50;
-            margin-bottom: 10px;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            color: #2d3b2d;
+            margin-bottom: 4px;
+            font-size: 1.6em;
         }
 
-        p {
-            color: #aaa;
-            margin-bottom: 30px;
+        h2 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            color: #2d3b2d;
+            margin: 0;
         }
+
+        p { color: #8a8a8a; margin-bottom: 24px; font-size: 0.9em; }
 
         .upload-btn-wrapper {
             position: relative;
@@ -42,131 +49,214 @@
         }
 
         .btn {
-            border: 2px solid #4CAF50;
-            color: white;
+            border: 2px solid #2d3b2d;
+            color: #2d3b2d;
             background-color: transparent;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 20px;
-            font-weight: bold;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            font-family: 'DM Sans', sans-serif;
         }
 
-        .btn:hover {
-            background-color: #4CAF50;
+        .btn:hover, .btn:active {
+            background-color: #2d3b2d;
             color: white;
         }
 
-        .btn:active {
-            transform: scale(0.95);
+        .btn:active { transform: scale(0.97); }
+
+        .btn.secondary {
+            border-color: #8b7355;
+            color: #8b7355;
+        }
+
+        .btn.secondary:hover, .btn.secondary:active {
+            background-color: #8b7355;
+            color: white;
+        }
+
+        .btn.record {
+            border-color: #c0392b;
+            color: #c0392b;
+        }
+
+        .btn.record:hover, .btn.record:active {
+            background-color: #c0392b;
+            color: white;
+        }
+
+        .btn.small {
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 8px;
         }
 
         input[type=file] {
             font-size: 100px;
             position: absolute;
-            left: 0;
-            top: 0;
+            left: 0; top: 0;
             opacity: 0;
             cursor: pointer;
-            height: 100%;
-            width: 100%;
+            height: 100%; width: 100%;
         }
 
         #status {
             margin-top: 20px;
-            font-weight: bold;
+            font-weight: 600;
             min-height: 24px;
+            font-size: 0.9em;
         }
 
-        .success {
-            color: #4CAF50;
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
+        .loading { color: #8b7355; }
+
+        .icon { font-size: 40px; margin-bottom: 16px; }
+
+        .note-card {
+            background: white;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #e8e4dc;
+            text-align: left;
         }
 
-        .error {
-            color: #f44336;
+        .note-card:hover, .note-card:active {
+            border-color: #2d3b2d;
+            box-shadow: 0 2px 8px rgba(45,59,45,0.08);
         }
 
-        .loading {
-            color: #FF9800;
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 600;
         }
 
-        .icon {
-            font-size: 48px;
-            margin-bottom: 20px;
+        .tag-consultation { background: #e8f5e9; color: #2d3b2d; }
+        .tag-prescription { background: #fff3e0; color: #8b7355; }
+        .tag-lab_result { background: #e3f2fd; color: #1565c0; }
+        .tag-referral { background: #f3e5f5; color: #7b1fa2; }
+
+        .tag-pending { background: #fff8e1; color: #f57f17; }
+        .tag-processing { background: #e3f2fd; color: #1565c0; }
+        .tag-processed { background: #e8f5e9; color: #2e7d32; }
+        .tag-reviewed { background: #ede7f6; color: #4527a0; }
+        .tag-error { background: #ffebee; color: #c62828; }
+
+        .detail-section {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #e8e4dc;
+            text-align: left;
+        }
+
+        .detail-section h4 {
+            margin: 0 0 8px 0;
+            color: #2d3b2d;
+            font-size: 0.95em;
+        }
+
+        input[type="text"], input[type="tel"] {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 16px;
+            padding: 12px 16px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px solid #d4cfc7;
+            background: white;
+            color: #1a1a1a;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, input[type="tel"]:focus {
+            border-color: #2d3b2d;
+        }
+
+        .brand-subtitle {
+            font-size: 0.7em;
+            color: #8b7355;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
         }
     </style>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-    <div id="login-view"
-        style="display:flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
-        <div class="icon">🔒</div>
-        <h1>Acceso Seguro</h1>
+    <!-- Login View -->
+    <div id="login-view" style="display:flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; padding: 20px;">
+        <div class="icon">&#9879;</div>
+        <h1>MEGI Records</h1>
+        <p class="brand-subtitle" style="margin-bottom: 24px;">Expedientes Medicos</p>
         <p>Ingresa tu Usuario y PIN</p>
-        <input type="text" id="userInput" placeholder="Usuario"
-            style="font-size: 20px; padding: 10px; text-align: center; width: 200px; border-radius: 10px; border: none; margin-bottom: 10px;">
-        <input type="tel" id="pinInput" placeholder="PIN (4 dígitos)" maxlength="4"
-            style="font-size: 24px; padding: 10px; text-align: center; width: 150px; border-radius: 10px; border: none; margin-bottom: 20px;">
+        <input type="text" id="userInput" placeholder="Usuario" style="width: 220px; margin-bottom: 10px;">
+        <input type="tel" id="pinInput" placeholder="PIN (4 digitos)" maxlength="4" style="width: 160px; margin-bottom: 20px;">
         <button class="btn" onclick="login()">Entrar</button>
-        <p id="login-error" class="error" style="display:none; margin-top: 10px;">Usuario o PIN Incorrecto</p>
+        <p id="login-error" class="error" style="display:none; margin-top: 12px; font-size: 0.85em;">Usuario o PIN incorrecto</p>
     </div>
 
-    <div id="home-view" style="display:none;">
-        <div class="icon">📸</div>
-        <h1>PaperToPlan AI</h1>
-        <p>Sube una foto o usa tu cámara</p>
+    <!-- Home View -->
+    <div id="home-view" style="display:none; padding: 20px;">
+        <div class="icon">&#128203;</div>
+        <h1>MEGI Records</h1>
+        <p>Captura documentos medicos</p>
 
         <div class="upload-btn-wrapper">
-            <button class="btn">📷 Tomar Foto</button>
+            <button class="btn">&#128247; Tomar Foto</button>
             <input type="file" name="file" id="fileInput" accept="image/*" capture="environment">
         </div>
 
-        <div class="upload-btn-wrapper" style="margin-top: 15px;">
-            <button class="btn secondary">🖼️ Galería</button>
+        <div class="upload-btn-wrapper" style="margin-top: 12px;">
+            <button class="btn secondary">&#128444; Galeria</button>
             <input type="file" name="file" id="galleryInput" accept="image/*">
         </div>
 
-        <div class="upload-btn-wrapper" style="margin-top: 15px;">
-            <button id="recordBtn" class="btn" style="border-color: #FF5722; color: #FF5722;">🎙️ Grabar Voz</button>
+        <div class="upload-btn-wrapper" style="margin-top: 12px;">
+            <button id="recordBtn" class="btn record">&#127908; Grabar Voz</button>
         </div>
-        <p id="recording-time" style="display:none; color: #FF5722; font-weight: bold; margin-top: 5px;">00:00</p>
+        <p id="recording-time" style="display:none; color: #c0392b; font-weight: bold; margin-top: 6px; font-size: 0.9em;">00:00</p>
 
         <br><br>
-        <button class="btn secondary" onclick="showNotesList()">📂 Ver Notas</button>
+        <button class="btn secondary" onclick="showConsultationsList()">&#128194; Ver Expedientes</button>
         <br><br>
-        <button class="btn small" onclick="logout()"
-            style="background:none; border:none; color:#666; font-size:12px;">Cerrar Sesión</button>
+        <button class="btn small" onclick="logout()" style="background:none; border:none; color:#8a8a8a; font-size:12px; cursor:pointer;">Cerrar Sesion</button>
 
         <div id="status"></div>
     </div>
 
-    <div id="list-view"
-        style="display:none; width: 100%; max-width: 600px; height: 100vh; overflow-y: auto; padding: 0 20px; box-sizing: border-box;">
-        <div
-            style="position: sticky; top: 0; background: #1a1a1a; padding: 20px 0 10px 0; z-index: 100; border-bottom: 1px solid #333;">
-            <button class="btn small" onclick="showHome()" style="margin-bottom: 5px;">⬅️ Volver</button>
-            <h2 style="margin: 0;">Mis Notas</h2>
+    <!-- List View -->
+    <div id="list-view" style="display:none; width: 100%; max-width: 600px; height: 100vh; overflow-y: auto; padding: 0 16px;">
+        <div style="position: sticky; top: 0; background: #f5f3ee; padding: 16px 0 10px 0; z-index: 100; border-bottom: 1px solid #e8e4dc;">
+            <button class="btn small" onclick="showHome()" style="margin-bottom: 6px;">&#8592; Volver</button>
+            <h2>Expedientes</h2>
         </div>
-        <div id="notes-container" style="text-align: left; padding-top: 10px; padding-bottom: 20px;"></div>
+        <div id="consultations-container" style="padding-top: 10px; padding-bottom: 20px;"></div>
     </div>
 
-    <div id="detail-view"
-        style="display:none; width: 100%; max-width: 600px; height: 100vh; overflow-y: auto; padding: 0 20px; box-sizing: border-box;">
-        <div
-            style="position: sticky; top: 0; background: #1a1a1a; padding: 20px 0 10px 0; z-index: 100; border-bottom: 1px solid #333;">
-            <button class="btn small" onclick="showNotesList()" style="margin-bottom: 5px;">⬅️ Volver a Lista</button>
-            <h2 id="detail-title" style="margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                Detalle de Nota</h2>
+    <!-- Detail View -->
+    <div id="detail-view" style="display:none; width: 100%; max-width: 600px; height: 100vh; overflow-y: auto; padding: 0 16px;">
+        <div style="position: sticky; top: 0; background: #f5f3ee; padding: 16px 0 10px 0; z-index: 100; border-bottom: 1px solid #e8e4dc;">
+            <button class="btn small" onclick="showConsultationsList()" style="margin-bottom: 6px;">&#8592; Volver</button>
+            <h2 id="detail-title" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Detalle</h2>
         </div>
-        <div id="detail-content"
-            style="word-wrap: break-word; overflow-wrap: break-word; white-space: normal; padding-top: 20px; padding-bottom: 20px;">
-        </div>
+        <div id="detail-content" style="word-wrap: break-word; overflow-wrap: break-word; padding-top: 16px; padding-bottom: 20px;"></div>
     </div>
 
     <script>
-        // Helper function to escape HTML and prevent XSS
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -177,11 +267,10 @@
         const fileInput = document.getElementById('fileInput');
         const galleryInput = document.getElementById('galleryInput');
         const statusDiv = document.getElementById('status');
-        let currentPIN = localStorage.getItem('paper_pin');
-        let currentUser = localStorage.getItem('paper_user');
+        let currentPIN = localStorage.getItem('megi_pin');
+        let currentUser = localStorage.getItem('megi_user');
         let ws = null;
 
-        // Init
         if (currentPIN && currentUser) {
             showHome();
             connectWebSocket();
@@ -192,96 +281,79 @@
             const user = document.getElementById('userInput').value;
 
             if (pin.length !== 4 || user.length === 0) {
-                document.getElementById('login-error').textContent = 'Please enter username and 4-digit PIN';
+                document.getElementById('login-error').textContent = 'Ingresa usuario y PIN de 4 digitos';
                 document.getElementById('login-error').style.display = 'block';
                 return;
             }
 
-            // Validate credentials with server
             try {
                 const response = await fetch('/api/login', {
                     method: 'POST',
-                    headers: {
-                        'X-Auth-User': user,
-                        'X-Auth-PIN': pin
-                    }
+                    headers: { 'X-Auth-User': user, 'X-Auth-PIN': pin }
                 });
 
                 if (response.ok) {
-                    // Login successful
                     currentPIN = pin;
                     currentUser = user;
-                    localStorage.setItem('paper_pin', pin);
-                    localStorage.setItem('paper_user', user);
+                    localStorage.setItem('megi_pin', pin);
+                    localStorage.setItem('megi_user', user);
                     document.getElementById('login-error').style.display = 'none';
                     showHome();
                     connectWebSocket();
                 } else {
-                    // Login failed
-                    document.getElementById('login-error').textContent = 'Invalid username or PIN';
+                    document.getElementById('login-error').textContent = 'Usuario o PIN incorrecto';
                     document.getElementById('login-error').style.display = 'block';
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                document.getElementById('login-error').textContent = 'Connection error. Please try again.';
+                document.getElementById('login-error').textContent = 'Error de conexion. Intenta de nuevo.';
                 document.getElementById('login-error').style.display = 'block';
             }
         }
 
         function logout() {
-            localStorage.removeItem('paper_pin');
-            localStorage.removeItem('paper_user');
+            localStorage.removeItem('megi_pin');
+            localStorage.removeItem('megi_user');
             if (ws) ws.close();
             location.reload();
         }
 
         function getHeaders() {
-            return {
-                'X-Auth-PIN': currentPIN,
-                'X-Auth-User': currentUser
-            };
+            return { 'X-Auth-PIN': currentPIN, 'X-Auth-User': currentUser };
         }
 
         async function handleAuthError(response) {
             if (response.status === 401) {
-                alert("Sesión expirada o PIN incorrecto");
+                alert("Sesion expirada o PIN incorrecto");
                 logout();
                 throw new Error("Unauthorized");
             }
             return response;
         }
 
-        // --- WebSocket ---
+        // WebSocket
         function connectWebSocket() {
             if (!currentUser) return;
-
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUrl = `${protocol}//${window.location.host}/ws/${currentUser}`;
-
-            ws = new WebSocket(wsUrl);
+            ws = new WebSocket(`${protocol}//${window.location.host}/ws/${currentUser}`);
 
             ws.onopen = () => {
                 console.log("WebSocket connected");
-                // Send ping every 30s to keep alive
-                setInterval(() => {
-                    if (ws.readyState === WebSocket.OPEN) ws.send("ping");
-                }, 30000);
+                setInterval(() => { if (ws.readyState === WebSocket.OPEN) ws.send("ping"); }, 30000);
             };
 
             ws.onmessage = (event) => {
                 if (event.data === "pong") return;
-
                 if (event.data === "processing_complete") {
-                    showToast("✅ Procesamiento completado en PC");
-                    // If we are in list view, refresh it
+                    showToast("Procesamiento completado");
                     if (document.getElementById('list-view').style.display === 'block') {
-                        showNotesList();
+                        showConsultationsList();
                     }
                 }
             };
 
             ws.onclose = () => {
-                console.log("WebSocket disconnected. Reconnecting in 5s...");
+                console.log("WebSocket disconnected. Reconnecting...");
                 setTimeout(connectWebSocket, 5000);
             };
         }
@@ -289,21 +361,13 @@
         function showToast(message) {
             const toast = document.createElement('div');
             toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.background = '#4CAF50';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '20px';
-            toast.style.zIndex = '1000';
-            toast.style.boxShadow = '0 4px 6px rgba(0,0,0,0.3)';
+            Object.assign(toast.style, {
+                position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+                background: '#2d3b2d', color: 'white', padding: '10px 20px', borderRadius: '10px',
+                zIndex: '1000', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', fontSize: '0.9em'
+            });
             document.body.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3000);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         // Navigation
@@ -314,363 +378,230 @@
             document.getElementById('detail-view').style.display = 'none';
         }
 
-        async function showNotesList() {
+        function getDocTypeLabel(type) {
+            const labels = { consultation: 'Consulta', prescription: 'Receta', lab_result: 'Laboratorio', referral: 'Referencia' };
+            return labels[type] || type;
+        }
+
+        function getStatusLabel(status) {
+            const labels = { pending: 'Pendiente', processing: 'En Proceso', processed: 'Procesado', reviewed: 'Revisado', error: 'Error' };
+            return labels[status] || status;
+        }
+
+        async function showConsultationsList() {
             document.getElementById('home-view').style.display = 'none';
             document.getElementById('list-view').style.display = 'block';
             document.getElementById('detail-view').style.display = 'none';
 
-            const container = document.getElementById('notes-container');
-            container.innerHTML = '<p class="loading">Cargando notas...</p>';
+            const container = document.getElementById('consultations-container');
+            container.innerHTML = '<p class="loading" style="text-align:center; padding:40px 0;">Cargando expedientes...</p>';
 
             try {
-                let response = await fetch('/api/notes', { headers: getHeaders() });
+                let response = await fetch('/api/consultations', { headers: getHeaders() });
                 response = await handleAuthError(response);
-                const notes = await response.json();
+                const consultations = await response.json();
 
                 container.innerHTML = '';
-                if (notes.length === 0) {
-                    container.innerHTML = '<p>No hay notas aún.</p>';
+                if (consultations.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#8a8a8a; padding:40px 0;">Sin expedientes aun.</p>';
                     return;
                 }
 
-                notes.forEach(note => {
+                consultations.forEach(c => {
                     const card = document.createElement('div');
                     card.className = 'note-card';
-                    // Support both flat and nested structure for backward compatibility
-                    let title = 'Sin título';
-                    if (note.title) {
-                        title = note.title;
-                    } else if (note.ai_analysis && note.ai_analysis.title) {
-                        title = note.ai_analysis.title;
-                    }
-
-                    const status = note.status;
-                    // Status pill removed as requested
+                    const summary = c.summary || 'Sin resumen';
+                    const docType = c.document_type || 'consultation';
+                    const status = c.status || 'pending';
 
                     card.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
-                            <strong style="font-size: 1.1em; color: #fff;">${title}</strong>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                            <span class="tag tag-${docType}">${getDocTypeLabel(docType)}</span>
+                            <span class="tag tag-${status}">${getStatusLabel(status)}</span>
                         </div>
-                        <p style="font-size: 0.85em; color: #aaa; margin: 5px 0;">
-                            ${note.implementation_time || 'Sin tiempo estimado'} • ${note.created_at ? new Date(note.created_at.replace(' ', 'T')).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
+                        <p style="font-size: 0.9em; color: #1a1a1a; margin: 4px 0; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(summary)}</p>
+                        <p style="font-size: 0.75em; color: #8a8a8a; margin-top: 4px;">
+                            ${c.created_at ? new Date(c.created_at.replace(' ', 'T')).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}
                         </p>
                     `;
-                    card.onclick = () => showNoteDetail(note.id);
+                    card.onclick = () => showConsultationDetail(c.id);
                     container.appendChild(card);
                 });
             } catch (e) {
                 console.error(e);
-                container.innerHTML = '<p class="error">Error al cargar notas.</p>';
+                container.innerHTML = '<p class="error" style="text-align:center; padding:20px;">Error al cargar expedientes.</p>';
             }
         }
 
-        async function showNoteDetail(id) {
+        async function showConsultationDetail(id) {
             document.getElementById('list-view').style.display = 'none';
             document.getElementById('detail-view').style.display = 'block';
 
             const content = document.getElementById('detail-content');
-            const titleElement = document.getElementById('detail-title');
-            content.innerHTML = '<p class="loading">Cargando detalle...</p>';
+            const titleEl = document.getElementById('detail-title');
+            content.innerHTML = '<p class="loading" style="text-align:center; padding:40px 0;">Cargando...</p>';
 
             try {
-                let response = await fetch(`/api/notes/${id}`, { headers: getHeaders() });
+                let response = await fetch(`/api/consultations/${id}`, { headers: getHeaders() });
                 response = await handleAuthError(response);
-                const note = await response.json();
+                const data = await response.json();
 
-                // The API now returns a flattened structure, but let's support both for safety
-                // If 'title' is at top level, it's flattened.
-                let analysis = {};
-                if (note.title !== undefined && note.ai_analysis === undefined) {
-                    // Flattened format
-                    analysis = {
-                        title: note.title,
-                        feasibility_score: note.feasibility_score,
-                        summary: note.summary,
-                        technical_considerations: note.technical_considerations,
-                        recommended_stack: note.recommended_stack
-                    };
-                } else if (note.ai_analysis) {
-                    // Old nested format
-                    if (typeof note.ai_analysis === 'string') {
-                        try {
-                            analysis = JSON.parse(note.ai_analysis);
-                        } catch (e) {
-                            console.error('Error parsing ai_analysis:', e);
-                            analysis = {};
-                        }
-                    } else {
-                        analysis = note.ai_analysis;
-                    }
-                }
+                const analysis = data.ai_analysis || {};
+                const docType = data.document_type || 'consultation';
+                const status = data.status || 'pending';
+                titleEl.textContent = getDocTypeLabel(docType) + ' #' + data.id;
 
-                const title = analysis.title || `Nota #${note.id}`;
-
-                // Update title in the header
-                if (titleElement) {
-                    titleElement.textContent = title;
-                }
-
-                // Build stack tecnológico
-                let stackHtml = 'Sin stack recomendado';
-                if (analysis.recommended_stack) {
-                    if (Array.isArray(analysis.recommended_stack)) {
-                        stackHtml = analysis.recommended_stack.map(item => `<span style="background: #2196F3; padding: 5px 10px; border-radius: 15px; margin: 5px 5px 5px 0; display: inline-block; font-size: 0.9em;">${item}</span>`).join('');
-                    } else {
-                        stackHtml = analysis.recommended_stack;
-                    }
-                }
-
-                // Build consideraciones técnicas
-                let considerationsHtml = 'Sin consideraciones técnicas';
-                if (analysis.technical_considerations) {
-                    if (Array.isArray(analysis.technical_considerations)) {
-                        considerationsHtml = '<ul style="margin: 10px 0; padding-left: 20px;">' +
-                            analysis.technical_considerations.map(item => `<li style="margin: 5px 0;">${item}</li>`).join('') +
-                            '</ul>';
-                    } else {
-                        considerationsHtml = analysis.technical_considerations;
-                    }
-                }
-
-                // Status info
-                const statusColor = note.status === 'processed' ? '#4CAF50' : note.status === 'error' ? '#f44336' : '#FF9800';
-                const statusText = note.status === 'processed' ? 'Completado' : note.status === 'error' ? 'Error' : 'Pendiente';
-                const scoreColor = (analysis.feasibility_score || 0) >= 80 ? '#4CAF50' : (analysis.feasibility_score || 0) >= 50 ? '#FF9800' : '#f44336';
-
-                content.innerHTML = `
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <h3 style="margin: 0; color: #4CAF50; font-size: 1.3em;">${title}</h3>
-                            <span style="background: ${statusColor}; padding: 5px 12px; border-radius: 15px; font-size: 0.85em; color: white; font-weight: bold;">${statusText}</span>
+                // Patient info
+                let patientHtml = '';
+                if (data.patient) {
+                    patientHtml = `
+                        <div class="detail-section">
+                            <h4>&#128100; Paciente</h4>
+                            <p style="font-weight:600; margin-bottom:4px;">${escapeHtml(data.patient.name)}</p>
+                            <p style="font-size:0.8em; color:#8a8a8a;">
+                                ${data.patient.gender || ''} ${data.patient.blood_type ? '| ' + data.patient.blood_type : ''}
+                            </p>
                         </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
-                            <div>
-                                <p style="margin: 5px 0; color: #aaa; font-size: 0.9em;"><strong>Tiempo Estimado:</strong></p>
-                                <p style="margin: 5px 0; color: #fff; font-size: 1em;">${note.implementation_time || 'N/A'}</p>
-                            </div>
-                            <div>
-                                <p style="margin: 5px 0; color: #aaa; font-size: 0.9em;"><strong>Score de Viabilidad:</strong></p>
-                                <p style="margin: 5px 0; color: ${scoreColor}; font-size: 1.2em; font-weight: bold;">${analysis.feasibility_score || 0}/100</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
-                        <h4 style="margin-top: 0; color: #2196F3;">📝 Resumen Ejecutivo</h4>
-                        <p style="line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible; text-overflow: clip;">${escapeHtml(analysis.summary || 'Sin resumen')}</p>
-                    </div>
-                    
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
-                        <h4 style="margin-top: 0; color: #2196F3;">💻 Stack Tecnológico Recomendado</h4>
-                        <div style="margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible;">${stackHtml}</div>
-                    </div>
-                    
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
-                        <h4 style="margin-top: 0; color: #2196F3;">🔧 Consideraciones Técnicas</h4>
-                        <div style="margin-top: 10px; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; max-width: 100%; overflow: visible;">${considerationsHtml}</div>
-                    </div>
-                    
-                    ${note.raw_text ? `
-                    <div style="background: #2a2a2a; padding: 15px; border-radius: 10px; margin-bottom: 15px; overflow: visible;">
-                        <h4 style="margin-top: 0; color: #2196F3;">📄 Texto Extraído</h4>
-                        <p style="line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; overflow-wrap: break-word; max-width: 100%; overflow: visible; text-overflow: clip;">${escapeHtml(note.raw_text)}</p>
-                    </div>
-                    ` : ''}
-                `;
+                    `;
+                }
+
+                // SOAP sections
+                const subjective = analysis.subjective || {};
+                const objective = analysis.objective || {};
+                const assessment = analysis.assessment || {};
+                const plan = analysis.plan || {};
+
+                let soapHtml = '';
+
+                // Subjective
+                if (subjective.chief_complaint || (subjective.symptoms && subjective.symptoms.length)) {
+                    soapHtml += `<div class="detail-section">
+                        <h4>S - Subjetivo</h4>
+                        ${subjective.chief_complaint ? `<p style="font-size:0.85em; margin-bottom:6px;"><strong>Motivo:</strong> ${escapeHtml(subjective.chief_complaint)}</p>` : ''}
+                        ${subjective.symptoms && subjective.symptoms.length ? `<p style="font-size:0.85em;"><strong>Sintomas:</strong> ${subjective.symptoms.map(s => escapeHtml(s)).join(', ')}</p>` : ''}
+                    </div>`;
+                }
+
+                // Objective
+                const vitals = objective.vitals || {};
+                const hasVitals = Object.values(vitals).some(v => v);
+                if (hasVitals || (objective.findings && objective.findings.length)) {
+                    soapHtml += `<div class="detail-section">
+                        <h4>O - Objetivo</h4>
+                        ${hasVitals ? `<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; font-size:0.8em; margin-bottom:8px;">
+                            ${vitals.blood_pressure ? `<span>PA: ${vitals.blood_pressure}</span>` : ''}
+                            ${vitals.heart_rate ? `<span>FC: ${vitals.heart_rate}</span>` : ''}
+                            ${vitals.temperature ? `<span>Temp: ${vitals.temperature}</span>` : ''}
+                            ${vitals.weight ? `<span>Peso: ${vitals.weight}</span>` : ''}
+                            ${vitals.spo2 ? `<span>SpO2: ${vitals.spo2}</span>` : ''}
+                        </div>` : ''}
+                        ${objective.findings && objective.findings.length ? `<p style="font-size:0.85em;"><strong>Hallazgos:</strong> ${objective.findings.map(f => escapeHtml(f)).join(', ')}</p>` : ''}
+                    </div>`;
+                }
+
+                // Assessment
+                const diagnoses = assessment.diagnoses || [];
+                if (diagnoses.length) {
+                    soapHtml += `<div class="detail-section">
+                        <h4>A - Evaluacion</h4>
+                        ${diagnoses.map(d => `<p style="font-size:0.85em; margin-bottom:4px;">
+                            ${escapeHtml(d.description)} ${d.cie10_code ? `<span class="tag" style="background:#e3f2fd; color:#1565c0;">${escapeHtml(d.cie10_code)}</span>` : ''}
+                        </p>`).join('')}
+                    </div>`;
+                }
+
+                // Plan
+                const medications = plan.medications || [];
+                if (medications.length || plan.recommendations) {
+                    soapHtml += `<div class="detail-section">
+                        <h4>P - Plan</h4>
+                        ${medications.length ? '<p style="font-size:0.85em; font-weight:600; margin-bottom:4px;">Medicamentos:</p>' +
+                            medications.map(m => `<p style="font-size:0.8em; margin-left:8px; margin-bottom:4px;">
+                                &#128138; ${escapeHtml(m.drug_name)} ${m.dose ? '- ' + escapeHtml(m.dose) : ''} ${m.frequency ? '| ' + escapeHtml(m.frequency) : ''} ${m.duration ? '| ' + escapeHtml(m.duration) : ''}
+                            </p>`).join('') : ''}
+                        ${plan.follow_up ? `<p style="font-size:0.8em; margin-top:8px;"><strong>Seguimiento:</strong> ${escapeHtml(plan.follow_up)}</p>` : ''}
+                    </div>`;
+                }
+
+                // Summary & confidence
+                const summary = analysis.summary || data.summary || '';
+                const confidence = analysis.confidence_score || 0;
+
+                let summaryHtml = '';
+                if (summary) {
+                    summaryHtml = `<div class="detail-section">
+                        <h4>Resumen</h4>
+                        <p style="font-size:0.85em; line-height:1.5;">${escapeHtml(summary)}</p>
+                        ${confidence ? `<p style="font-size:0.75em; color:#8b7355; margin-top:8px;">Confianza: ${confidence}%</p>` : ''}
+                    </div>`;
+                }
+
+                // Status & type
+                let headerHtml = `<div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <span class="tag tag-${docType}">${getDocTypeLabel(docType)}</span>
+                    <span class="tag tag-${status}">${getStatusLabel(status)}</span>
+                </div>`;
+
+                content.innerHTML = headerHtml + patientHtml + summaryHtml + soapHtml;
+
+                // Raw text
+                if (data.raw_text) {
+                    content.innerHTML += `<div class="detail-section">
+                        <h4>Texto Extraido</h4>
+                        <p style="font-size:0.8em; line-height:1.5; white-space:pre-wrap; color:#5a5a5a;">${escapeHtml(data.raw_text)}</p>
+                    </div>`;
+                }
+
             } catch (e) {
                 console.error(e);
-                content.innerHTML = '<p class="error">Error al cargar detalle.</p>';
+                content.innerHTML = '<p class="error" style="text-align:center;">Error al cargar detalle.</p>';
             }
         }
 
-        // --- Image Compression ---
+        // Image compression
         async function compressImage(file) {
             return new Promise((resolve, reject) => {
-                const maxWidth = 1920;
-                const maxHeight = 1920;
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = (event) => {
                     const img = new Image();
                     img.src = event.target.result;
                     img.onload = () => {
-                        let width = img.width;
-                        let height = img.height;
-
-                        if (width > height) {
-                            if (width > maxWidth) {
-                                height *= maxWidth / width;
-                                width = maxWidth;
-                            }
-                        } else {
-                            if (height > maxHeight) {
-                                width *= maxHeight / height;
-                                height = maxHeight;
-                            }
-                        }
-
+                        let w = img.width, h = img.height;
+                        const max = 1920;
+                        if (w > h) { if (w > max) { h *= max / w; w = max; } }
+                        else { if (h > max) { w *= max / h; h = max; } }
                         const canvas = document.createElement('canvas');
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-
-                        canvas.toBlob((blob) => {
-                            resolve(blob);
-                        }, 'image/jpeg', 0.7); // 70% quality
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        canvas.toBlob((blob) => resolve(blob), 'image/jpeg', 0.7);
                     };
-                    img.onerror = (err) => reject(err);
+                    img.onerror = reject;
                 };
-                reader.onerror = (err) => reject(err);
+                reader.onerror = reject;
             });
         }
 
         async function handleUpload(file) {
             if (!file) return;
-
             statusDiv.className = 'loading';
-            statusDiv.textContent = '⏳ Comprimiendo...';
+            statusDiv.textContent = 'Comprimiendo...';
 
             try {
-                // Compress
-                const compressedBlob = await compressImage(file);
-
-                statusDiv.textContent = '⏳ Subiendo...';
+                const compressed = await compressImage(file);
+                statusDiv.textContent = 'Subiendo documento...';
 
                 const formData = new FormData();
-                // Use original filename but change extension to jpg
-                const filename = file.name.replace(/\.[^/.]+$/, "") + ".jpg";
-                formData.append('file', compressedBlob, filename);
+                formData.append('file', compressed, file.name.replace(/\.[^/.]+$/, "") + ".jpg");
 
-                let response = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                    headers: getHeaders()
-                });
-
+                let response = await fetch('/api/upload', { method: 'POST', body: formData, headers: getHeaders() });
                 response = await handleAuthError(response);
 
                 if (response.ok) {
-                    const result = await response.json();
                     statusDiv.className = 'success';
-                    statusDiv.textContent = '✅ ¡Enviado! Procesando en PC...';
-                    // Clear inputs
+                    statusDiv.textContent = 'Documento enviado. Procesando...';
                     fileInput.value = '';
                     galleryInput.value = '';
-
-                    // Reset status after 3s
-                    setTimeout(() => {
-                        statusDiv.textContent = '';
-                    }, 3000);
-                } else {
-                    throw new Error('Upload failed');
-                }
-            } catch (error) {
-                console.error(error);
-                statusDiv.className = 'error';
-                statusDiv.textContent = '❌ Error al subir la imagen.';
-            }
-        }
-
-        fileInput.addEventListener('change', async (e) => {
-            handleUpload(e.target.files[0]);
-        });
-
-        galleryInput.addEventListener('change', async (e) => {
-            handleUpload(e.target.files[0]);
-        });
-
-        // --- Audio Recording ---
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        let startTime;
-        let timerInterval;
-
-        const recordBtn = document.getElementById('recordBtn');
-        const recordingTime = document.getElementById('recording-time');
-
-        recordBtn.addEventListener('click', async () => {
-            if (!isRecording) {
-                startRecording();
-            } else {
-                stopRecording();
-            }
-        });
-
-        async function startRecording() {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("Tu navegador no soporta grabación de audio.");
-                return;
-            }
-
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = event => {
-                    audioChunks.push(event.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    handleAudioUpload(audioBlob);
-                };
-
-                mediaRecorder.start();
-                isRecording = true;
-                recordBtn.textContent = "⏹️ Detener y Enviar";
-                recordBtn.style.backgroundColor = "#FF5722";
-                recordBtn.style.color = "white";
-                recordingTime.style.display = "block";
-
-                startTime = Date.now();
-                timerInterval = setInterval(updateTimer, 1000);
-            } catch (err) {
-                console.error("Error accessing microphone:", err);
-                alert("Error al acceder al micrófono.");
-            }
-        }
-
-        function stopRecording() {
-            if (mediaRecorder && isRecording) {
-                mediaRecorder.stop();
-                isRecording = false;
-                recordBtn.textContent = "🎙️ Grabar Voz";
-                recordBtn.style.backgroundColor = "transparent";
-                recordBtn.style.color = "#FF5722";
-                recordingTime.style.display = "none";
-                clearInterval(timerInterval);
-            }
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
-            const seconds = (elapsed % 60).toString().padStart(2, '0');
-            recordingTime.textContent = `${minutes}:${seconds}`;
-        }
-
-        async function handleAudioUpload(audioBlob) {
-            statusDiv.className = 'loading';
-            statusDiv.textContent = '⏳ Subiendo audio...';
-
-            const formData = new FormData();
-            formData.append('file', audioBlob, "voice_note.webm");
-
-            try {
-                let response = await fetch('/api/upload_audio', {
-                    method: 'POST',
-                    body: formData,
-                    headers: getHeaders()
-                });
-
-                response = await handleAuthError(response);
-
-                if (response.ok) {
-                    statusDiv.className = 'success';
-                    statusDiv.textContent = '✅ Audio enviado. Transcribiendo...';
                     setTimeout(() => { statusDiv.textContent = ''; }, 3000);
                 } else {
                     throw new Error('Upload failed');
@@ -678,54 +609,92 @@
             } catch (error) {
                 console.error(error);
                 statusDiv.className = 'error';
-                statusDiv.textContent = '❌ Error al subir audio.';
+                statusDiv.textContent = 'Error al subir documento.';
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => handleUpload(e.target.files[0]));
+        galleryInput.addEventListener('change', (e) => handleUpload(e.target.files[0]));
+
+        // Audio recording
+        let mediaRecorder, audioChunks = [], isRecording = false, startTime, timerInterval;
+        const recordBtn = document.getElementById('recordBtn');
+        const recordingTime = document.getElementById('recording-time');
+
+        recordBtn.addEventListener('click', () => {
+            isRecording ? stopRecording() : startRecording();
+        });
+
+        async function startRecording() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("Tu navegador no soporta grabacion de audio.");
+                return;
+            }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    handleAudioUpload(audioBlob);
+                };
+                mediaRecorder.start();
+                isRecording = true;
+                recordBtn.textContent = "Detener y Enviar";
+                recordBtn.style.backgroundColor = "#c0392b";
+                recordBtn.style.color = "white";
+                recordingTime.style.display = "block";
+                startTime = Date.now();
+                timerInterval = setInterval(updateTimer, 1000);
+            } catch (err) {
+                console.error(err);
+                alert("Error al acceder al microfono.");
+            }
+        }
+
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.textContent = "&#127908; Grabar Voz";
+                recordBtn.style.backgroundColor = "transparent";
+                recordBtn.style.color = "#c0392b";
+                recordingTime.style.display = "none";
+                clearInterval(timerInterval);
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            recordingTime.textContent = `${String(Math.floor(elapsed / 60)).padStart(2, '0')}:${String(elapsed % 60).padStart(2, '0')}`;
+        }
+
+        async function handleAudioUpload(audioBlob) {
+            statusDiv.className = 'loading';
+            statusDiv.textContent = 'Subiendo audio...';
+
+            const formData = new FormData();
+            formData.append('file', audioBlob, "voice_note.webm");
+
+            try {
+                let response = await fetch('/api/upload_audio', { method: 'POST', body: formData, headers: getHeaders() });
+                response = await handleAuthError(response);
+
+                if (response.ok) {
+                    statusDiv.className = 'success';
+                    statusDiv.textContent = 'Audio enviado. Transcribiendo...';
+                    setTimeout(() => { statusDiv.textContent = ''; }, 3000);
+                } else {
+                    throw new Error('Upload failed');
+                }
+            } catch (error) {
+                console.error(error);
+                statusDiv.className = 'error';
+                statusDiv.textContent = 'Error al subir audio.';
             }
         }
     </script>
-    <style>
-        /* Additions for new views */
-        .secondary {
-            border-color: #2196F3;
-            color: #2196F3;
-        }
-
-        .secondary:hover {
-            background-color: #2196F3;
-            color: white;
-        }
-
-        .small {
-            padding: 5px 15px;
-            font-size: 14px;
-            margin-bottom: 10px;
-        }
-
-        .note-card {
-            background: #333;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .note-card:hover {
-            background: #444;
-        }
-
-        .status-pending {
-            color: orange;
-        }
-
-        .status-processed {
-            color: #4CAF50;
-        }
-
-        .status-error {
-            color: #f44336;
-        }
-    </style>
-
 </body>
 
 </html>

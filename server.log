@@ -1,0 +1,23 @@
+2025-12-04 23:46:07,034 - INFO - Database initialized successfully.
+2025-12-04 23:46:07,041 - INFO - Database initialized successfully.
+2025-12-04 23:46:07,041 - INFO - Existing users in DB: {'Kimi': '2001', 'Beto May': '0295'}
+INFO:     Started server process [38514]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+2025-12-04 23:46:22,946 - INFO - Auth Attempt - User: 'Beto May', PIN: '0295'
+2025-12-04 23:46:22,965 - INFO - Note added with ID: 12 for user: Beto May
+INFO:     127.0.0.1:53180 - "POST /api/notes/text HTTP/1.1" 200 OK
+2025-12-04 23:46:22,966 - INFO - Starting background processing for note 12
+2025-12-04 23:46:23,885 - INFO - Sending text to Ollama (ministral-3:14b) for analysis...
+2025-12-04 23:48:02,231 - INFO - HTTP Request: POST http://localhost:11434/api/chat "HTTP/1.1 200 OK"
+2025-12-04 23:48:02,251 - INFO - Note 12 updated with analysis.
+2025-12-04 23:48:02,251 - INFO - Background processing complete for note 12
+2025-12-04 23:48:02,251 - INFO - Auth Attempt - User: 'Beto May', PIN: '0295'
+INFO:     127.0.0.1:46340 - "GET /api/notes HTTP/1.1" 200 OK
+2025-12-04 23:48:02,252 - INFO - Auth Attempt - User: 'Beto May', PIN: '0295'
+INFO:     127.0.0.1:34964 - "GET /api/notes/12 HTTP/1.1" 200 OK
+2025-12-04 23:48:48,493 - INFO - Auth Attempt - User: 'Beto May', PIN: '0295'
+INFO:     127.0.0.1:59416 - "GET /api/notes/9 HTTP/1.1" 200 OK
+2025-12-04 23:49:09,664 - INFO - Auth Attempt - User: 'Beto May', PIN: '0295'
+INFO:     127.0.0.1:52344 - "GET /api/notes/12 HTTP/1.1" 200 OK
