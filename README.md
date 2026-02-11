@@ -1,126 +1,180 @@
- # **PaperToPlan AI 🧠📝**
+# MEGI Records
 
-**De Papel a Ejecución:** Digitaliza, Analiza y Estructura tus ideas manuscritas con IA 100% Local.
+**Sistema de Expedientes Medicos Digitales** — Digitaliza, analiza y estructura documentos clinicos con IA 100% local.
 
-## **📋 Descripción**
+## Descripcion
 
-**PaperToPlan AI** es una aplicación de escritorio diseñada para desarrolladores y gestores que necesitan transformar el caos de las notas manuscritas en planes de proyecto estructurados y ejecutables sin comprometer la privacidad.
+**MEGI Records** es una aplicacion de escritorio para profesionales de la salud que necesitan transformar documentos medicos fisicos (notas clinicas, recetas, resultados de laboratorio) en expedientes digitales estructurados y consultables, sin comprometer la privacidad del paciente.
 
-A diferencia de los OCR tradicionales que fallan con la caligrafía humana, PaperToPlan utiliza una estrategia híbrida de **Visión Multimodal (LLaVA/Moondream)** y **OCR** para interpretar diagramas y texto manuscrito. Todo el procesamiento ocurre localmente en tu máquina utilizando **Ollama**, garantizando que tus datos sensibles o propiedad intelectual nunca salgan de tu ordenador.
+Utiliza una estrategia hibrida de **Vision Multimodal** y **OCR** para interpretar documentos medicos manuscritos e impresos. Todo el procesamiento ocurre localmente usando **Ollama**, garantizando que los datos clinicos nunca salgan de tu equipo.
 
-## **✨ Características Principales**
+## Caracteristicas Principales
 
-* **🔐 Privacidad Total (Local-First):** Ejecución 100% offline. Tus ideas no se suben a ninguna nube ni API de terceros.  
-* **👁️ Visión Inteligente:** Integración con modelos multimodales (LLaVA) para entender el contexto visual de una nota, flechas y listas desordenadas, no solo caracteres sueltos.  
-* **📊 Análisis de Factibilidad Automático:** La IA evalúa tu idea y genera un reporte JSON con:  
-  * Score de factibilidad (0-100).  
-  * Consideraciones técnicas y stack recomendado.  
-  * Tiempo estimado de implementación.  
-*   **🗂️ Gestión Temporal:** Clasificación automática de notas en el dashboard según su complejidad: *Corto, Medio o Largo Plazo*.  
-*   **📱 Web Companion App:** Escanea un código QR para conectar tu móvil (iOS/Android) y usarlo como escáner de notas o visor de planes.
-*   **🎨 UI Moderna:** Interfaz oscura, limpia y responsiva construida con CustomTkinter.
+- **Privacidad Total (Local-First):** Ejecucion 100% offline. Los datos de pacientes no se suben a ninguna nube ni API de terceros.
+- **Analisis SOAP Automatico:** La IA estructura documentos clinicos en formato SOAP (Subjetivo, Objetivo, Evaluacion, Plan) con codigos CIE-10 y score de confianza.
+- **Gestion de Pacientes:** CRUD completo con datos demograficos, alergias, condiciones, tipo de sangre y contactos de emergencia.
+- **Clasificacion de Documentos:** Deteccion automatica del tipo: consulta, receta, resultado de laboratorio o referencia.
+- **Extraccion de Recetas:** Medicamentos con dosis, frecuencia, duracion e instrucciones extraidos automaticamente.
+- **Resultados de Laboratorio:** Valores con unidades, rangos de referencia e indicador de anomalia.
+- **Generacion de PDFs:** Notas medicas y recetas en formato PDF profesional listo para imprimir.
+- **Tablero Kanban:** Flujo visual por estado: Pendiente, En Proceso, Procesado, Revisado.
+- **Companion Movil:** Escanea un QR para usar tu celular como escaner de documentos.
+- **Multi-Usuario:** Multiples doctores/staff con autenticacion PIN.
 
-## **🛠️ Stack Tecnológico**
+## Stack Tecnologico
 
-* **Lenguaje:** Python 3.10+  
-* **Interfaz Gráfica:** [CustomTkinter](https://github.com/TomSchimansky/CustomTkinter)  
-* **Motor de IA:** [Ollama](https://ollama.com/) (API Local)  
-* **Modelos IA:**  
-  * *Cerebro (Lógica):* llama3 o phi3  
-  * *Ojos (Visión):* llava (para GPUs potentes) o moondream (para eficiencia)  
-* **OCR Rápido:** EasyOCR \+ OpenCV (Pre-procesamiento de imagen)  
-* **Persistencia:** SQLite
-* **Web Companion:** FastAPI + HTML5/JS (PWA para iOS y Android)
+| Capa | Tecnologia |
+|------|-----------|
+| Frontend | React 19 + TypeScript + Tailwind CSS v4 |
+| Desktop | Tauri v2 (Rust) |
+| Backend | FastAPI + Uvicorn |
+| Base de Datos | SQLite (`megirecords.db`) |
+| Motor de IA | Ollama (local) |
+| Modelos IA | gemma3 (logica), qwen3-vl (vision) |
+| OCR | EasyOCR + OpenCV |
+| PDFs | fpdf2 |
+| Tiempo Real | WebSockets |
+| Movil | PWA (HTML5/JS via QR) |
 
-## **⚙️ Requisitos Previos**
+## Requisitos Previos
 
-Antes de instalar la aplicación, necesitas preparar el entorno de IA local:
+1. **Python 3.10+**
+2. **Node.js 18+** y npm
+3. **Rust** (para compilar Tauri)
+4. **Ollama** instalado y ejecutandose — [Descargar aqui](https://ollama.com)
+5. Modelos descargados:
+   ```bash
+   ollama pull gemma3
+   ollama pull qwen3-vl:8b
+   ```
 
-1. **Python 3.10** o superior.  
-2. **Ollama** instalado y ejecutándose. [Descargar aquí](https://ollama.com).  
-3. Modelos descargados:  
-   Abre tu terminal y ejecuta:  
-   ollama pull llama3  
-   ollama pull llava  
-   \# Opcional: para equipos con menos RAM/GPU  
-   ollama pull moondream
+## Instalacion y Uso
 
-## **🚀 Instalación y Uso**
+### 1. Clonar el repositorio
 
-1. **Clonar el repositorio:**  
-   git clone \[https://github.com/tu-usuario/PaperToPlan.git\](https://github.com/tu-usuario/PaperToPlan.git)  
-   cd PaperToPlan
+```bash
+git clone https://github.com/Alberto-Campos-de-la-Torre/Paper-to-Plan-Ai.io.git
+cd Paper-to-Plan-Ai.io
+git checkout feat/megi-records
+```
 
-2. **Crear un entorno virtual:**  
-   python \-m venv venv  
-   \# En Windows:  
-   .\\venv\\Scripts\\activate  
-   \# En macOS/Linux:  
-   source venv/bin/activate
+### 2. Backend (Python)
 
-3. **Instalar dependencias:**  
-   pip install \-r requirements.txt
+```bash
+python -m venv venv
+source venv/bin/activate  # Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
+python backend/server.py
+```
 
-   *(El archivo requirements.txt debe incluir: customtkinter, ollama, easyocr, opencv-python, pillow)*  
-4. Ejecutar la aplicación:  
-   Asegúrate de que ollama serve esté corriendo en otra terminal o en segundo plano.  
-   python main.py
+### 3. Frontend (desarrollo)
 
-## **📖 Guía de Uso Rápida**
+```bash
+cd desktop-app
+npm install
+npm run dev
+```
 
-1. **Nueva Nota:** Haz clic en el botón "+" y selecciona una foto de tu libreta o servilleta.  
-2. **Procesamiento:** La app intentará leerla primero con OCR rápido. Si es confusa, usará LLaVA (esto puede tardar unos segundos dependiendo de tu GPU).  
-3. **Revisión:** Verás la tarjeta de la nota en el tablero. Haz clic para ver el "Plan de Mejora" generado por la IA.  
-4. **Filtrado:** Usa los filtros laterales para ver solo proyectos de "Corto Plazo" para victorias rápidas.
+### 4. Desktop (Tauri)
 
-## **🗺️ Roadmap (Estado Actual)**
+```bash
+cd desktop-app
+npm run tauri dev
+```
 
-### Completado ✅
-* **Fase 1:** Backend Core (Conexión Python-Ollama y Prompts JSON).
-* **Fase 2:** Módulo de Visión Híbrido (EasyOCR + LLaVA fallback).
-* **Fase 3:** Interfaz Gráfica (Dashboard y Detalles).
-* **Fase 4:** Base de datos y optimización de hilos (Threading).
-* **Fase 5:** Mejoras (Soporte Español, Eliminación de Notas, Webcam).
-* **Fase 6:** Funciones Avanzadas (Flush DB, Edición y Regeneración).
-* **Fase 7:** Pulido UI (Banner de Estado, Validación).
-* **Fase 8:** Embellecimiento UI (Layout Rico, Sidebar Pulido).
-* **Fase 9:** Personalización de Escritura (Few-Shot Learning).
-* **Fase 10:** Compañero Móvil (PWA Local con QR).
-* **Fase 11:** Mobile Enhancements (Ver notas en móvil).
-* **Fase 12:** iOS Compatibility (Soporte nativo PWA).
-* **Fase 13:** Seguridad & Configuración (Autenticación PIN).
-* **Fase 14:** Multi-Usuario (Gestión de usuarios con PINs únicos).
-* **Fase 15:** Tracking & AI+ (Marcar proyectos completados, títulos creativos con IA).
-* **Fase 16:** UI Avanzada (Drag & Drop, Dashboard con gráficos, Export PDF/Markdown).
-* **Fase 17:** Mobile Polish (Compresión de imágenes, WebSockets en tiempo real).
-* **Fase 18:** Voice Notes (Integración con Whisper para notas de voz).
+## Estructura del Proyecto
 
-* **Fase 19:** App Nativa Android (MVP) - Implementación inicial en Kotlin/Compose.
+```
+├── backend/
+│   ├── server.py              # API FastAPI (pacientes, consultas, documentos)
+│   ├── ai_manager.py          # Prompts SOAP y clasificacion medica
+│   ├── document_generator.py  # Generador de PDFs (notas y recetas)
+│   └── session_manager.py     # Gestion de sesiones
+├── database/
+│   └── db_manager.py          # SQLite: patients, consultations, prescriptions, lab_results
+├── desktop-app/
+│   ├── src/
+│   │   ├── api/client.ts      # Cliente API TypeScript
+│   │   ├── components/
+│   │   │   ├── Dashboard.tsx          # Vista principal de expedientes
+│   │   │   ├── ConsultationDetail.tsx # Detalle SOAP con tabs
+│   │   │   ├── PatientList.tsx        # Registro de pacientes
+│   │   │   ├── PatientDetail.tsx      # Ficha completa del paciente
+│   │   │   ├── PatientFormModal.tsx   # Crear/editar paciente
+│   │   │   ├── PatientSelector.tsx    # Busqueda y vinculacion
+│   │   │   ├── Kanban.tsx             # Tablero por estado
+│   │   │   ├── Statistics.tsx         # Graficas medicas
+│   │   │   ├── MedicalTags.tsx        # Tags: alergias, condiciones, CIE-10
+│   │   │   ├── Sidebar.tsx            # Navegacion y filtros
+│   │   │   ├── Login.tsx              # Autenticacion
+│   │   │   ├── TextNoteModal.tsx      # Consulta manual
+│   │   │   └── WebcamModal.tsx        # Captura de documentos
+│   │   ├── App.tsx            # Rutas y estado global
+│   │   └── index.css          # Tema MEGI (cream/forest-green)
+│   └── src-tauri/             # Configuracion Tauri
+└── requirements.txt
+```
 
-### Próximas Fases 🚀
-* **Fase 20:** App Nativa de Escritorio (Electron/Tauri).
-* **Fase 21:** Mejora Gráfica Android (UI/UX Premium).
-* **Fase 22:** Integración con Calendarios (Google/Outlook).
+## Esquema de Base de Datos
 
-## **✨ Características Implementadas**
+| Tabla | Descripcion |
+|-------|-------------|
+| `users` | Doctores/staff con PIN |
+| `patients` | Datos demograficos, alergias, condiciones, CIE-10 |
+| `consultations` | Documentos medicos con analisis SOAP (JSON) y estado |
+| `prescriptions` | Medicamentos vinculados a consulta y paciente |
+| `lab_results` | Valores de laboratorio con rangos de referencia |
+| `corrections` | Historial de correcciones OCR |
 
-* **🎙️ Notas de Voz:** Transcripción automática con Whisper para capturar ideas habladas.
-* **📊 Dashboard Inteligente:** Gráficos en tiempo real de progreso, tiempos de implementación y factibilidad.
-* **⚡ Análisis Refinado:** Prompt V2 con detección estricta de tiempos y scoring variado.
-* **🔐 Privacidad Total (Local-First):** Ejecución 100% offline con Ollama.
-* **📱 Compañero Móvil:** Escanea un QR y usa tu teléfono como cámara inalámbrica.
-* **📸 Captura Flexible:** Sube imágenes o usa tu **Webcam** directamente.
-* **🧠 IA en Español:** Análisis de factibilidad y planes generados en español usando **gemma3:4B**.
-* **✍️ Aprendizaje Personalizado:** La IA aprende de tus correcciones para entender mejor tu letra.
-* **👁️ Visión Híbrida:** OCR rápido para texto claro, LLaVA para manuscritos complejos.
-* **🗑️ Gestión Completa:** Crea, visualiza, edita y elimina notas.
-* **🔄 Regeneración:** Corrige el texto extraído y regenera el plan si la IA falla.
-* **🛡️ Validación:** Banners de estado y validación de respuestas para evitar errores.
+## Flujo de Trabajo
 
-## **🤝 Contribución**
+1. **Captura:** Sube imagen, usa webcam o escribe manualmente una consulta.
+2. **OCR:** Extraccion de texto del documento fisico.
+3. **Clasificacion:** La IA identifica el tipo de documento (consulta, receta, lab, referencia).
+4. **Analisis SOAP:** Estructuracion en Subjetivo/Objetivo/Evaluacion/Plan con codigos CIE-10.
+5. **Extraccion:** Recetas y valores de laboratorio se guardan en tablas dedicadas.
+6. **Revision:** El doctor revisa, corrige si es necesario y marca como revisado.
+7. **Exportacion:** Genera PDFs profesionales de notas medicas y recetas.
 
-¡Las contribuciones son bienvenidas\! Si tienes ideas para mejorar los prompts del sistema o la eficiencia del OCR, por favor abre un *issue* o envía un *pull request*.
+## API Endpoints
 
-## **📄 Licencia**
+### Pacientes
+- `GET/POST /api/patients` — Listar / crear pacientes
+- `GET/PUT/DELETE /api/patients/{id}` — CRUD individual
+- `GET /api/patients/search?q=` — Busqueda por nombre
+- `GET /api/patients/{id}/consultations` — Historial del paciente
+- `GET /api/patients/{id}/prescriptions` — Recetas del paciente
+- `GET /api/patients/{id}/lab-results` — Laboratorios del paciente
 
-Este proyecto está bajo la Licencia MIT \- eres libre de usarlo y modificarlo.
+### Consultas
+- `GET /api/consultations` — Listar consultas
+- `GET /api/consultations/{id}` — Detalle con analisis SOAP
+- `POST /api/consultations/text` — Nueva consulta de texto
+- `POST /api/consultations/{id}/regenerate` — Regenerar analisis
+- `POST /api/consultations/{id}/review` — Marcar como revisado
+- `POST /api/consultations/{id}/link-patient` — Vincular paciente
+- `DELETE /api/consultations/{id}` — Eliminar
+
+### Documentos PDF
+- `GET /api/documents/medical-note/{id}` — Descargar nota medica
+- `GET /api/documents/prescription/{id}` — Descargar receta
+
+### Otros
+- `POST /api/upload` — Subir imagen de documento
+- `POST /api/capture_webcam` — Captura desde webcam
+- `GET /api/stats` — Estadisticas medicas
+- `WS /ws/{user_id}` — Actualizaciones en tiempo real
+
+## Tema Visual
+
+MEGI Records usa una paleta medica profesional:
+
+- **Primary:** `#2d3b2d` (forest green)
+- **Accent:** `#8b7355` (gold)
+- **Background:** `#f5f3ee` (cream)
+- **Fuentes:** Cormorant Garamond (titulos), DM Sans (cuerpo), JetBrains Mono (datos)
+- Soporta modo claro y oscuro
+
+## Licencia
+
+Este proyecto esta bajo la Licencia MIT.
