@@ -52,6 +52,19 @@ class SessionManager:
         users = self.db.get_all_users()
         return {user['username']: user['pin'] for user in users}
 
+    def add_user(self, username: str, pin: str) -> bool:
+        """Adds a user with the given username and PIN."""
+        return self.db.create_user(username, pin)
+
+    def remove_user(self, username: str) -> bool:
+        """Removes a user by username."""
+        return self.db.delete_user(username)
+
+    def user_exists(self, username: str) -> bool:
+        """Checks if a user with the given username exists."""
+        users = self.get_all_users()
+        return username in users
+
 # Global instance - but DB won't be initialized until first use
 session_manager = SessionManager()
 

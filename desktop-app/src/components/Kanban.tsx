@@ -1,140 +1,127 @@
 import React, { useEffect, useState } from 'react';
-import { getNotes, Note } from '../api/client';
+import { getConsultations, Consultation } from '../api/client';
 import { useNavigate } from 'react-router-dom';
-import { MoreHorizontal } from 'lucide-react';
+import { Stethoscope, Pill, FlaskConical, FileText } from 'lucide-react';
 
 interface KanbanProps {
     currentUser?: string;
-    showCompleted?: boolean;
+    showReviewed?: boolean;
 }
 
-const Kanban: React.FC<KanbanProps> = ({ currentUser = 'Beto May', showCompleted = false }) => {
-    const [notes, setNotes] = useState<Note[]>([]);
+const Kanban: React.FC<KanbanProps> = ({ currentUser = '', showReviewed = false }) => {
+    const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
         setLoading(true);
-        loadNotes();
+        loadData();
     }, [currentUser]);
 
-    const loadNotes = async () => {
+    const loadData = async () => {
         try {
-            const data = await getNotes();
-            setNotes(data);
+            const data = await getConsultations();
+            setConsultations(data);
         } catch (error) {
-            console.error("Error loading notes:", error);
+            console.error("Error loading consultations:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    // Define columns structure
     const columns = [
-        { id: 'corto', title: 'Corto Plazo', color: 'cyan' },
-        { id: 'medio', title: 'Mediano Plazo', color: 'blue' },
-        { id: 'largo', title: 'Largo Plazo', color: 'purple' }
+        { id: 'pending', title: 'Pendientes', color: '#b8860b' },
+        { id: 'processing', title: 'En Proceso', color: '#2471a3' },
+        { id: 'processed', title: 'Procesados', color: '#2d6a2d' },
+        { id: 'reviewed', title: 'Revisados', color: '#7c3aed' },
     ];
 
-    // Bucket notes based on Tkinter logic
-    const getBucketedNotes = () => {
-        const buckets: Record<string, Note[]> = {
-            corto: [],
-            medio: [],
-            largo: []
-        };
-
-        notes.forEach(note => {
-            // Filter by completion status first
-            if (!showCompleted && (note.status === 'completed' || note.status === 'Completed')) {
-                return;
-            }
-
-            const timeEst = (note.implementation_time || '').toLowerCase();
-
-            if (timeEst.includes('corto') || timeEst.includes('short') || timeEst.includes('semana') || timeEst.includes('días') || timeEst.includes('week') || timeEst.includes('day') || timeEst.includes('1 mes') || timeEst.includes('1 month')) {
-                buckets.corto.push(note);
-            } else if (timeEst.includes('medio') || timeEst.includes('mediano') || timeEst.includes('medium') || timeEst.includes('mes') || timeEst.includes('month')) {
-                buckets.medio.push(note);
-            } else if (timeEst.includes('largo') || timeEst.includes('long') || timeEst.includes('año') || timeEst.includes('year')) {
-                buckets.largo.push(note);
-            } else {
-                // Default fallback to Short Term (like Tkinter)
-                buckets.corto.push(note);
-            }
+    const getBuckets = () => {
+        const buckets: Record<string, Consultation[]> = { pending: [], processing: [], processed: [], reviewed: [] };
+        consultations.forEach(c => {
+            if (!showReviewed && c.status === 'reviewed') return;
+            const key = c.status === 'error' ? 'pending' : c.status;
+            if (buckets[key]) buckets[key].push(c);
+            else buckets.pending.push(c);
         });
-
         return buckets;
     };
 
-    const bucketedNotes = getBucketedNotes();
+    const getDocTypeIcon = (type: string) => {
+        switch (type) {
+            case 'prescription': return <Pill className="w-3.5 h-3.5" />;
+            case 'lab_result': return <FlaskConical className="w-3.5 h-3.5" />;
+            case 'referral': return <FileText className="w-3.5 h-3.5" />;
+            default: return <Stethoscope className="w-3.5 h-3.5" />;
+        }
+    };
+
+    const getDocTypeLabel = (type: string) => {
+        switch (type) {
+            case 'prescription': return 'Receta';
+            case 'lab_result': return 'Lab';
+            case 'referral': return 'Referencia';
+            default: return 'Consulta';
+        }
+    };
+
+    const buckets = getBuckets();
 
     return (
-        <div className="h-full overflow-x-auto p-8 bg-[#020617] relative">
-            {/* Background Gradients */}
-            <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-purple-900/10 to-transparent pointer-events-none" />
-
-            <div className="relative z-10 mb-8">
-                <h2 className="text-3xl font-bold text-white tracking-tight">Kanban Board</h2>
-                <p className="text-gray-400">Gestiona tus proyectos por tiempo de implementación.</p>
+        <div className="h-full overflow-x-auto p-8">
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold font-display" style={{ color: 'var(--color-primary)' }}>Tablero</h2>
+                <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                    Gestiona expedientes por estado de procesamiento
+                </p>
             </div>
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
-                    <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin"></div>
+                    <div className="animate-spin rounded-full h-8 w-8" style={{ border: '2px solid var(--color-border)', borderTopColor: 'var(--color-primary)' }} />
                 </div>
             ) : (
-                <div className="flex gap-6 h-[calc(100%-80px)] min-w-[1000px]">
+                <div className="flex gap-4 h-[calc(100%-80px)] min-w-[1000px]">
                     {columns.map(col => (
-                        <div key={col.id} className="flex-1 flex flex-col min-w-[300px] bg-white/5 rounded-2xl border border-white/5 backdrop-blur-sm">
+                        <div key={col.id} className="flex-1 flex flex-col min-w-[240px] rounded-xl overflow-hidden"
+                             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border-light)' }}>
                             {/* Column Header */}
-                            <div className={`p-4 border-b border-white/5 flex justify-between items-center`}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-3 h-3 rounded-full bg-${col.color}-500 shadow-[0_0_10px_rgba(var(--color-${col.color}),0.5)]`} />
-                                    <span className="font-bold text-gray-200">{col.title}</span>
-                                    <span className="bg-white/5 px-2 py-0.5 rounded text-xs text-gray-500 font-mono">
-                                        {bucketedNotes[col.id as keyof typeof bucketedNotes].length}
+                            <div className="p-4 flex justify-between items-center" style={{ borderBottom: '1px solid var(--color-border-light)' }}>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: col.color }} />
+                                    <span className="font-semibold text-sm">{col.title}</span>
+                                    <span className="text-xs px-1.5 py-0.5 rounded font-mono"
+                                          style={{ background: 'var(--color-surface-alt)', color: 'var(--color-text-muted)' }}>
+                                        {buckets[col.id].length}
                                     </span>
                                 </div>
                             </div>
 
-                            {/* Column Content */}
-                            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                                {bucketedNotes[col.id as keyof typeof bucketedNotes].map(note => (
+                            {/* Cards */}
+                            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                                {buckets[col.id].map(c => (
                                     <div
-                                        key={note.id}
-                                        onClick={() => navigate(`/note/${note.id}`)}
-                                        className="bg-[#020617]/50 p-4 rounded-xl border border-white/5 hover:border-purple-500/30 cursor-pointer group transition-all hover:shadow-lg hover:shadow-purple-900/10"
+                                        key={c.id}
+                                        onClick={() => navigate(`/consultation/${c.id}`)}
+                                        className="p-3 rounded-lg cursor-pointer transition-all hover:shadow-md"
+                                        style={{ background: 'var(--color-surface-alt)', border: '1px solid var(--color-border-light)' }}
                                     >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex items-center gap-2">
-                                                {/* User Pin */}
-                                                <div className="w-5 h-5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-[8px] font-bold text-white shadow-sm ring-1 ring-white/20">
-                                                    {currentUser?.substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">
-                                                    {note.status}
-                                                </span>
-                                            </div>
-                                            <button className="text-gray-600 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <MoreHorizontal className="w-4 h-4" />
-                                            </button>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span style={{ color: 'var(--color-accent)' }}>{getDocTypeIcon(c.document_type)}</span>
+                                            <span className="text-[10px] font-semibold uppercase" style={{ color: 'var(--color-accent)' }}>
+                                                {getDocTypeLabel(c.document_type)}
+                                            </span>
                                         </div>
-                                        <h4 className="font-semibold text-gray-200 mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors text-sm">
-                                            {note.title || 'Sin Título'}
-                                        </h4>
-
-                                        {note.feasibility_score > 0 && (
-                                            <div className="flex items-center gap-2 mt-3">
-                                                <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                                    <div
-                                                        className={`h-full rounded-full ${note.feasibility_score > 70 ? 'bg-emerald-500' :
-                                                            note.feasibility_score > 40 ? 'bg-amber-500' : 'bg-red-500'
-                                                            }`}
-                                                        style={{ width: `${note.feasibility_score}%` }}
-                                                    />
-                                                </div>
-                                                <span className="text-xs font-mono text-gray-400">{note.feasibility_score}%</span>
+                                        <p className="text-xs line-clamp-2 mb-2" style={{ color: 'var(--color-text)' }}>
+                                            {c.summary || 'Sin resumen'}
+                                        </p>
+                                        {c.confidence_score > 0 && (
+                                            <div className="confidence-bar">
+                                                <div className="confidence-bar-fill"
+                                                     style={{
+                                                         width: `${c.confidence_score}%`,
+                                                         background: c.confidence_score >= 70 ? 'var(--color-success)' : c.confidence_score >= 40 ? 'var(--color-warning)' : 'var(--color-error)'
+                                                     }} />
                                             </div>
                                         )}
                                     </div>

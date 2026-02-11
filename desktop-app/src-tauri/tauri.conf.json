@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "desktop-app",
-  "version": "0.1.0",
-  "identifier": "com.ttech-main.desktop-app",
+  "productName": "MEGI Records",
+  "version": "1.0.0",
+  "identifier": "com.megirecords.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,9 +12,12 @@
   "app": {
     "windows": [
       {
-        "title": "desktop-app",
-        "width": 800,
-        "height": 600
+        "title": "MEGI Records - Expedientes Médicos Digitales",
+        "width": 1400,
+        "height": 900,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true
       }
     ],
     "security": {
@@ -33,6 +36,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "publisher": "TechMain",
+    "copyright": "Copyright © 2025 MEGI Records",
+    "category": "Medical",
+    "shortDescription": "Sistema de expedientes médicos digitales con IA",
+    "longDescription": "MEGI Records es un sistema de digitalización inteligente de documentos médicos que estructura la información clínica en una base de datos local filtrable por paciente."
   }
 }

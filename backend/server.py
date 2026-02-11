@@ -3,14 +3,16 @@ import shutil
 import json
 import threading
 from fastapi import FastAPI, UploadFile, File, HTTPException, Header, Depends, WebSocket, WebSocketDisconnect
-from fastapi.responses import HTMLResponse, FileResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, StreamingResponse, Response
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime
 import logging
 import asyncio
-from typing import List, Dict
+from typing import List, Dict, Optional
+from pydantic import BaseModel
 from database.db_manager import DBManager
 from backend.session_manager import session_manager
+from backend.document_generator import MedicalDocumentGenerator
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -20,10 +22,7 @@ import cv2
 
 app = FastAPI()
 
-# ... (existing imports)
-
-# We need a way to pass the loop to the external world or vice versa.
-# Let's add a startup event to capture the loop.
+# Capture the event loop at startup for thread-safe broadcasts
 global_loop = None
 
 @app.on_event("startup")
@@ -36,7 +35,6 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CAPTURES_DIR = os.path.join(BASE_DIR, "captures")
 WEB_DIR = os.path.join(BASE_DIR, "web")
 
-# Ensure directories exist
 os.makedirs(CAPTURES_DIR, exist_ok=True)
 os.makedirs(WEB_DIR, exist_ok=True)
 
@@ -50,7 +48,10 @@ app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 # Database Instance
 db = DBManager()
 
-# We will use a simple callback mechanism if running in the same process
+# Document Generator
+doc_generator = MedicalDocumentGenerator()
+
+# Callbacks for processing (set by main app)
 on_upload_callback = None
 on_audio_callback = None
 
@@ -62,10 +63,54 @@ def set_audio_callback(callback):
     global on_audio_callback
     on_audio_callback = callback
 
-# --- WebSocket Manager ---
+
+# ─── Pydantic Models ─────────────────────────────────────────
+
+class PatientCreate(BaseModel):
+    name: str
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    blood_type: Optional[str] = None
+    allergies: Optional[List[str]] = []
+    conditions: Optional[List[str]] = []
+    cie10_codes: Optional[List[str]] = []
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    notes: Optional[str] = None
+
+class PatientUpdate(BaseModel):
+    name: Optional[str] = None
+    date_of_birth: Optional[str] = None
+    gender: Optional[str] = None
+    blood_type: Optional[str] = None
+    allergies: Optional[List[str]] = None
+    conditions: Optional[List[str]] = None
+    cie10_codes: Optional[List[str]] = None
+    contact_phone: Optional[str] = None
+    contact_email: Optional[str] = None
+    emergency_contact: Optional[str] = None
+    notes: Optional[str] = None
+
+class TextConsultation(BaseModel):
+    text: str
+    patient_id: Optional[int] = None
+
+class LinkPatient(BaseModel):
+    patient_id: int
+
+class RegenerateRequest(BaseModel):
+    raw_text: Optional[str] = None
+
+class UserCreate(BaseModel):
+    username: str
+    pin: str
+
+
+# ─── WebSocket Manager ───────────────────────────────────────
+
 class ConnectionManager:
     def __init__(self):
-        # Map user_id -> List[WebSocket]
         self.active_connections: Dict[str, List[WebSocket]] = {}
 
     async def connect(self, websocket: WebSocket, user_id: str):
@@ -94,91 +139,494 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 def broadcast_update_sync(user_id: str, message: str):
-    """Thread-safe broadcast"""
+    """Thread-safe broadcast."""
     if global_loop and manager:
         asyncio.run_coroutine_threadsafe(manager.broadcast(message, user_id), global_loop)
 
 
+# ─── Auth ─────────────────────────────────────────────────────
+
 async def verify_user_and_pin(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
-    logger.info(f"Auth Attempt - User: '{x_auth_user}', PIN: '{x_auth_pin}'")
     if not x_auth_user or not x_auth_pin:
-        logger.warning("Auth failed: Missing headers")
         raise HTTPException(status_code=401, detail="Missing Username or PIN")
-    
     if not session_manager.verify_user(x_auth_user, x_auth_pin):
-        logger.warning(f"Auth failed: Invalid credentials for user '{x_auth_user}'")
         raise HTTPException(status_code=401, detail="Invalid Username or PIN")
-    
     return x_auth_user
 
 @app.post("/api/login")
 async def login(x_auth_user: str = Header(None), x_auth_pin: str = Header(None)):
-    """Validates username and PIN for login."""
     if not x_auth_user or not x_auth_pin:
         raise HTTPException(status_code=400, detail="Username and PIN required")
-    
     if session_manager.verify_user(x_auth_user, x_auth_pin):
         return {"status": "success", "message": "Login successful"}
-    else:
-        raise HTTPException(status_code=401, detail="Invalid username or PIN")
+    raise HTTPException(status_code=401, detail="Invalid username or PIN")
+
+
+# ─── Users ────────────────────────────────────────────────────
 
 @app.get("/api/users")
 async def get_users():
-    """Returns a list of all users and their PINs."""
     try:
         users_dict = session_manager.get_all_users()
-        # Convert to list of objects for easier frontend handling
-        users_list = [{"username": k, "pin": v} for k, v in users_dict.items()]
-        return users_list
+        return [{"username": k, "pin": v} for k, v in users_dict.items()]
     except Exception as e:
         logger.error(f"Error fetching users: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/users")
+async def create_user(data: UserCreate):
+    try:
+        if session_manager.user_exists(data.username):
+            raise HTTPException(status_code=400, detail="Username already exists")
+        success = session_manager.add_user(data.username, data.pin)
+        if success:
+            return {"status": "success", "username": data.username, "pin": data.pin}
+        raise HTTPException(status_code=500, detail="Failed to create user")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/users/{username}")
+async def delete_user(username: str):
+    try:
+        success = session_manager.remove_user(username)
+        if success:
+            return {"status": "success", "message": f"User {username} deleted"}
+        raise HTTPException(status_code=404, detail="User not found")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting user: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── WebSocket ────────────────────────────────────────────────
 
 @app.websocket("/ws/{user_id}")
 async def websocket_endpoint(websocket: WebSocket, user_id: str):
     await manager.connect(websocket, user_id)
     try:
         while True:
-            # Keep alive / listen for messages
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket, user_id)
 
+
+# ─── Mobile Root ──────────────────────────────────────────────
+
 @app.get("/", response_class=HTMLResponse)
 async def read_root():
     try:
         mobile_index_path = os.path.join(WEB_DIR, "mobile_index.html")
-        logger.info(f"Attempting to serve mobile_index.html from: {mobile_index_path}")
         with open(mobile_index_path, "r") as f:
             return f.read()
     except FileNotFoundError:
-        logger.error(f"mobile_index.html not found at: {mobile_index_path}")
         return "<h1>Error: mobile_index.html not found</h1>"
+
+
+# ─── Patients ─────────────────────────────────────────────────
+
+@app.post("/api/patients")
+async def create_patient(patient: PatientCreate, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patient_id = db.add_patient(
+            name=patient.name,
+            date_of_birth=patient.date_of_birth,
+            gender=patient.gender,
+            blood_type=patient.blood_type,
+            allergies=patient.allergies,
+            conditions=patient.conditions,
+            cie10_codes=patient.cie10_codes,
+            contact_phone=patient.contact_phone,
+            contact_email=patient.contact_email,
+            emergency_contact=patient.emergency_contact,
+            notes=patient.notes,
+            created_by=user_id
+        )
+        if patient_id < 0:
+            raise HTTPException(status_code=500, detail="Failed to create patient")
+        return {"status": "success", "patient_id": patient_id}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating patient: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients")
+async def get_patients(user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patients = db.get_all_patients()
+        return patients
+    except Exception as e:
+        logger.error(f"Error fetching patients: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients/search")
+async def search_patients(q: str = "", user_id: str = Depends(verify_user_and_pin)):
+    try:
+        if not q:
+            return db.get_all_patients()
+        return db.search_patients(q)
+    except Exception as e:
+        logger.error(f"Error searching patients: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients/{patient_id}")
+async def get_patient(patient_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patient = db.get_patient_by_id(patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        return patient
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.put("/api/patients/{patient_id}")
+async def update_patient(patient_id: int, data: PatientUpdate, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patient = db.get_patient_by_id(patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+        if not update_data:
+            raise HTTPException(status_code=400, detail="No fields to update")
+        success = db.update_patient(patient_id, **update_data)
+        if success:
+            return {"status": "success", "message": "Patient updated"}
+        raise HTTPException(status_code=500, detail="Failed to update patient")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/patients/{patient_id}")
+async def delete_patient(patient_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patient = db.get_patient_by_id(patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        success = db.delete_patient(patient_id)
+        if success:
+            return {"status": "success", "message": "Patient deleted"}
+        raise HTTPException(status_code=500, detail="Failed to delete patient")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients/{patient_id}/consultations")
+async def get_patient_consultations(patient_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        patient = db.get_patient_by_id(patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        consultations = db.get_consultations_by_patient(patient_id)
+        return _flatten_consultations(consultations)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching consultations for patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients/{patient_id}/prescriptions")
+async def get_patient_prescriptions(patient_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        return db.get_prescriptions_by_patient(patient_id)
+    except Exception as e:
+        logger.error(f"Error fetching prescriptions for patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/patients/{patient_id}/lab-results")
+async def get_patient_lab_results(patient_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        return db.get_lab_results_by_patient(patient_id)
+    except Exception as e:
+        logger.error(f"Error fetching lab results for patient {patient_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Consultations ────────────────────────────────────────────
+
+def _flatten_consultation(c: Dict) -> Dict:
+    """Flatten a consultation for API response."""
+    analysis = c.get('ai_analysis', {}) or {}
+    if isinstance(analysis, str):
+        try:
+            analysis = json.loads(analysis)
+        except Exception:
+            analysis = {}
+    return {
+        "id": c['id'],
+        "patient_id": c.get('patient_id'),
+        "user_id": c.get('user_id', ''),
+        "document_type": c.get('document_type', 'consultation'),
+        "status": c.get('status', 'pending'),
+        "priority": c.get('priority', 'normal'),
+        "summary": analysis.get('summary', ''),
+        "confidence_score": analysis.get('confidence_score', 0),
+        "created_at": c.get('created_at', ''),
+        "reviewed_at": c.get('reviewed_at'),
+    }
+
+def _flatten_consultations(consultations: List[Dict]) -> List[Dict]:
+    return [_flatten_consultation(c) for c in consultations]
+
+@app.get("/api/consultations")
+async def get_consultations(user_id: str = Depends(verify_user_and_pin)):
+    try:
+        consultations = db.get_all_consultations(user_id=user_id)
+        return _flatten_consultations(consultations)
+    except Exception as e:
+        logger.error(f"Error fetching consultations: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/consultations/{consultation_id}")
+async def get_consultation_detail(consultation_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+
+        analysis = c.get('ai_analysis', {}) or {}
+        if isinstance(analysis, str):
+            try:
+                analysis = json.loads(analysis)
+            except Exception:
+                analysis = {}
+
+        # Get patient info if linked
+        patient = None
+        if c.get('patient_id'):
+            patient = db.get_patient_by_id(c['patient_id'])
+
+        # Get prescriptions for this consultation
+        prescriptions = db.get_prescriptions_by_consultation(consultation_id)
+
+        return {
+            "id": c['id'],
+            "patient_id": c.get('patient_id'),
+            "patient": patient,
+            "user_id": c.get('user_id', ''),
+            "document_type": c.get('document_type', 'consultation'),
+            "status": c.get('status', 'pending'),
+            "priority": c.get('priority', 'normal'),
+            "raw_text": c.get('raw_text', ''),
+            "image_path": c.get('image_path', ''),
+            "ai_analysis": analysis,
+            "prescriptions": prescriptions,
+            "created_at": c.get('created_at', ''),
+            "reviewed_at": c.get('reviewed_at'),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching consultation {consultation_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/consultations/text")
+async def create_text_consultation(data: TextConsultation, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        consultation_id = db.add_consultation(
+            user_id=user_id,
+            patient_id=data.patient_id,
+            raw_text=data.text
+        )
+        if consultation_id < 0:
+            raise HTTPException(status_code=500, detail="Failed to create consultation")
+
+        # Process in background
+        def process():
+            _process_text_consultation(consultation_id, data.text, user_id, data.patient_id)
+
+        thread = threading.Thread(target=process, daemon=True)
+        thread.start()
+
+        return {"status": "success", "consultation_id": consultation_id, "message": "Consultation created and processing started."}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating text consultation: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.delete("/api/consultations/{consultation_id}")
+async def delete_consultation(consultation_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+        success = db.delete_consultation(consultation_id)
+        if success:
+            return {"status": "success", "message": "Consultation deleted"}
+        raise HTTPException(status_code=500, detail="Failed to delete consultation")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting consultation {consultation_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/consultations/{consultation_id}/regenerate")
+async def regenerate_consultation(consultation_id: int, data: RegenerateRequest,
+                                   user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+
+        raw_text = data.raw_text if data.raw_text else c.get('raw_text', '')
+        if not raw_text:
+            raise HTTPException(status_code=400, detail="No text available for regeneration")
+
+        if data.raw_text:
+            db.update_consultation_text(consultation_id, raw_text)
+
+        db.update_consultation_status(consultation_id, 'processing')
+
+        patient_id = c.get('patient_id')
+
+        def process():
+            _process_text_consultation(consultation_id, raw_text, user_id, patient_id, is_regeneration=True)
+
+        thread = threading.Thread(target=process, daemon=True)
+        thread.start()
+
+        return {"status": "success", "message": "Consultation queued for regeneration"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error regenerating consultation {consultation_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/consultations/{consultation_id}/review")
+async def review_consultation(consultation_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+        success = db.mark_as_reviewed(consultation_id)
+        if success:
+            return {"status": "success", "message": "Consultation marked as reviewed"}
+        raise HTTPException(status_code=500, detail="Failed to mark as reviewed")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error reviewing consultation {consultation_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/consultations/{consultation_id}/link-patient")
+async def link_consultation_to_patient(consultation_id: int, data: LinkPatient,
+                                        user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found or unauthorized")
+        patient = db.get_patient_by_id(data.patient_id)
+        if not patient:
+            raise HTTPException(status_code=404, detail="Patient not found")
+        success = db.link_consultation_patient(consultation_id, data.patient_id)
+        if success:
+            return {"status": "success", "message": "Consultation linked to patient"}
+        raise HTTPException(status_code=500, detail="Failed to link consultation")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error linking consultation {consultation_id}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Documents (PDF) ─────────────────────────────────────────
+
+@app.get("/api/documents/medical-note/{consultation_id}")
+async def download_medical_note(consultation_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+
+        patient = None
+        if c.get('patient_id'):
+            patient = db.get_patient_by_id(c['patient_id'])
+
+        pdf_bytes = doc_generator.generate_medical_note(c, patient, doctor=user_id)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=nota_medica_{consultation_id}.pdf"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating medical note PDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/documents/prescription/{consultation_id}")
+async def download_prescription(consultation_id: int, user_id: str = Depends(verify_user_and_pin)):
+    try:
+        c = db.get_consultation_by_id(consultation_id, user_id=user_id)
+        if not c:
+            raise HTTPException(status_code=404, detail="Consultation not found")
+
+        patient = None
+        if c.get('patient_id'):
+            patient = db.get_patient_by_id(c['patient_id'])
+
+        prescriptions = db.get_prescriptions_by_consultation(consultation_id)
+        if not prescriptions:
+            # Try extracting from analysis
+            analysis = c.get('ai_analysis', {}) or {}
+            if isinstance(analysis, str):
+                try:
+                    analysis = json.loads(analysis)
+                except Exception:
+                    analysis = {}
+            plan = analysis.get('plan', {})
+            if isinstance(plan, dict):
+                meds = plan.get('medications', [])
+                prescriptions = [m for m in meds if isinstance(m, dict) and m.get('drug_name')]
+
+        if not prescriptions:
+            raise HTTPException(status_code=404, detail="No prescriptions found for this consultation")
+
+        pdf_bytes = doc_generator.generate_prescription(c, patient, prescriptions, doctor=user_id)
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=receta_{consultation_id}.pdf"}
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating prescription PDF: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Upload & Capture ────────────────────────────────────────
 
 @app.post("/api/upload")
 async def upload_image(file: UploadFile = File(...), user_id: str = Depends(verify_user_and_pin)):
     try:
-        # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
         filename = f"mobile_capture_{timestamp}.jpg"
         file_path = os.path.join(CAPTURES_DIR, filename)
-        
-        # Save the file in captures directory
+
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
+
         logger.info(f"File uploaded from mobile: {file_path} by user {user_id}")
-        
-        # Trigger callback in main app to process the note
-        # Pass absolute path and user_id to the callback
+
         abs_file_path = os.path.abspath(file_path)
         if on_upload_callback:
             on_upload_callback(abs_file_path, user_id)
-            
+
         return {"status": "success", "filename": filename, "message": "Image uploaded and processing started."}
-        
     except Exception as e:
         logger.error(f"Upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -186,198 +634,29 @@ async def upload_image(file: UploadFile = File(...), user_id: str = Depends(veri
 @app.post("/api/upload_audio")
 async def upload_audio(file: UploadFile = File(...), user_id: str = Depends(verify_user_and_pin)):
     try:
-        # Generate a unique filename
         timestamp = int(datetime.now().timestamp())
-        # Use original extension or default to .webm (common for web recording)
-        ext = os.path.splitext(file.filename)[1]
+        ext = os.path.splitext(file.filename)[1] if file.filename else ".webm"
         if not ext:
             ext = ".webm"
-            
         filename = f"voice_note_{timestamp}{ext}"
-        # Save in captures dir for simplicity, or a new voice_notes dir
         file_path = os.path.join(CAPTURES_DIR, filename)
-        
-        # Save the file
+
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-            
+
         logger.info(f"Audio uploaded from mobile: {file_path} by user {user_id}")
-        
-        # Trigger callback
+
         abs_file_path = os.path.abspath(file_path)
         if on_audio_callback:
             on_audio_callback(abs_file_path, user_id)
-            
+
         return {"status": "success", "filename": filename, "message": "Audio uploaded and processing started."}
-        
     except Exception as e:
         logger.error(f"Audio upload failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/notes")
-async def get_notes(user_id: str = Depends(verify_user_and_pin)):
-    """Returns a list of all notes for the authenticated user."""
-    try:
-        notes = db.get_all_notes(user_id=user_id)
-        # Flatten the structure for the mobile app
-        flat_notes = []
-        for note in notes:
-            analysis = note.get('ai_analysis', {}) or {}
-            flat_note = {
-                "id": note['id'],
-                "status": note['status'],
-                "implementation_time": note['implementation_time'],
-                "title": analysis.get('title', 'Sin Título'),
-                "feasibility_score": analysis.get('feasibility_score', 0)
-            }
-            flat_notes.append(flat_note)
-        return flat_notes
-    except Exception as e:
-        logger.error(f"Error fetching notes: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/notes/{note_id}")
-async def get_note_detail(note_id: int, user_id: str = Depends(verify_user_and_pin)):
-    """Returns details for a specific note if owned by the user."""
-    try:
-        note = db.get_note_by_id(note_id, user_id=user_id)
-        if not note:
-            raise HTTPException(status_code=404, detail="Note not found")
-        
-        # Flatten structure
-        analysis = note.get('ai_analysis', {}) or {}
-        flat_note = {
-            "id": note['id'],
-            "status": note['status'],
-            "implementation_time": note['implementation_time'],
-            "title": analysis.get('title', 'Sin Título'),
-            "summary": analysis.get('summary', ''),
-            "feasibility_score": analysis.get('feasibility_score', 0),
-            "technical_considerations": analysis.get('technical_considerations', []),
-            "recommended_stack": analysis.get('recommended_stack', []),
-            "raw_text": note.get('raw_text', ''),
-            "created_at": note.get('created_at', '')
-        }
-        return flat_note
-    except Exception as e:
-        logger.error(f"Error fetching note {note_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.delete("/api/notes/{note_id}")
-async def delete_note(note_id: int, user_id: str = Depends(verify_user_and_pin)):
-    """Deletes a note if owned by the user."""
-    try:
-        note = db.get_note_by_id(note_id, user_id=user_id)
-        if not note:
-            raise HTTPException(status_code=404, detail="Note not found or unauthorized")
-        
-        success = db.delete_note(note_id)
-        if success:
-            return {"status": "success", "message": "Note deleted"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to delete note")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error deleting note {note_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/notes/{note_id}/regenerate")
-async def regenerate_note(note_id: int, request: dict, user_id: str = Depends(verify_user_and_pin)):
-    """Regenerates the AI analysis for a note with new raw text."""
-    try:
-        note = db.get_note_by_id(note_id, user_id=user_id)
-        if not note:
-            raise HTTPException(status_code=404, detail="Note not found or unauthorized")
-        
-        new_text = request.get('raw_text', '')
-        if not new_text:
-            raise HTTPException(status_code=400, detail="raw_text is required")
-        
-        # Update the raw text
-        db.update_note_text(note_id, new_text)
-        
-        # Set status to pending for reprocessing
-        db.update_note_error(note_id, "Pending regeneration")
-        
-        # Trigger AI processing callback if available
-        if on_upload_callback:
-            on_upload_callback(note.get('image_path', ''), user_id)
-        
-        return {"status": "success", "message": "Note queued for regeneration"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error regenerating note {note_id}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.post("/api/notes/{note_id}/complete")
-async def mark_note_completed(note_id: int, user_id: str = Depends(verify_user_and_pin)):
-    """Marks a note as completed."""
-    try:
-        note = db.get_note_by_id(note_id, user_id=user_id)
-        if not note:
-            raise HTTPException(status_code=404, detail="Note not found or unauthorized")
-        
-        success = db.mark_as_completed(note_id)
-        if success:
-            return {"status": "success", "message": "Note marked as completed"}
-        else:
-            raise HTTPException(status_code=500, detail="Failed to mark note as completed")
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error marking note {note_id} as completed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/api/status")
-async def get_status():
-    return {"status": "running", "service": "PaperToPlan AI Companion"}
-
-@app.get("/api/stats")
-async def get_stats(user_id: str = Depends(verify_user_and_pin)):
-    """Returns statistics for the user's notes."""
-    try:
-        notes = db.get_all_notes(user_id=user_id)
-        
-        # 1. Progress (Completed vs In Progress)
-        completed_count = 0
-        in_progress_count = 0
-        for note in notes:
-            if note.get('completed', 0) == 1:
-                completed_count += 1
-            elif note.get('status') != 'error':
-                in_progress_count += 1
-                
-        # 2. Implementation Time
-        time_counts = {"Corto Plazo": 0, "Mediano Plazo": 0, "Largo Plazo": 0}
-        for note in notes:
-            t = note.get('implementation_time', 'Unknown')
-            if not t: t = 'Unknown'
-            if "Corto" in t or "Short" in t: time_counts["Corto Plazo"] += 1
-            elif "Medio" in t or "Mediano" in t or "Medium" in t: time_counts["Mediano Plazo"] += 1
-            elif "Largo" in t or "Long" in t: time_counts["Largo Plazo"] += 1
-
-        # 3. Feasibility Scores
-        scores = []
-        for note in notes:
-            analysis = note.get('ai_analysis', {}) or {}
-            try:
-                s = int(analysis.get('feasibility_score', 0))
-                if s > 0: scores.append(s)
-            except: pass
-            
-        return {
-            "progress": {
-                "completed": completed_count,
-                "in_progress": in_progress_count
-            },
-            "implementation_time": time_counts,
-            "feasibility_scores": scores
-        }
-    except Exception as e:
-        logger.error(f"Error fetching stats: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+# ─── Camera ───────────────────────────────────────────────────
 
 class CameraManager:
     def __init__(self):
@@ -388,11 +667,9 @@ class CameraManager:
         with self.lock:
             if self.camera is None or not self.camera.isOpened():
                 self.camera = cv2.VideoCapture(0)
-            
             success, frame = self.camera.read()
             if not success:
                 return None
-            
             ret, buffer = cv2.imencode('.jpg', frame)
             return buffer.tobytes()
 
@@ -404,7 +681,6 @@ class CameraManager:
                 cap.release()
             else:
                 ret, frame = self.camera.read()
-            
             if not ret:
                 raise Exception("Could not read frame")
             return frame
@@ -433,40 +709,216 @@ async def video_feed():
 async def capture_webcam(user_id: str = Depends(verify_user_and_pin)):
     try:
         frame = camera_manager.capture_image()
-            
-        # Generate filename
         timestamp = int(datetime.now().timestamp())
         filename = f"webcam_capture_{timestamp}.jpg"
         file_path = os.path.join(CAPTURES_DIR, filename)
-        
-        # Save image
+
         cv2.imwrite(file_path, frame)
         logger.info(f"Webcam capture saved: {file_path}")
-        
-        # Trigger processing callback if exists (for original app)
+
         abs_file_path = os.path.abspath(file_path)
         if on_upload_callback:
             on_upload_callback(abs_file_path, user_id)
-            
-        return {"status": "success", "filename": filename, "file_path": abs_file_path, "message": "Image captured and processing started."}
-        
+
+        return {"status": "success", "filename": filename, "file_path": abs_file_path,
+                "message": "Image captured and processing started."}
     except Exception as e:
         logger.error(f"Webcam capture failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-def generate_frames():
-    camera = cv2.VideoCapture(0)
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-    camera.release()
 
-@app.get("/api/video_feed")
-async def video_feed():
-    return StreamingResponse(generate_frames(), media_type="multipart/x-mixed-replace; boundary=frame")
 
+# ─── Stats & Status ──────────────────────────────────────────
+
+@app.get("/api/status")
+async def get_status():
+    return {"status": "running", "service": "MEGI Records - Expedientes Médicos Digitales"}
+
+@app.get("/api/stats")
+async def get_stats(user_id: str = Depends(verify_user_and_pin)):
+    try:
+        return db.get_medical_stats(user_id=user_id)
+    except Exception as e:
+        logger.error(f"Error fetching stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─── Background Processing ───────────────────────────────────
+
+def _process_text_consultation(consultation_id: int, text: str, user_id: str,
+                                patient_id: int = None, is_regeneration: bool = False):
+    """Process a text consultation with AI analysis in background."""
+    try:
+        from backend.ai_manager import AIEngine
+        ai = AIEngine()
+
+        if not is_regeneration:
+            db.update_consultation_status(consultation_id, 'processing')
+
+        broadcast_update_sync(user_id, json.dumps({
+            "type": "consultation_update",
+            "consultation_id": consultation_id,
+            "status": "processing"
+        }))
+
+        # Classify document
+        classification = ai.classify_document(text)
+        doc_type = classification.get('document_type', 'consultation')
+
+        # Full medical analysis
+        analysis = ai.analyze_medical_text(text)
+
+        if 'error' in analysis:
+            db.update_consultation_error(consultation_id, analysis['error'])
+            broadcast_update_sync(user_id, json.dumps({
+                "type": "consultation_update",
+                "consultation_id": consultation_id,
+                "status": "error",
+                "error": analysis['error']
+            }))
+            return
+
+        analysis['document_type'] = doc_type
+        db.update_consultation_analysis(consultation_id, analysis)
+
+        # Extract and save prescriptions
+        if patient_id:
+            prescriptions = ai.extract_prescriptions(analysis)
+            for rx in prescriptions:
+                db.add_prescription(
+                    consultation_id=consultation_id,
+                    patient_id=patient_id,
+                    drug_name=rx.get('drug_name', ''),
+                    dose=rx.get('dose', ''),
+                    frequency=rx.get('frequency', ''),
+                    duration=rx.get('duration', ''),
+                    instructions=rx.get('instructions', '')
+                )
+
+            # Extract and save lab results
+            lab_results = ai.extract_lab_results(analysis)
+            for lab in lab_results:
+                db.add_lab_result(
+                    patient_id=patient_id,
+                    consultation_id=consultation_id,
+                    test_name=lab.get('test_name', ''),
+                    value=lab.get('value', ''),
+                    unit=lab.get('unit', ''),
+                    reference_range=lab.get('reference_range', ''),
+                    is_abnormal=lab.get('is_abnormal', 0)
+                )
+
+        broadcast_update_sync(user_id, json.dumps({
+            "type": "consultation_update",
+            "consultation_id": consultation_id,
+            "status": "processed"
+        }))
+
+        logger.info(f"Consultation {consultation_id} processed successfully.")
+
+    except Exception as e:
+        logger.error(f"Error processing consultation {consultation_id}: {e}")
+        db.update_consultation_error(consultation_id, str(e))
+        broadcast_update_sync(user_id, json.dumps({
+            "type": "consultation_update",
+            "consultation_id": consultation_id,
+            "status": "error",
+            "error": str(e)
+        }))
+
+
+def process_medical_document_background(image_path: str, user_id: str, patient_id: int = None):
+    """Process a medical document image with OCR + AI analysis. Called from callbacks."""
+    try:
+        from backend.ai_manager import AIEngine
+        ai = AIEngine()
+
+        # Create consultation record
+        consultation_id = db.add_consultation(
+            user_id=user_id,
+            patient_id=patient_id,
+            image_path=image_path
+        )
+
+        if consultation_id < 0:
+            logger.error("Failed to create consultation record")
+            return
+
+        db.update_consultation_status(consultation_id, 'processing')
+        broadcast_update_sync(user_id, json.dumps({
+            "type": "consultation_update",
+            "consultation_id": consultation_id,
+            "status": "processing"
+        }))
+
+        # OCR
+        examples = db.get_recent_corrections(limit=3)
+        raw_text = ai.extract_text_from_image(image_path, examples)
+
+        if raw_text.startswith("Error"):
+            db.update_consultation_error(consultation_id, raw_text)
+            broadcast_update_sync(user_id, json.dumps({
+                "type": "consultation_update",
+                "consultation_id": consultation_id,
+                "status": "error",
+                "error": raw_text
+            }))
+            return
+
+        db.update_consultation_text(consultation_id, raw_text)
+
+        # Classify
+        classification = ai.classify_document(raw_text)
+        doc_type = classification.get('document_type', 'consultation')
+
+        # Full analysis
+        analysis = ai.analyze_medical_text(raw_text)
+
+        if 'error' in analysis:
+            db.update_consultation_error(consultation_id, analysis['error'])
+            broadcast_update_sync(user_id, json.dumps({
+                "type": "consultation_update",
+                "consultation_id": consultation_id,
+                "status": "error",
+                "error": analysis['error']
+            }))
+            return
+
+        analysis['document_type'] = doc_type
+        db.update_consultation_analysis(consultation_id, analysis)
+
+        # Extract prescriptions and lab results if patient is linked
+        if patient_id:
+            prescriptions = ai.extract_prescriptions(analysis)
+            for rx in prescriptions:
+                db.add_prescription(
+                    consultation_id=consultation_id,
+                    patient_id=patient_id,
+                    drug_name=rx.get('drug_name', ''),
+                    dose=rx.get('dose', ''),
+                    frequency=rx.get('frequency', ''),
+                    duration=rx.get('duration', ''),
+                    instructions=rx.get('instructions', '')
+                )
+
+            lab_results = ai.extract_lab_results(analysis)
+            for lab in lab_results:
+                db.add_lab_result(
+                    patient_id=patient_id,
+                    consultation_id=consultation_id,
+                    test_name=lab.get('test_name', ''),
+                    value=lab.get('value', ''),
+                    unit=lab.get('unit', ''),
+                    reference_range=lab.get('reference_range', ''),
+                    is_abnormal=lab.get('is_abnormal', 0)
+                )
+
+        broadcast_update_sync(user_id, json.dumps({
+            "type": "consultation_update",
+            "consultation_id": consultation_id,
+            "status": "processed"
+        }))
+
+        logger.info(f"Medical document {consultation_id} processed successfully.")
+
+    except Exception as e:
+        logger.error(f"Error processing medical document: {e}")
